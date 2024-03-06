@@ -1,6 +1,6 @@
 {
   "role": {
-    "name": "hmpps-template-kotlin"
+    "name": "hmpps-one-login-user-registry"
   },
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"
