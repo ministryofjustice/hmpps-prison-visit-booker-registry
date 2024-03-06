@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsoneloginuserregistry.integration
+package uk.gov.justice.digital.hmpps.oneloginuserregistry.integration
 
 import org.junit.jupiter.api.Test
 

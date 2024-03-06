@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsoneloginuserregistry.config
+package uk.gov.justice.digital.hmpps.oneloginuserregistry.config
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory

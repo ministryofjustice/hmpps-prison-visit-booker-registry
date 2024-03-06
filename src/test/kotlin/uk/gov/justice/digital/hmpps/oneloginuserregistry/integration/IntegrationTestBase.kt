@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsoneloginuserregistry.integration
+package uk.gov.justice.digital.hmpps.oneloginuserregistry.integration
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

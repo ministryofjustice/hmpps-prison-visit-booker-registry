@@ -1,11 +1,11 @@
-package uk.gov.justice.digital.hmpps.hmppsoneloginuserregistry
+package uk.gov.justice.digital.hmpps.oneloginuserregistry
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class HmppsOneLoginUserRegistry
+class HmppsOneLoginUserRegistryApplication
 
 fun main(args: Array<String>) {
-  runApplication<HmppsOneLoginUserRegistry>(*args)
+  runApplication<HmppsOneLoginUserRegistryApplication>(*args)
 }
