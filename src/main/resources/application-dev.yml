@@ -1,0 +1,14 @@
+server:
+  shutdown: immediate
+
+management.endpoint:
+  health.cache.time-to-live: 0
+  info.cache.time-to-live: 0
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/one_login_user_registry
+    username: one_login_user_registry
+    password: one_login_user_registry
+
+hmpps.auth.url: http://localhost:8090/auth
