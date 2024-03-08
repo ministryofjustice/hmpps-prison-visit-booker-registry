@@ -1,8 +1,9 @@
 generic-service:
   nameOverride: hmpps-one-login-user-registry
+  serviceAccountName: hmpps-one-login-user-registry
   productId: "DPS035" # productId for the product that this belongs too, i.e. DPS001, see README.md for details
 
-  replicaCount: 4
+  replicaCount: 2
 
   image:
     repository: quay.io/hmpps/hmpps-one-login-user-registry
@@ -30,7 +31,13 @@ generic-service:
   namespace_secrets:
     hmpps-one-login-user-registry:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
-
+      SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
+      SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
+    hmpps-one-login-user-registry-rds:
+      SPRING_DATASOURCE_USERNAME: "database_username"
+      SPRING_DATASOURCE_PASSWORD: "database_password"
+      DATABASE_NAME: "database_name"
+      DATABASE_ENDPOINT: "rds_instance_endpoint"
   allowlist:
     groups:
       - internal
