@@ -30,7 +30,7 @@ services:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
 
-  visit-scheduler-db:
+  one-login-user-registry-db:
     image: postgres:15.5
     networks:
       - hmpps
