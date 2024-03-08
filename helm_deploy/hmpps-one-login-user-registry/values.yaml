@@ -1,5 +1,6 @@
 generic-service:
   nameOverride: hmpps-one-login-user-registry
+  serviceAccountName: visit-someone-in-prison
   productId: "DPS035" # productId for the product that this belongs too, i.e. DPS001, see README.md for details
 
   replicaCount: 2
