@@ -6,7 +6,7 @@ plugins {
 }
 
 springBoot {
-  mainClass.value("uk.gov.justice.digital.hmpps.oneloginuserregistry.HmppsOneLoginUserRegistryApplication")
+  mainClass.value("uk.gov.justice.digital.hmpps.oneloginuserregistry.HmppsOneLoginUserRegistryApplicationKt")
 }
 
 configurations {
