@@ -29,18 +29,18 @@ abstract class IntegrationTestBase {
     @DynamicPropertySource
     fun properties(registry: DynamicPropertyRegistry) {
       pgContainer?.run {
-//        registry.add("spring.datasource.url", pgContainer::getJdbcUrl)
-//        registry.add("spring.datasource.username", pgContainer::getUsername)
-//        registry.add("spring.datasource.password", pgContainer::getPassword)
-//        registry.add("spring.datasource.placeholders.database_update_password", pgContainer::getPassword)
-//        registry.add("spring.datasource.placeholders.database_read_only_password", pgContainer::getPassword)
-//        registry.add("spring.flyway.url", pgContainer::getJdbcUrl)
-//        registry.add("spring.flyway.user", pgContainer::getUsername)
-//        registry.add("spring.flyway.password", pgContainer::getPassword)
+        registry.add("spring.datasource.url", pgContainer::getJdbcUrl)
+        registry.add("spring.datasource.username", pgContainer::getUsername)
+        registry.add("spring.datasource.password", pgContainer::getPassword)
+        registry.add("spring.datasource.placeholders.database_update_password", pgContainer::getPassword)
+        registry.add("spring.datasource.placeholders.database_read_only_password", pgContainer::getPassword)
+        registry.add("spring.flyway.url", pgContainer::getJdbcUrl)
+        registry.add("spring.flyway.user", pgContainer::getUsername)
+        registry.add("spring.flyway.password", pgContainer::getPassword)
       }
       lsContainer?.run {
-//        registry.add("hmpps.sqs.localstackUrl") { lsContainer.getEndpointOverride(org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS) }
-//        registry.add("hmpps.sqs.region") { lsContainer.region }
+        registry.add("hmpps.sqs.localstackUrl") { lsContainer.getEndpointOverride(org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS) }
+        registry.add("hmpps.sqs.region") { lsContainer.region }
       }
     }
   }
