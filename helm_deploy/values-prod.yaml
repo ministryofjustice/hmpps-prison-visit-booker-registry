@@ -2,8 +2,9 @@
 # Per environment values which override defaults in hmpps-one-login-user-registry/values.yaml
 
 generic-service:
+
   ingress:
-    host: hmpps-one-login-user-registry.hmpps.service.justice.gov.uk
+    host: hmpps-one-login-user-registry.prison.service.justice.gov.uk
 
   env:
     HMPPS_AUTH_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
