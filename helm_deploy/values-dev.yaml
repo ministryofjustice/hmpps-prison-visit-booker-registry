@@ -2,12 +2,9 @@
 # Per environment values which override defaults in hmpps-one-login-user-registry/values.yaml
 
 generic-service:
-  replicaCount: 2
 
   ingress:
     host: hmpps-one-login-user-registry-dev.prison.service.justice.gov.uk
-
-
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
