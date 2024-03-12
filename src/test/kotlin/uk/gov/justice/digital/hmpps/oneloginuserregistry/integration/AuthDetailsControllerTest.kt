@@ -19,7 +19,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ONE_LOGIN_USER_REGISTRY"))
+    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_ONE_LOGIN_USER_REGISTRY"))
   }
 
   @Test
