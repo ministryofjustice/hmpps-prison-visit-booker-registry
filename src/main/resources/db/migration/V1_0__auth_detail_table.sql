@@ -8,4 +8,3 @@ CREATE TABLE auth_detail
 );
 
 CREATE INDEX idx_auth_reference_auth_detail ON auth_detail(auth_reference);
-

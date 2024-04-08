@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oneloginuserregistry.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.codec.ClientCodecConfigurer
@@ -13,7 +14,11 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
-class WebClientConfiguration {
+class WebClientConfiguration(
+  @Value("\${hmpps-orchestration.api.url}")
+  private val orchestrationServiceBaseUrl: String,
+) {
+
   companion object {
     const val CLIENT_REGISTRATION_ID = "hmpps-apis"
   }
@@ -30,6 +35,11 @@ class WebClientConfiguration {
     return authorizedClientManager
   }
 
+  @Bean
+  fun orchestrationServiceWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, CLIENT_REGISTRATION_ID)
+    return getWebClient(orchestrationServiceBaseUrl, oauth2Client)
+  }
   private fun getOauth2Client(authorizedClientManager: OAuth2AuthorizedClientManager, clientRegistrationId: String): ServletOAuth2AuthorizedClientExchangeFilterFunction {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId(clientRegistrationId)

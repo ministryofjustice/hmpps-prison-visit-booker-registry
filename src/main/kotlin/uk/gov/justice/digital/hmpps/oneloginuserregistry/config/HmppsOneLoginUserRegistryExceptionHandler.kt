@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
@@ -45,6 +46,16 @@ class HmppsOneLoginUserRegistryExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(AccessDeniedException::class)
+  fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
+    log.debug("Forbidden (403) returned with message {}", e.message)
+    val error = ErrorResponse(
+      status = HttpStatus.FORBIDDEN,
+      userMessage = "Access denied",
+    )
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error)
+  }
 
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
