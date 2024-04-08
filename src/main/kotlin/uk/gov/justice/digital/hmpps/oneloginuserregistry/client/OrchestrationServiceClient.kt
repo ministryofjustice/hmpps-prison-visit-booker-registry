@@ -37,7 +37,7 @@ class OrchestrationServiceClient(
       }.block(apiTimeout)
   }
 
-  fun getVisitorDetails(prisonerId: String, visitorIds: List<Long>): List<BasicContactDto> {
+  fun getVisitorDetails(prisonerId: String, visitorIds: List<Long>): List<BasicContactDto>? {
     return webClient.get()
       .uri(
         ORCHESTRATION_VISITOR_DETAILS_PATH.replace("{prisonerId}", prisonerId)
@@ -45,6 +45,11 @@ class OrchestrationServiceClient(
       )
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<List<BasicContactDto>>().block(apiTimeout) ?: emptyList()
+      .bodyToMono<List<BasicContactDto>>().onErrorResume { e ->
+        if (e is WebClientResponseException) {
+          return@onErrorResume Mono.just(emptyList<BasicContactDto>())
+        }
+        Mono.error(e)
+      }.block(apiTimeout)
   }
 }
