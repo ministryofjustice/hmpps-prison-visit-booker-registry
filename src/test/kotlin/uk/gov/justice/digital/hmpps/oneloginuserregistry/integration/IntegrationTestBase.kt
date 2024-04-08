@@ -72,15 +72,14 @@ abstract class IntegrationTestBase {
   fun createAssociatedPrisoners(authDetail: AuthDetail, associatedPrisoners: List<Tuple2<String, Boolean>>): List<AssociatedPrisoner> {
     val associatedPrisonerList = mutableListOf<AssociatedPrisoner>()
     associatedPrisoners.forEach {
-      val associatedPrisoner = AssociatedPrisoner(authDetailId = authDetail.id, authDetail = authDetail, prisonerId = it.t1, active = it.t2)
-      associatedPrisonerList.add(entityHelper.createAssociatedPrisoner(associatedPrisoner))
+      val associatedPrisoner = AssociatedPrisoner(bookerId = authDetail.id, authDetail = authDetail, prisonNumber = it.t1, active = it.t2)
+      associatedPrisonerList.add(createAssociatedPrisoner(authDetail, associatedPrisoner))
     }
     return associatedPrisonerList
   }
 
   @Transactional
-  fun createAssociatedPrisoner(authDetail: AuthDetail, prisonerNumber: String, isActive: Boolean): AssociatedPrisoner {
-    val associatedPrisoner = AssociatedPrisoner(authDetailId = authDetail.id, authDetail = authDetail, prisonerId = prisonerNumber, active = isActive)
+  fun createAssociatedPrisoner(authDetail: AuthDetail, associatedPrisoner: AssociatedPrisoner): AssociatedPrisoner {
     return entityHelper.createAssociatedPrisoner(associatedPrisoner)
   }
 
@@ -88,15 +87,14 @@ abstract class IntegrationTestBase {
     val visitors = mutableListOf<AssociatedPrisonersVisitor>()
     associatedPrisonersVisitors.forEach {
       val associatedPrisonersVisitor = AssociatedPrisonersVisitor(associatedPrisonerId = associatedPrisoner.id, associatedPrisoner = associatedPrisoner, visitorId = it.t1, active = it.t2)
-      visitors.add(associatedPrisonersVisitor)
+      visitors.add(createAssociatedPrisonersVisitor(associatedPrisoner, associatedPrisonersVisitor))
     }
 
     return visitors
   }
 
   @Transactional
-  fun createAssociatedPrisonersVisitor(associatedPrisoner: AssociatedPrisoner, visitorId: Long, isActive: Boolean): AssociatedPrisonersVisitor {
-    val associatedPrisonersVisitor = AssociatedPrisonersVisitor(associatedPrisonerId = associatedPrisoner.id, associatedPrisoner = associatedPrisoner, visitorId = visitorId, active = isActive)
+  fun createAssociatedPrisonersVisitor(associatedPrisoner: AssociatedPrisoner, associatedPrisonersVisitor: AssociatedPrisonersVisitor): AssociatedPrisonersVisitor {
     return entityHelper.createAssociatedPrisonerVisitor(associatedPrisonersVisitor)
   }
 }

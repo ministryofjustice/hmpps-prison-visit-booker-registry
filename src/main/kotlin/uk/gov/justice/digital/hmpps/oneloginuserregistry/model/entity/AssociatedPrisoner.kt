@@ -23,15 +23,15 @@ class AssociatedPrisoner(
   @Column(name = "ID")
   val id: Long = 0,
 
-  @Column(name = "auth_detail_id", nullable = false)
-  val authDetailId: Long,
+  @Column(name = "booker_id", nullable = false)
+  val bookerId: Long,
 
   @ManyToOne
-  @JoinColumn(name = "auth_detail_id", updatable = false, insertable = false)
+  @JoinColumn(name = "booker_id", updatable = false, insertable = false)
   val authDetail: AuthDetail,
 
-  @Column(name = "prisoner_id", nullable = false)
-  val prisonerId: String,
+  @Column(name = "prison_number", nullable = false)
+  val prisonNumber: String,
 
   @Column(name = "active", nullable = false)
   val active: Boolean,

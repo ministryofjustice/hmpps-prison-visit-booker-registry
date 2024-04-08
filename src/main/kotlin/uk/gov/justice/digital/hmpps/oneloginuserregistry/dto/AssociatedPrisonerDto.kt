@@ -22,7 +22,7 @@ data class AssociatedPrisonerDto(
   val isActive: Boolean,
 ) {
   constructor(basicInfoDto: PrisonerBasicInfoDto, associatedPrisoner: AssociatedPrisoner) : this (
-    prisonerNumber = associatedPrisoner.prisonerId,
+    prisonerNumber = associatedPrisoner.prisonNumber,
     firstName = basicInfoDto.firstName,
     lastName = basicInfoDto.lastName,
     isActive = associatedPrisoner.active,

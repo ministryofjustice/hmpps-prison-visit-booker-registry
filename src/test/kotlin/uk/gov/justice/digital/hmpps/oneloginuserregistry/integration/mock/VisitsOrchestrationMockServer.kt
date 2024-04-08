@@ -8,6 +8,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.BasicContactDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.PrisonerBasicInfoDto
 
 class VisitsOrchestrationMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8091) {
@@ -21,6 +22,21 @@ class VisitsOrchestrationMockServer(@Autowired private val objectMapper: ObjectM
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(basicPrisonerInfoList))
+          },
+        ),
+    )
+  }
+
+  fun stubBasicVisitorsBasicDetails(prisonerId: String, visitorIds: List<Long>, basicContactList: List<BasicContactDto>?) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/prisoner/$prisonerId/visitors/${visitorIds.joinToString(",")}/basic-details")
+        .willReturn(
+          if (basicContactList == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(basicContactList))
           },
         ),
     )

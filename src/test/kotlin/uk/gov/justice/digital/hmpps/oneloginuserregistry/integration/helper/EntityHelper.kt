@@ -36,14 +36,13 @@ class EntityHelper(
 
   @Transactional
   fun deleteAll() {
-    println("Delete all")
-    testAuthDetailRepository.deleteAll()
-    testAuthDetailRepository.flush()
+    testAssociatedVisitorRepository.deleteAll()
+    testAssociatedVisitorRepository.flush()
 
     testAssociatedPrisonerRepository.deleteAll()
     testAssociatedPrisonerRepository.flush()
 
-    testAssociatedVisitorRepository.deleteAll()
-    testAssociatedVisitorRepository.flush()
+    testAuthDetailRepository.deleteAll()
+    testAuthDetailRepository.flush()
   }
 }

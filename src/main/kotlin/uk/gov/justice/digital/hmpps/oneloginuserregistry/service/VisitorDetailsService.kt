@@ -19,7 +19,7 @@ class VisitorDetailsService(
     return prisoner?.let { associatedPrisoner ->
       val visitors = associatedVisitorRepository.findByAssociatedPrisonerId(associatedPrisoner.id)
       if (visitors.isNotEmpty()) {
-        val visitorsBasicContactDetailsMap = orchestrationServiceClient.getVisitorDetails(prisonerId, visitors.map { it.visitorId }.toList()).associateBy { it.personId }
+        val visitorsBasicContactDetailsMap = orchestrationServiceClient.getVisitorDetails(prisonerId, visitors.map { it.visitorId }.toList())?.associateBy { it.personId } ?: emptyMap()
         visitors.forEach {
           val visitorsBasicContactDetails = visitorsBasicContactDetailsMap[it.visitorId]
           associatedPrisonersVisitors.add(

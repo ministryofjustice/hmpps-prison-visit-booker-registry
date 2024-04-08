@@ -19,13 +19,13 @@ class PrisonerDetailsService(
     val authDetailByReference = authDetailRepository.findByAuthReference(reference)
     val associatedPrisoners = mutableListOf<AssociatedPrisonerDto>()
     return authDetailByReference?.let { authDetail ->
-      val associatedPrisonersByAuthId = prisonerRepository.findByAuthDetailId(authDetail.id)
+      val associatedPrisonersByAuthId = prisonerRepository.findByBookerId(authDetail.id)
       if (associatedPrisonersByAuthId.isNotEmpty()) {
         val prisonerDetails =
-          orchestrationServiceClient.getPrisonerDetails(associatedPrisonersByAuthId.map { it.prisonerId }.toList())?.associateBy { it.prisonerNumber } ?: emptyMap()
+          orchestrationServiceClient.getPrisonerDetails(associatedPrisonersByAuthId.map { it.prisonNumber }.toList())?.associateBy { it.prisonerNumber } ?: emptyMap()
 
         associatedPrisonersByAuthId.forEach {
-          associatedPrisoners.add(AssociatedPrisonerDto(prisonerDetails[it.prisonerId] ?: getBlankPrisonerBasicInfo(it.prisonerId), it))
+          associatedPrisoners.add(AssociatedPrisonerDto(prisonerDetails[it.prisonNumber] ?: getBlankPrisonerBasicInfo(it.prisonNumber), it))
         }
       }
 
@@ -36,7 +36,7 @@ class PrisonerDetailsService(
   fun getAssociatedPrisoner(reference: String, prisonerId: String): AssociatedPrisoner? {
     val authDetailByReference = authDetailRepository.findByAuthReference(reference)
     return authDetailByReference?.let { authDetail ->
-      prisonerRepository.findByAuthDetailIdAndPrisonerId(authDetail.id, prisonerId)
+      prisonerRepository.findByAuthDetailIdAndPrisonNumber(authDetail.id, prisonerId)
     }
   }
 

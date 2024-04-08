@@ -6,6 +6,6 @@ import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.Associated
 
 @Repository
 interface AssociatedPrisonerRepository : JpaRepository<AssociatedPrisoner, Long> {
-  fun findByAuthDetailId(authDetailId: Long): List<AssociatedPrisoner>
-  fun findByAuthDetailIdAndPrisonerId(authDetailId: Long, prisonerId: String): AssociatedPrisoner?
+  fun findByBookerId(bookerId: Long): List<AssociatedPrisoner>
+  fun findByAuthDetailIdAndPrisonNumber(authDetailId: Long, prisonNumber: String): AssociatedPrisoner?
 }
