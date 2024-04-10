@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AuthDetailDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.service.AuthService
 
-const val AUTH_DETAILS_CONTROLLER_PATH: String = "/register/auth/details"
+const val AUTH_DETAILS_CONTROLLER_PATH: String = "/register/auth"
 
 @RestController
 @Validated
@@ -29,16 +29,16 @@ class AuthDetailsController(
   private val authService: AuthService,
 ) {
 
-  @PreAuthorize("hasAnyRole('ONE_LOGIN_USER_REGISTRY')")
+  @PreAuthorize("hasAnyRole('BOOKER_AUTHORISATION')")
   @PutMapping(AUTH_DETAILS_CONTROLLER_PATH)
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   @Operation(
-    summary = "Save auth details",
-    description = "Save auth detail, if existing then returns existing details",
+    summary = "Authenticate one login details against pre populated bookers",
+    description = "Authenticate one login details against pre populated bookers",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Save new auth detail is saved",
+        description = "One login details matched with pre populated booker",
       ),
       ApiResponse(
         responseCode = "401",
@@ -52,7 +52,7 @@ class AuthDetailsController(
       ),
     ],
   )
-  fun save(@RequestBody @Valid authDetailDto: AuthDetailDto): AuthDetailDto {
-    return authService.save(authDetailDto)
+  fun bookerAuthorisation(@RequestBody @Valid authDetailDto: AuthDetailDto): String {
+    return authService.bookerAuthorisation(authDetailDto)
   }
 }

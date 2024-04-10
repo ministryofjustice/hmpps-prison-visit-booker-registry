@@ -7,5 +7,5 @@ import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.AuthDetail
 @Repository
 interface AuthDetailRepository : JpaRepository<AuthDetail, Long> {
 
-  fun findByAuthReference(authReference: String): AuthDetail?
+  fun findByOneLoginSub(sub: String): AuthDetail?
 }

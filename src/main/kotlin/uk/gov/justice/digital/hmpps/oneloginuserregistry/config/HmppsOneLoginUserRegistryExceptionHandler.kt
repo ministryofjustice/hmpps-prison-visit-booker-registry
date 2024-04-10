@@ -10,9 +10,39 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.exceptions.BookerNotFoundException
 
 @RestControllerAdvice
 class HmppsOneLoginUserRegistryExceptionHandler {
+
+  @ExceptionHandler(org.springframework.security.access.AccessDeniedException::class)
+  fun handleAccessDeniedException(e: org.springframework.security.access.AccessDeniedException): ResponseEntity<ErrorResponse?>? {
+    log.debug("Access denied exception caught: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.FORBIDDEN)
+      .body(
+        ErrorResponse(
+          status = HttpStatus.FORBIDDEN,
+          userMessage = "Access is forbidden",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(BookerNotFoundException::class)
+  fun handleBookerNotFoundException(e: BookerNotFoundException): ResponseEntity<ErrorResponse?>? {
+    log.debug("Booker found exception caught: {}", e.message)
+    return ResponseEntity
+      .status(NOT_FOUND)
+      .body(
+        ErrorResponse(
+          status = NOT_FOUND,
+          userMessage = "Booker not found",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
   @ExceptionHandler(ValidationException::class)
   fun handleValidationException(e: ValidationException): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(BAD_REQUEST)

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oneloginuserregistry.integration
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -7,8 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.integration.mock.HmppsAuthExtension
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.repository.AuthDetailRepository
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.repository.BookerRepository
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -19,7 +23,20 @@ abstract class IntegrationTestBase {
   lateinit var webTestClient: WebTestClient
 
   @Autowired
+  protected lateinit var authDetailRepository: AuthDetailRepository
+
+  @Autowired
+  protected lateinit var bookerRepository: BookerRepository
+
+  @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
+
+  @AfterEach
+  @Transactional
+  internal open fun deleteAll() {
+    bookerRepository.deleteAll()
+    authDetailRepository.deleteAll()
+  }
 
   internal fun setAuthorisation(
     user: String = "AUTH_ADM",
