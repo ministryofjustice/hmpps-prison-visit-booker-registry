@@ -5,43 +5,48 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.PostPersist
 import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AuthDetailDto
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.util.QuotableEncoder
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "auth_detail")
-class AuthDetail(
+@Table(name = "booker")
+class Booker(
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID")
   val id: Long = 0,
 
-  @Column(name = "count", nullable = false)
-  var count: Int = 0,
-
-  @Column(name = "one_login_sub", nullable = false)
-  val oneLoginSub: String,
+  @Column(name = "one_login_sub", nullable = true)
+  var oneLoginSub: String? = null,
 
   @Column(name = "email", nullable = false)
-  var email: String,
-
-  @Column(name = "phone_number", nullable = true)
-  var phoneNumber: String? = null,
+  val email: String,
 
 ) {
+  @Column
+  var reference: String = ""
+    private set
 
   @CreationTimestamp
   @Column
   val createTimestamp: LocalDateTime? = null
 
+  @PostPersist
+  fun createReference() {
+    if (reference.isBlank()) {
+      reference = QuotableEncoder(minLength = 10).encode(id)
+    }
+  }
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
-    other as AuthDetail
+    other as Booker
 
     return id == other.id
   }
@@ -49,12 +54,6 @@ class AuthDetail(
   override fun hashCode(): Int = id.hashCode()
 
   override fun toString(): String {
-    return this::class.simpleName + "(id=$id, created = $createTimestamp)"
+    return this::class.simpleName + "(id=$id, reference='$reference', created = $createTimestamp)"
   }
-
-  constructor(authDetailDto: AuthDetailDto) : this(
-    oneLoginSub = authDetailDto.oneLoginSub,
-    email = authDetailDto.email,
-    phoneNumber = authDetailDto.phoneNumber,
-  )
 }
