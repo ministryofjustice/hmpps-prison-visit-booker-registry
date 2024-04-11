@@ -1,14 +1,14 @@
 info.app:
   name: Hmpps One Login User Registry
   version: 1.0
-  description: API providing one Login User Registry details
+  description: API providing Public Prison Booker Registry details
   contact:
-    name: Hmpps One Login User Registry
+    name: HMPPS Public Prison Booker Registry
     email: prisonvisitsbooking@digital.justice.gov.uk
 
 spring:
   application:
-    name: hmpps-one-login-user-registry
+    name: hmpps-prison-visit-booker-registry
   codec:
     max-in-memory-size: 10MB
 

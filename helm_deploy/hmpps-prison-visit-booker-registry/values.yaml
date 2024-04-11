@@ -1,19 +1,19 @@
 generic-service:
-  nameOverride: hmpps-one-login-user-registry
+  nameOverride: hmpps-prison-visit-booker-registry
   serviceAccountName: visit-someone-in-prison
   productId: "DPS035" # productId for the product that this belongs too, i.e. DPS001, see README.md for details
 
   replicaCount: 2
 
   image:
-    repository: quay.io/hmpps/hmpps-one-login-user-registry
+    repository: quay.io/hmpps/hmpps-prison-visit-booker-registry
     tag: app_version # override at deployment time
     port: 8080
 
   ingress:
     enabled: true
     host: app-hostname.local # override per environment
-    tlsSecretName: hmpps-one-login-user-registry-cert
+    tlsSecretName: hmpps-prison-visit-booker-registry-cert
 
   # Environment variables to load into the deployment
   env:
@@ -29,11 +29,11 @@ generic-service:
   #     [name of environment variable as seen by app]: [key of kubernetes secret to load]
 
   namespace_secrets:
-    hmpps-one-login-user-registry:
+    hmpps-prison-visit-booker-registry:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
-    hmpps-one-login-user-registry-rds:
+    hmpps-prison-visit-booker-registry-rds:
       SPRING_DATASOURCE_USERNAME: "database_username"
       SPRING_DATASOURCE_PASSWORD: "database_password"
       DATABASE_NAME: "database_name"
@@ -43,4 +43,4 @@ generic-service:
       - internal
 
 generic-prometheus-alerts:
-  targetApplication: hmpps-one-login-user-registry
+  targetApplication: hmpps-prison-visit-booker-registry

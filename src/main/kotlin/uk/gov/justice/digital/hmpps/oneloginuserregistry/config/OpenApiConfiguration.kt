@@ -27,7 +27,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   private val buildVersion: String = buildProperties.version
 
   @Value("\${info.app.description}")
-  private val description: String = "A microservice for registering one-login accounts to HMPPS services"
+  private val description: String = "A microservice for registering public visit bookers to HMPPS - VSIP services"
 
   @Value("\${info.app.contact.name}")
   private val contactName: String = "Prison Visits Booking Project"
@@ -39,10 +39,10 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   fun customOpenAPI(): OpenAPI = OpenAPI()
     .servers(
       listOf(
-        Server().url("https://hmpps-one-login-user-registry.prison.service.justice.gov.uk").description("Prod"),
-        Server().url("https://hmpps-one-login-user-registry-preprod.prison.service.justice.gov.uk").description("PreProd"),
-        Server().url("https://hmpps-one-login-user-registry-staging.prison.service.justice.gov.uk").description("Staging"),
-        Server().url("https://hmpps-one-login-user-registry-dev.prison.service.justice.gov.uk").description("Development"),
+        Server().url("https://hmpps-prison-visit-booker-registry.prison.service.justice.gov.uk").description("Prod"),
+        Server().url("https://hmpps-prison-visit-booker-registry-preprod.prison.service.justice.gov.uk").description("PreProd"),
+        Server().url("https://hmpps-prison-visit-booker-registry-staging.prison.service.justice.gov.uk").description("Staging"),
+        Server().url("https://hmpps-prison-visit-booker-registry-dev.prison.service.justice.gov.uk").description("Development"),
         Server().url("http://localhost:8080").description("Local"),
       ),
     )

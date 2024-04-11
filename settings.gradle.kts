@@ -1,1 +1,1 @@
-rootProject.name = "hmpps-one-login-user-registry"
+rootProject.name = "hmpps-prison-visit-booker-registry"

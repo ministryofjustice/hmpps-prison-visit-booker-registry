@@ -1,10 +1,10 @@
 version: "3"
 services:
-  hmpps-one-login-user-registry:
+  hmpps-prison-visit-booker-registry:
     build:
       context: .
     network_mode: "host"
-    container_name: hmpps-one-login-user-registry
+    container_name: hmpps-prison-visit-booker-registry
     ports:
       - "8081:8080"
     healthcheck:
@@ -30,7 +30,7 @@ services:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
 
-  one-login-user-registry-db:
+  prison-visit-booker-registry-db:
     image: postgres:15.5
     networks:
       - hmpps

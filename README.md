@@ -1,8 +1,8 @@
-# hmpps-one-login-user-registry
-[![repo standards badge](https://img.shields.io/badge/dynamic/json?color=blue&style=flat&logo=github&label=MoJ%20Compliant&query=%24.result&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fhmpps-one-login-user-registry)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-github-repositories.html#hmpps-one-login-user-registry "Link to report")
-[![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-one-login-user-registry/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/hmpps-one-login-user-registry)
-[![Docker Repository on Quay](https://quay.io/repository/hmpps/hmpps-one-login-user-registry/status "Docker Repository on Quay")](https://quay.io/repository/hmpps/hmpps-one-login-user-registry)
-[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://hmpps-one-login-user-registry-dev.hmpps.service.justice.gov.uk/webjars/swagger-ui/index.html?configUrl=/v3/api-docs)
+# hmpps-prison-visit-booker-registry
+[![repo standards badge](https://img.shields.io/badge/dynamic/json?color=blue&style=flat&logo=github&label=MoJ%20Compliant&query=%24.result&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fhmpps-prison-visit-booker-registry)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-github-repositories.html#hmpps-prison-visit-booker-registry "Link to report")
+[![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-prison-visit-booker-registry/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/hmpps-prison-visit-booker-registry)
+[![Docker Repository on Quay](https://quay.io/repository/hmpps/hmpps-prison-visit-booker-registry/status "Docker Repository on Quay")](https://quay.io/repository/hmpps/hmpps-prison-visit-booker-registry)
+[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://hmpps-prison-visit-booker-registry-dev.hmpps.service.justice.gov.uk/webjars/swagger-ui/index.html?configUrl=/v3/api-docs)
 
 This is a skeleton project from which to create new kotlin projects from.
 
@@ -15,7 +15,7 @@ see https://github.com/ministryofjustice/dps-project-bootstrap.
 
 When deploying to a new namespace, you may wish to use this template kotlin project namespace as the basis for your new namespace:
 
-<https://github.com/ministryofjustice/cloud-platform-environments/tree/main/namespaces/live.cloud-platform.service.justice.gov.uk/hmpps-one-login-user-registry>
+<https://github.com/ministryofjustice/cloud-platform-environments/tree/main/namespaces/live.cloud-platform.service.justice.gov.uk/hmpps-prison-visit-booker-registry>
 
 Copy this folder, update all the existing namespace references, and submit a PR to the CloudPlatform team. Further instructions from the CloudPlatform team can be found here: <https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide>
 
