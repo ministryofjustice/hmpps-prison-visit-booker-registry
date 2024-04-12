@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "booker_prisoner")
-class AssociatedPrisoner(
+class BookerPrisoner(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID")
@@ -28,7 +28,7 @@ class AssociatedPrisoner(
 
   @ManyToOne
   @JoinColumn(name = "booker_id", updatable = false, insertable = false)
-  val authDetail: AuthDetail,
+  val booker: Booker,
 
   @Column(name = "prison_number", nullable = false)
   val prisonNumber: String,
@@ -36,8 +36,8 @@ class AssociatedPrisoner(
   @Column(name = "active", nullable = false)
   val active: Boolean,
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "associatedPrisoner", orphanRemoval = true)
-  val visitors: MutableList<AssociatedPrisonersVisitor> = mutableListOf(),
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "bookerPrisoner", orphanRemoval = true)
+  val visitors: MutableList<BookerPrisonerVisitor> = mutableListOf(),
 ) {
 
   @CreationTimestamp
@@ -47,7 +47,7 @@ class AssociatedPrisoner(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
-    other as AssociatedPrisoner
+    other as BookerPrisoner
 
     return id == other.id
   }

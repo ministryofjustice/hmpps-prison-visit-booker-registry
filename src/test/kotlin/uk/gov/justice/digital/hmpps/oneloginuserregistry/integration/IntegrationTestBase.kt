@@ -12,16 +12,18 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.transaction.annotation.Transactional
 import reactor.util.function.Tuple2
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AuthDetailDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.integration.mock.VisitsOrchestrationMockServer
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.AssociatedPrisoner
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.AssociatedPrisonersVisitor
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.AuthDetail
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.BookerPrisoner
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.BookerPrisonerVisitor
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.repository.AuthDetailRepository
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.repository.BookerRepository
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -53,6 +55,12 @@ abstract class IntegrationTestBase {
   @Autowired
   lateinit var entityHelper: EntityHelper
 
+  @Autowired
+  protected lateinit var authDetailRepository: AuthDetailRepository
+
+  @Autowired
+  protected lateinit var bookerRepository: BookerRepository
+
   @AfterEach
   fun deleteAll() {
     entityHelper.deleteAll()
@@ -65,36 +73,39 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
   fun createAuthDetail(authDetailDto: AuthDetailDto): AuthDetail {
-    val authDetail = AuthDetail(authReference = authDetailDto.authReference, authEmail = authDetailDto.authEmail, authPhoneNumber = authDetailDto.authPhoneNumber)
+    val authDetail = AuthDetail(count = 0, oneLoginSub = authDetailDto.oneLoginSub, email = authDetailDto.email, phoneNumber = authDetailDto.phoneNumber)
     return entityHelper.saveAuthDetail(authDetail)
   }
 
-  fun createAssociatedPrisoners(authDetail: AuthDetail, associatedPrisoners: List<Tuple2<String, Boolean>>): List<AssociatedPrisoner> {
-    val associatedPrisonerList = mutableListOf<AssociatedPrisoner>()
+  fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
+    val booker = Booker(oneLoginSub = oneLoginSub, email = emailAddress)
+    return entityHelper.saveBooker(booker)
+  }
+
+  fun createAssociatedPrisoners(booker: Booker, associatedPrisoners: List<Tuple2<String, Boolean>>): List<BookerPrisoner> {
+    val bookerPrisonerList = mutableListOf<BookerPrisoner>()
     associatedPrisoners.forEach {
-      val associatedPrisoner = AssociatedPrisoner(bookerId = authDetail.id, authDetail = authDetail, prisonNumber = it.t1, active = it.t2)
-      associatedPrisonerList.add(createAssociatedPrisoner(authDetail, associatedPrisoner))
+      val bookerPrisoner = BookerPrisoner(bookerId = booker.id, booker = booker, prisonNumber = it.t1, active = it.t2)
+      bookerPrisonerList.add(createAssociatedPrisoner(bookerPrisoner))
     }
-    return associatedPrisonerList
+    return bookerPrisonerList
   }
 
-  @Transactional
-  fun createAssociatedPrisoner(authDetail: AuthDetail, associatedPrisoner: AssociatedPrisoner): AssociatedPrisoner {
-    return entityHelper.createAssociatedPrisoner(associatedPrisoner)
+  fun createAssociatedPrisoner(bookerPrisoner: BookerPrisoner): BookerPrisoner {
+    return entityHelper.createAssociatedPrisoner(bookerPrisoner)
   }
 
-  fun createAssociatedPrisonersVisitors(associatedPrisoner: AssociatedPrisoner, associatedPrisonersVisitors: List<Tuple2<Long, Boolean>>): List<AssociatedPrisonersVisitor> {
-    val visitors = mutableListOf<AssociatedPrisonersVisitor>()
+  fun createAssociatedPrisonersVisitors(bookerPrisoner: BookerPrisoner, associatedPrisonersVisitors: List<Tuple2<Long, Boolean>>): List<BookerPrisonerVisitor> {
+    val visitors = mutableListOf<BookerPrisonerVisitor>()
     associatedPrisonersVisitors.forEach {
-      val associatedPrisonersVisitor = AssociatedPrisonersVisitor(associatedPrisonerId = associatedPrisoner.id, associatedPrisoner = associatedPrisoner, visitorId = it.t1, active = it.t2)
-      visitors.add(createAssociatedPrisonersVisitor(associatedPrisoner, associatedPrisonersVisitor))
+      val bookerPrisonerVisitor = BookerPrisonerVisitor(bookerPrisonerId = bookerPrisoner.id, bookerPrisoner = bookerPrisoner, visitorId = it.t1, active = it.t2)
+      visitors.add(createAssociatedPrisonersVisitor(bookerPrisoner, bookerPrisonerVisitor))
     }
 
     return visitors
   }
 
-  @Transactional
-  fun createAssociatedPrisonersVisitor(associatedPrisoner: AssociatedPrisoner, associatedPrisonersVisitor: AssociatedPrisonersVisitor): AssociatedPrisonersVisitor {
-    return entityHelper.createAssociatedPrisonerVisitor(associatedPrisonersVisitor)
+  fun createAssociatedPrisonersVisitor(bookerPrisoner: BookerPrisoner, bookerPrisonerVisitor: BookerPrisonerVisitor): BookerPrisonerVisitor {
+    return entityHelper.createAssociatedPrisonerVisitor(bookerPrisonerVisitor)
   }
 }

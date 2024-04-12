@@ -2,7 +2,8 @@ package uk.gov.justice.digital.hmpps.oneloginuserregistry.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.AssociatedPrisoner
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration.PrisonerBasicInfoDto
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.BookerPrisoner
 
 data class AssociatedPrisonerDto(
   @JsonProperty("prisonerNumber")
@@ -21,10 +22,10 @@ data class AssociatedPrisonerDto(
   @JsonProperty("isActive")
   val isActive: Boolean,
 ) {
-  constructor(basicInfoDto: PrisonerBasicInfoDto, associatedPrisoner: AssociatedPrisoner) : this (
-    prisonerNumber = associatedPrisoner.prisonNumber,
+  constructor(basicInfoDto: PrisonerBasicInfoDto, bookerPrisoner: BookerPrisoner) : this (
+    prisonerNumber = bookerPrisoner.prisonNumber,
     firstName = basicInfoDto.firstName,
     lastName = basicInfoDto.lastName,
-    isActive = associatedPrisoner.active,
+    isActive = bookerPrisoner.active,
   )
 }

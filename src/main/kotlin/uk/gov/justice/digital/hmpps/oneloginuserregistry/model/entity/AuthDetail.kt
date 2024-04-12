@@ -20,14 +20,17 @@ class AuthDetail(
   @Column(name = "ID")
   val id: Long = 0,
 
-  @Column(name = "auth_reference", nullable = false)
-  val authReference: String,
+  @Column(name = "count", nullable = false)
+  var count: Int = 0,
 
-  @Column(name = "auth_email", nullable = false)
-  val authEmail: String,
+  @Column(name = "one_login_sub", nullable = false)
+  val oneLoginSub: String,
 
-  @Column(name = "auth_phone_number", nullable = true)
-  val authPhoneNumber: String? = null,
+  @Column(name = "email", nullable = false)
+  var email: String,
+
+  @Column(name = "phone_number", nullable = true)
+  var phoneNumber: String? = null,
 
 ) {
 
@@ -50,8 +53,8 @@ class AuthDetail(
   }
 
   constructor(authDetailDto: AuthDetailDto) : this(
-    authReference = authDetailDto.authReference,
-    authEmail = authDetailDto.authEmail,
-    authPhoneNumber = authDetailDto.authPhoneNumber,
+    oneLoginSub = authDetailDto.oneLoginSub,
+    email = authDetailDto.email,
+    phoneNumber = authDetailDto.phoneNumber,
   )
 }

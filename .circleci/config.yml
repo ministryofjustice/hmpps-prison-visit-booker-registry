@@ -154,7 +154,7 @@ workflows:
           env: "staging"
           context:
             - hmpps-common-vars
-            - one-login-user-registry-stage
+            - prison-visit-booker-registry-stage
           requires:
             - request-staging-approval
       - request-acceptance-tests-approval:
@@ -173,7 +173,7 @@ workflows:
           env: "preprod"
           context:
             - hmpps-common-vars
-            - one-login-user-registry-preprod
+            - prison-visit-booker-registry-preprod
           requires:
             - request-preprod-approval
       - request-prod-approval:
@@ -187,7 +187,7 @@ workflows:
           slack_channel_name: << pipeline.parameters.releases-slack-channel >>
           context:
             - hmpps-common-vars
-            - one-login-user-registry-prod
+            - prison-visit-booker-registry-prod
           requires:
             - request-prod-approval
   build-test-develop-flow:
@@ -231,7 +231,7 @@ workflows:
           env: "staging"
           context:
             - hmpps-common-vars
-            - one-login-user-registry-stage
+            - prison-visit-booker-registry-stage
           requires:
             - request-staging-approval
       - request-acceptance-tests-approval:
@@ -250,7 +250,7 @@ workflows:
           env: "preprod"
           context:
             - hmpps-common-vars
-            - one-login-user-registry-preprod
+            - prison-visit-booker-registry-preprod
           requires:
             - request-preprod-approval
   security:

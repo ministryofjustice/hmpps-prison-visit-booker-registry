@@ -6,5 +6,5 @@ CREATE TABLE booker_prisoner
     active                  boolean         NOT NULL,
     create_timestamp        timestamp       default current_timestamp,
 
-    CONSTRAINT prisoner_to_booker  FOREIGN KEY (booker_id) REFERENCES auth_detail(id)
+    CONSTRAINT prisoner_to_booker  FOREIGN KEY (booker_id) REFERENCES booker(id)
 );

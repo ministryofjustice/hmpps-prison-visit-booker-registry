@@ -8,8 +8,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.BasicContactDto
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.PrisonerBasicInfoDto
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration.BasicContactDto
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration.PrisonerBasicInfoDto
 
 class VisitsOrchestrationMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8091) {
   fun stubGetBasicPrisonerDetails(prisonerIds: List<String>, basicPrisonerInfoList: List<PrisonerBasicInfoDto>?) {

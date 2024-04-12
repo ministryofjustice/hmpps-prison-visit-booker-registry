@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oneloginuserregistry.dto
+package uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate

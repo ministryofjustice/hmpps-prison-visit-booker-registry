@@ -1,6 +1,6 @@
 {
   "role": {
-    "name": "hmpps-one-login-user-registry"
+    "name": "hmpps-prison-visit-booker-registry"
   },
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"

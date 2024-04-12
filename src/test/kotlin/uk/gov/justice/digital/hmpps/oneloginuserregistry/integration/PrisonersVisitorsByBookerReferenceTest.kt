@@ -7,21 +7,20 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.util.function.Tuples
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.BasicContactDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AssociatedPrisonersVisitorDto
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AuthDetailDto
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.AssociatedPrisoner
-import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.AuthDetail
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration.BasicContactDto
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.BookerPrisoner
 
 @DisplayName("Get prisoner's visitors for booker")
 class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   private lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
 
-  private lateinit var booker1: AuthDetail
-  private lateinit var booker2: AuthDetail
+  private lateinit var booker1: Booker
+  private lateinit var booker2: Booker
 
-  private lateinit var prisoner1: AssociatedPrisoner
-  private lateinit var prisoner2: AssociatedPrisoner
+  private lateinit var prisoner1: BookerPrisoner
+  private lateinit var prisoner2: BookerPrisoner
 
   private lateinit var visitor1: PrisonersVisitorDetails
   private lateinit var visitor2: PrisonersVisitorDetails
@@ -32,10 +31,10 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   internal fun setUp() {
     roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_PUBLIC_VISITS_BOOKING_SERVICE"))
 
-    booker1 = createAuthDetail(AuthDetailDto(authReference = "123", authEmail = "test@example.com"))
+    booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
     // booker 2 has no prisoners associated
-    booker2 = createAuthDetail(AuthDetailDto(authReference = "456", authEmail = "test1@example.com"))
+    booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
     val prisoner1Details = PrisonerDetails("AB123456", "PrisonerOne", "NumberUno", null, "HEI", true)
     val prisoner2Details = PrisonerDetails("AB789012", "PrisonerTwo", "NumberTwo", null, "HEI", false)
@@ -103,7 +102,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     )
 
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.authReference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedVisitors = getResults(returnResult)
 
@@ -117,7 +116,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns no visitors when none associated with that prisoner`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker2.authReference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker2.reference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -140,7 +139,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
     // When
     val responseSpec =
-      getPrisonerVisitorsByBookerReference(webTestClient, booker1.authReference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
+      getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -166,7 +165,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
     // When
     val responseSpec =
-      getPrisonerVisitorsByBookerReference(webTestClient, booker1.authReference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
+      getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -180,7 +179,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `access forbidden when no role`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.authReference, prisoner1.prisonNumber, setAuthorisation(roles = listOf()))
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, setAuthorisation(roles = listOf()))
     responseSpec.expectStatus().isForbidden
   }
 
@@ -197,8 +196,8 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
   private fun assertPrisonerDetailsWhenUnknown(visitor: AssociatedPrisonersVisitorDto, visitorDetails: PrisonersVisitorDetails) {
     Assertions.assertThat(visitor.personId).isEqualTo(visitorDetails.personId)
-    Assertions.assertThat(visitor.firstName).isEqualTo("UNKNOWN")
-    Assertions.assertThat(visitor.lastName).isEqualTo("UNKNOWN")
+    Assertions.assertThat(visitor.firstName).isEqualTo("NOT_KNOWN")
+    Assertions.assertThat(visitor.lastName).isEqualTo("NOT_KNOWN")
     Assertions.assertThat(visitor.isActive).isEqualTo(visitorDetails.isActive)
   }
 }

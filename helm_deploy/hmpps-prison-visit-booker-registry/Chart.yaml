@@ -1,8 +1,8 @@
 apiVersion: v2
 appVersion: '1.0'
 description: A Helm chart for Kubernetes
-name: hmpps-one-login-user-registry
-version: 0.2.0
+name: hmpps-prison-visit-booker-registry
+version: 0.2.1
 dependencies:
   - name: generic-service
     version: "2.9"

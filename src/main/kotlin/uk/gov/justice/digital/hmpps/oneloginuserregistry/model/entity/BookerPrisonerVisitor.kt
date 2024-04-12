@@ -10,12 +10,11 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "booker_prisoner_prison")
-class AssociatedPrisonersPrison(
+@Table(name = "booker_prisoner_visitor")
+class BookerPrisonerVisitor(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID")
@@ -26,18 +25,14 @@ class AssociatedPrisonersPrison(
 
   @ManyToOne
   @JoinColumn(name = "booker_prisoner_id", updatable = false, insertable = false)
-  val associatedPrisoner: AssociatedPrisoner,
+  val bookerPrisoner: BookerPrisoner,
 
-  @Column(name = "PRISON_ID", nullable = false)
-  val prisonId: Long,
+  @Column(name = "visitor_id", nullable = false)
+  val visitorId: Long,
 
   @Column(nullable = false)
-  val validFromDate: LocalDate,
-
-  @Column
-  val validToDate: LocalDate?,
+  val active: Boolean,
 ) {
-
   @CreationTimestamp
   @Column
   val createTimestamp: LocalDateTime? = null
@@ -45,7 +40,7 @@ class AssociatedPrisonersPrison(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
-    other as AssociatedPrisonersPrison
+    other as BookerPrisonerVisitor
 
     return id == other.id
   }
