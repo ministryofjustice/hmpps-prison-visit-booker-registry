@@ -9,8 +9,8 @@ import org.springframework.cache.annotation.EnableCaching
 @SpringBootApplication
 @SecurityScheme(name = "bearerAuth", scheme = "bearer", type = SecuritySchemeType.HTTP, bearerFormat = "JWT")
 @EnableCaching
-class HmppsOneLoginUserRegistryApplication
+class HmppsPrisonVisitBookerRegistryApplication
 
 fun main(args: Array<String>) {
-  runApplication<HmppsOneLoginUserRegistryApplication>(*args)
+  runApplication<HmppsPrisonVisitBookerRegistryApplication>(*args)
 }

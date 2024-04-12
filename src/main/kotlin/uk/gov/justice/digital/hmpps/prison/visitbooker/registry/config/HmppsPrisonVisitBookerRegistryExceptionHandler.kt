@@ -13,7 +13,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
 
 @RestControllerAdvice
-class HmppsOneLoginUserRegistryExceptionHandler {
+class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   @ExceptionHandler(org.springframework.security.access.AccessDeniedException::class)
   fun handleAccessDeniedException(e: org.springframework.security.access.AccessDeniedException): ResponseEntity<ErrorResponse?>? {
