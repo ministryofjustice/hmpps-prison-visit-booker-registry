@@ -29,15 +29,15 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_PUBLIC_VISITS_BOOKING_SERVICE"))
+    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_BOOKER_AUTHORISATION"))
 
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
     // booker 2 has no prisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    val prisoner1Details = PrisonerDetails("AB123456", "PrisonerOne", "NumberUno", null, "HEI", true)
-    val prisoner2Details = PrisonerDetails("AB789012", "PrisonerTwo", "NumberTwo", null, "HEI", false)
+    val prisoner1Details = PrisonerDetails("AB123456", "PrisonerOne", "NumberUno", true)
+    val prisoner2Details = PrisonerDetails("AB789012", "PrisonerTwo", "NumberTwo", false)
 
     val prisoners = createAssociatedPrisoners(
       booker1,

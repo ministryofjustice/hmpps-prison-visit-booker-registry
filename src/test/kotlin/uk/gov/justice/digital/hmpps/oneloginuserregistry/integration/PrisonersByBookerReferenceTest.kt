@@ -10,7 +10,6 @@ import reactor.util.function.Tuples
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AssociatedPrisonerDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration.PrisonerBasicInfoDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.Booker
-import java.time.LocalDate
 
 @DisplayName("Get prisoners for booker")
 class PrisonersByBookerReferenceTest : IntegrationTestBase() {
@@ -26,15 +25,15 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_PUBLIC_VISITS_BOOKING_SERVICE"))
+    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_BOOKER_AUTHORISATION"))
 
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
     // booker 2 has no prisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PrisonerDetails("AB123456", "PrisonerOne", "NumberUno", null, "HEI", true)
-    prisoner2 = PrisonerDetails("AB789012", "PrisonerTwo", "NumberTwo", null, "HEI", false)
+    prisoner1 = PrisonerDetails("AB123456", "PrisonerOne", "NumberUno", true)
+    prisoner2 = PrisonerDetails("AB789012", "PrisonerTwo", "NumberTwo", false)
 
     createAssociatedPrisoners(
       booker1,
@@ -64,8 +63,8 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
         prisoner2.prisonerNumber,
       ),
       listOf(
-        with(prisoner1) { PrisonerBasicInfoDto(this.prisonerNumber, this.firstName, this.lastName, this.dob, this.prisonId) },
-        with(prisoner2) { PrisonerBasicInfoDto(this.prisonerNumber, this.firstName, this.lastName, this.dob, this.prisonId) },
+        with(prisoner1) { PrisonerBasicInfoDto(this.prisonerNumber, this.firstName, this.lastName) },
+        with(prisoner2) { PrisonerBasicInfoDto(this.prisonerNumber, this.firstName, this.lastName) },
       ),
     )
 
@@ -167,7 +166,5 @@ class PrisonerDetails(
   val prisonerNumber: String,
   val firstName: String,
   val lastName: String,
-  val dob: LocalDate?,
-  val prisonId: String?,
   val isActive: Boolean,
 )
