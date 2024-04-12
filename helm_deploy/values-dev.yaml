@@ -1,10 +1,10 @@
 ---
-# Per environment values which override defaults in hmpps-one-login-user-registry/values.yaml
+# Per environment values which override defaults in hmpps-prison-visit-booker-registry/values.yaml
 
 generic-service:
 
   ingress:
-    host: hmpps-one-login-user-registry-dev.prison.service.justice.gov.uk
+    host: hmpps-prison-visit-booker-registry-dev.prison.service.justice.gov.uk
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
