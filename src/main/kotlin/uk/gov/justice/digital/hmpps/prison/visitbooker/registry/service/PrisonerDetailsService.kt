@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.OrchestrationServiceClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AssociatedPrisonerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.PrisonerBasicInfoDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisoner
@@ -30,7 +29,15 @@ class PrisonerDetailsService(
         orchestrationServiceClient.getPrisonerDetails(associatedPrisonersByAuthId.map { it.prisonNumber }.toList())?.associateBy { it.prisonerNumber } ?: emptyMap()
 
       associatedPrisonersByAuthId.forEach {
-        associatedPrisoners.add(AssociatedPrisonerDto(prisonerDetails[it.prisonNumber] ?: getBlankPrisonerBasicInfo(it.prisonNumber), it))
+        val prisoner = prisonerDetails[it.prisonNumber]
+        associatedPrisoners.add(
+          AssociatedPrisonerDto(
+            it.prisonNumber,
+            prisoner?.firstName ?: NOT_KNOWN,
+            prisoner?.lastName ?: NOT_KNOWN,
+            it.active,
+          ),
+        )
       }
     }
 
@@ -40,10 +47,6 @@ class PrisonerDetailsService(
   fun getAssociatedPrisoner(reference: String, prisonerId: String): BookerPrisoner? {
     val bookerByReference = getBooker(reference)
     return prisonerRepository.findByBookerIdAndPrisonNumber(bookerByReference.id, prisonerId)
-  }
-
-  private fun getBlankPrisonerBasicInfo(prisonerId: String): PrisonerBasicInfoDto {
-    return PrisonerBasicInfoDto(prisonerId, NOT_KNOWN, NOT_KNOWN)
   }
 
   private fun getBooker(reference: String): Booker {
