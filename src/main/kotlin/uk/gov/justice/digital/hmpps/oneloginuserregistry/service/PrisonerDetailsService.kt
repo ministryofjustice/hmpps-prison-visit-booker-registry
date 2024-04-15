@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.oneloginuserregistry.client.OrchestrationSer
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AssociatedPrisonerDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration.PrisonerBasicInfoDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.exceptions.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.entity.BookerPrisoner
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.repository.BookerPrisonerRepository
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.repository.BookerRepository
@@ -20,7 +21,7 @@ class PrisonerDetailsService(
   }
 
   fun getAssociatedPrisoners(reference: String): List<AssociatedPrisonerDto> {
-    val bookerByReference = bookerRepository.findByReference(reference) ?: throw BookerNotFoundException("Booker for reference : $reference not found")
+    val bookerByReference = getBooker(reference)
     val associatedPrisoners = mutableListOf<AssociatedPrisonerDto>()
 
     val associatedPrisonersByAuthId = prisonerRepository.findByBookerId(bookerByReference.id)
@@ -37,11 +38,15 @@ class PrisonerDetailsService(
   }
 
   fun getAssociatedPrisoner(reference: String, prisonerId: String): BookerPrisoner? {
-    val bookerByReference = bookerRepository.findByReference(reference) ?: throw BookerNotFoundException("Booker for reference : $reference not found")
+    val bookerByReference = getBooker(reference)
     return prisonerRepository.findByBookerIdAndPrisonNumber(bookerByReference.id, prisonerId)
   }
 
   private fun getBlankPrisonerBasicInfo(prisonerId: String): PrisonerBasicInfoDto {
     return PrisonerBasicInfoDto(prisonerId, NOT_KNOWN, NOT_KNOWN)
+  }
+
+  private fun getBooker(reference: String): Booker {
+    return bookerRepository.findByReference(reference) ?: throw BookerNotFoundException("Booker for reference : $reference not found")
   }
 }

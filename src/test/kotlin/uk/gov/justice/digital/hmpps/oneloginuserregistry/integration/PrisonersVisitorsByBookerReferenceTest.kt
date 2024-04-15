@@ -29,7 +29,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_BOOKER_AUTHORISATION"))
+    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI"))
 
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
