@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.client.OrchestrationServiceClient
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.AssociatedPrisonersVisitorDto
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.dto.orchestration.BasicContactDto
+import uk.gov.justice.digital.hmpps.oneloginuserregistry.exceptions.PrisonerForBookerNotFoundException
 import uk.gov.justice.digital.hmpps.oneloginuserregistry.model.repository.BookerPrisonerVisitorRepository
 
 @Service
@@ -17,21 +18,20 @@ class VisitorDetailsService(
   }
 
   fun getAssociatedVisitors(reference: String, prisonerId: String): List<AssociatedPrisonersVisitorDto> {
-    val prisoner = prisonersService.getAssociatedPrisoner(reference, prisonerId)
+    val prisoner = prisonersService.getAssociatedPrisoner(reference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Prisoner with prisonNumber - $prisonerId not found for booker reference - $reference")
     val associatedPrisonersVisitors = mutableListOf<AssociatedPrisonersVisitorDto>()
-    return prisoner?.let { associatedPrisoner ->
-      val visitors = bookerPrisonerVisitorRepository.findByBookerPrisonerId(associatedPrisoner.id)
-      if (visitors.isNotEmpty()) {
-        val visitorsBasicContactDetailsMap = orchestrationServiceClient.getVisitorDetails(prisonerId, visitors.map { it.visitorId }.toList())?.associateBy { it.personId } ?: emptyMap()
-        visitors.forEach {
-          val visitorsBasicContactDetails = visitorsBasicContactDetailsMap[it.visitorId]
-          associatedPrisonersVisitors.add(
-            AssociatedPrisonersVisitorDto(visitorsBasicContactDetails ?: getBlankBasicContactInfo(it.visitorId), it),
-          )
-        }
+    val visitors = bookerPrisonerVisitorRepository.findByBookerPrisonerId(prisoner.id)
+    if (visitors.isNotEmpty()) {
+      val visitorsBasicContactDetailsMap = orchestrationServiceClient.getVisitorDetails(prisonerId, visitors.map { it.visitorId }.toList())?.associateBy { it.personId } ?: emptyMap()
+      visitors.forEach {
+        val visitorsBasicContactDetails = visitorsBasicContactDetailsMap[it.visitorId]
+        associatedPrisonersVisitors.add(
+          AssociatedPrisonersVisitorDto(visitorsBasicContactDetails ?: getBlankBasicContactInfo(it.visitorId), it),
+        )
       }
-      associatedPrisonersVisitors
-    } ?: emptyList()
+    }
+
+    return associatedPrisonersVisitors
   }
 
   private fun getBlankBasicContactInfo(personId: Long): BasicContactDto {

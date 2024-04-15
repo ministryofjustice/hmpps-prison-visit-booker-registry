@@ -137,6 +137,13 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when invalid reference then NOT_FOUND status is returned`() {
+    // When
+    val responseSpec = getPrisonersByBookerReference(webTestClient, "invalid-reference", roleVisitSchedulerHttpHeaders)
+    responseSpec.expectStatus().isNotFound
+  }
+
+  @Test
   fun `access forbidden when no role`() {
     // When
     val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, setAuthorisation(roles = listOf()))

@@ -33,7 +33,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
-    // booker 2 has no prisoners associated
+    // booker 2 has 2 prisoners associated but no visitors
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
     val prisoner1Details = PrisonerDetails("AB123456", "PrisonerOne", "NumberUno", true)
@@ -44,6 +44,13 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
       listOf(
         Tuples.of(prisoner1Details.prisonerNumber, prisoner1Details.isActive),
         Tuples.of(prisoner2Details.prisonerNumber, prisoner2Details.isActive),
+      ),
+    )
+
+    createAssociatedPrisoners(
+      booker2,
+      listOf(
+        Tuples.of(prisoner1Details.prisonerNumber, prisoner1Details.isActive),
       ),
     )
 
@@ -174,6 +181,21 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     assertPrisonerDetailsWhenUnknown(associatedPrisoners[0], visitor1)
     assertPrisonerDetailsWhenUnknown(associatedPrisoners[1], visitor2)
     assertPrisonerDetailsWhenUnknown(associatedPrisoners[2], visitor3)
+  }
+
+  @Test
+  fun `when invalid reference then NOT_FOUND status is returned`() {
+    // When
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, "invalid-reference", prisoner1.prisonNumber, roleVisitSchedulerHttpHeaders)
+
+    responseSpec.expectStatus().isNotFound
+  }
+
+  @Test
+  fun `when invalid prisoner Id then NOT_FOUND status is returned`() {
+    // When
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, "invalid-prison-number", roleVisitSchedulerHttpHeaders)
+    responseSpec.expectStatus().isNotFound
   }
 
   @Test
