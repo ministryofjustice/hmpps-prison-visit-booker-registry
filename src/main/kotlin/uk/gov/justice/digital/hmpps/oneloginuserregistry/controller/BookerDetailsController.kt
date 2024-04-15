@@ -19,14 +19,14 @@ import uk.gov.justice.digital.hmpps.oneloginuserregistry.service.VisitorDetailsS
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
 
 const val BOOKER_LINKED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/prisoners"
-const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerId}/visitors"
+const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerNumber}/visitors"
 
 @RestController
 class OrchestrationPublicBookerController(
   val prisonerDetailsService: PrisonerDetailsService,
   val visitorDetailsService: VisitorDetailsService,
 ) {
-  @PreAuthorize("hasRole('BOOKER_AUTHORISATION')")
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI')")
   @GetMapping(BOOKER_LINKED_PRISONERS)
   @Operation(
     summary = "Get prisoners associated with a booker.",
@@ -65,7 +65,7 @@ class OrchestrationPublicBookerController(
     return prisonerDetailsService.getAssociatedPrisoners(bookerReference)
   }
 
-  @PreAuthorize("hasRole('BOOKER_AUTHORISATION')")
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI')")
   @GetMapping(BOOKER_LINKED_PRISONER_VISITORS)
   @Operation(
     summary = "Get visitors for a prisoner associated with that booker.",
@@ -96,14 +96,14 @@ class OrchestrationPublicBookerController(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonerId", required = true)
+    @PathVariable(value = "prisonerNumber", required = true)
     @Parameter(
-      description = "Prisoner ID for whom visitors need to be returned.",
+      description = "Prisoner Number for whom visitors need to be returned.",
       example = "A12345DC",
     )
     @NotBlank
-    prisonerId: String,
+    prisonerNumber: String,
   ): List<AssociatedPrisonersVisitorDto> {
-    return visitorDetailsService.getAssociatedVisitors(bookerReference, prisonerId)
+    return visitorDetailsService.getAssociatedVisitors(bookerReference, prisonerNumber)
   }
 }
