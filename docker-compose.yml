@@ -15,7 +15,7 @@ services:
       - HMPPS_AUTH_URL=http://hmpps-auth:8080/auth
       - SYSTEM_CLIENT_ID=book-a-prison-visit-client
       - SYSTEM_CLIENT_SECRET=clientsecret
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://one_login_user_registry-db:5432/one_login_user_registry
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://prison_visit_booker-registry_db:5432/prison_visit_booker-registry
 
   hmpps-auth:
     image: quay.io/hmpps/hmpps-auth:latest
@@ -34,14 +34,14 @@ services:
     image: postgres:15.5
     networks:
       - hmpps
-    container_name: one_login_user_registry-db
+    container_name: prison_visit_booker_registry-db
     restart: always
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=one_login_user_registry
-      - POSTGRES_USER=one_login_user_registry
-      - POSTGRES_DB=one_login_user_registry
+      - POSTGRES_PASSWORD=prison_visit_booker_registry
+      - POSTGRES_USER=prison_visit_booker_registry
+      - POSTGRES_DB=prison_visit_booker_registry
 
 networks:
   hmpps:

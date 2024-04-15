@@ -11,10 +11,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
+<<<<<<<< HEAD:src/main/kotlin/uk/gov/justice/digital/hmpps/prison/visitbooker/registry/config/HmppsOneLoginUserRegistryExceptionHandler.kt
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
+========
+>>>>>>>> main:src/main/kotlin/uk/gov/justice/digital/hmpps/prison/visitbooker/registry/config/HmppsPrisonVisitBookerRegistryExceptionHandler.kt
 
 @RestControllerAdvice
-class HmppsOneLoginUserRegistryExceptionHandler {
+class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   @ExceptionHandler(org.springframework.security.access.AccessDeniedException::class)
   fun handleAccessDeniedException(e: org.springframework.security.access.AccessDeniedException): ResponseEntity<ErrorResponse?>? {
