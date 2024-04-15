@@ -9,5 +9,7 @@ interface BookerRepository : JpaRepository<Booker, Long> {
 
   fun findByOneLoginSub(authReference: String): Booker?
 
+  fun findByReference(reference: String): Booker?
+
   fun findByEmail(authReference: String): Booker?
 }

@@ -29,7 +29,7 @@ class AuthDetailsController(
   private val authService: AuthService,
 ) {
 
-  @PreAuthorize("hasAnyRole('BOOKER_AUTHORISATION')")
+  @PreAuthorize("hasAnyRole('ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI')")
   @PutMapping(AUTH_DETAILS_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
