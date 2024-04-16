@@ -153,7 +153,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
   }
 
   protected fun getReference(responseSpec: ResponseSpec): String {
-    val bookerReferenceObject =  objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerReference::class.java)
+    val bookerReferenceObject = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerReference::class.java)
     return bookerReferenceObject.value
   }
 }
