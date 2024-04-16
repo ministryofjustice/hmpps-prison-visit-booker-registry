@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.AUTH_DETAILS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerReference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.AuthDetail
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 
@@ -152,10 +153,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
   }
 
   protected fun getReference(responseSpec: ResponseSpec): String {
-    var reference = ""
-    responseSpec.expectBody()
-      .jsonPath("$")
-      .value<String> { json -> reference = json }
-    return reference
+    val bookerReferenceObject = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerReference::class.java)
+    return bookerReferenceObject.value
   }
 }

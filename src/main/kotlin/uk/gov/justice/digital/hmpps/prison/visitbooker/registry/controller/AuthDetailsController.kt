@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerReference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.AuthService
 
@@ -34,7 +35,7 @@ class AuthDetailsController(
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Authenticate one login details against pre populated bookers",
-    description = "Authenticate one login details against pre populated bookers",
+    description = "Authenticate one login details against pre populated bookers and return BookerReference object to be used for all other api calls for booker information",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -52,7 +53,7 @@ class AuthDetailsController(
       ),
     ],
   )
-  fun bookerAuthorisation(@RequestBody @Valid authDetailDto: AuthDetailDto): String {
-    return authService.bookerAuthorisation(authDetailDto)
+  fun bookerAuthorisation(@RequestBody @Valid authDetailDto: AuthDetailDto): BookerReference {
+    return BookerReference(authService.bookerAuthorisation(authDetailDto))
   }
 }
