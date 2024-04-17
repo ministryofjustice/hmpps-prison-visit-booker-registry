@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.OrchestrationServiceClient
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.BasicContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerPrisonerVisitorRepository
@@ -13,7 +13,7 @@ class VisitorDetailsService(
   private val bookerPrisonerVisitorRepository: BookerPrisonerVisitorRepository,
   private val orchestrationServiceClient: OrchestrationServiceClient,
 ) {
-  fun getAssociatedVisitors(bookerReference: String, prisonerNumber: String): List<BasicContactDto> {
+  fun getAssociatedVisitors(bookerReference: String, prisonerNumber: String): List<VisitorBasicInfoDto> {
     val prisoner = getPrisoner(bookerReference, prisonerNumber)
     val visitors = bookerPrisonerVisitorRepository.findByBookerPrisonerIdAndActive(prisoner.id, true)
     return if (visitors.isNotEmpty()) {

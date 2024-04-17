@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.BasicContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.PrisonerBasicInfoDto
 import java.time.Duration
 
@@ -37,7 +37,7 @@ class OrchestrationServiceClient(
       }.block(apiTimeout)
   }
 
-  fun getVisitorDetails(prisonerId: String, visitorIds: List<Long>): List<BasicContactDto>? {
+  fun getVisitorDetails(prisonerId: String, visitorIds: List<Long>): List<VisitorBasicInfoDto>? {
     return webClient.get()
       .uri(
         ORCHESTRATION_VISITOR_DETAILS_PATH.replace("{prisonerId}", prisonerId)
@@ -45,9 +45,9 @@ class OrchestrationServiceClient(
       )
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<List<BasicContactDto>>().onErrorResume { e ->
+      .bodyToMono<List<VisitorBasicInfoDto>>().onErrorResume { e ->
         if (e is WebClientResponseException) {
-          return@onErrorResume Mono.just(emptyList<BasicContactDto>())
+          return@onErrorResume Mono.just(emptyList<VisitorBasicInfoDto>())
         }
         Mono.error(e)
       }.block(apiTimeout)
