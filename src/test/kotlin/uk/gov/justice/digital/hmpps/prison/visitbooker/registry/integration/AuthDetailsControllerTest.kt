@@ -59,10 +59,10 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when auth details are submitted twice with different subs but email an exception is thrown`() {
+  fun `when auth details are submitted twice with different subs but email is the same an exception is thrown`() {
     // Given
     val authDetailsDto1 = AuthDetailDto("IamASub1", "aled.evans@govt.com", "0123456789")
-    val pilotBooker = bookerRepository.saveAndFlush(Booker(email = authDetailsDto1.email, oneLoginSub = authDetailsDto1.oneLoginSub))
+    bookerRepository.saveAndFlush(Booker(email = authDetailsDto1.email, oneLoginSub = authDetailsDto1.oneLoginSub))
     val authDetailsDto2 = AuthDetailDto("IamASub2", "aled.evans@govt.com", "0123456789")
 
     // When
