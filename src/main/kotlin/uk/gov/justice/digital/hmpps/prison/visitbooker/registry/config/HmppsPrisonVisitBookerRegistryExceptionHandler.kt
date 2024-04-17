@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
@@ -39,6 +40,21 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         ErrorResponse(
           status = NOT_FOUND,
           userMessage = "Booker not found",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException::class)
+  fun handleBookerNotFoundException(e: DataIntegrityViolationException): ResponseEntity<ErrorResponse?>? {
+    log.debug("DataBase exception caught: {}", e.message)
+
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = NOT_FOUND,
+          userMessage = "DataBase exception",
           developerMessage = e.message,
         ),
       )
