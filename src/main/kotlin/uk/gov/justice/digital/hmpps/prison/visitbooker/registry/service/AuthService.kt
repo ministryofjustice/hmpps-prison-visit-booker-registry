@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Aut
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
 
 @Service
 class AuthService(
@@ -26,7 +27,10 @@ class AuthService(
     if (authDetail.count == 0) {
       booker = bookerRepository.findByEmail(authDetail.email) ?: throw BookerNotFoundException("Booker for Email : ${authDetail.email} not found")
       booker.oneLoginSub = authDetail.oneLoginSub
-      // Save to add reference
+      // Create reference and then save TODO this should be using post persist, we using when we stop manual entry for bookers
+      if (booker.reference.isNullOrBlank()) {
+        booker.reference = QuotableEncoder(minLength = 10).encode(booker.id)
+      }
       booker = bookerRepository.saveAndFlush(booker)
     } else {
       booker = bookerRepository.findByOneLoginSub(authDetail.oneLoginSub) ?: throw BookerNotFoundException("Booker for sub : ${authDetail.oneLoginSub} not found")

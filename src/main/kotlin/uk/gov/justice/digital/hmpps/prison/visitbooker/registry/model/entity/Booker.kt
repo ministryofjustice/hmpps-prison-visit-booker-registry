@@ -33,7 +33,6 @@ class Booker(
 ) {
   @Column
   var reference: String = ""
-    private set
 
   @CreationTimestamp
   @Column
