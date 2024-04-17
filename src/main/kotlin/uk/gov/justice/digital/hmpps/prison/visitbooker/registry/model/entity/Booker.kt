@@ -44,7 +44,7 @@ class Booker(
 
   @PostPersist
   fun createReference() {
-    if (reference.isBlank()) {
+    if (reference.isNullOrBlank()) {
       reference = QuotableEncoder(minLength = 10).encode(id)
     }
   }

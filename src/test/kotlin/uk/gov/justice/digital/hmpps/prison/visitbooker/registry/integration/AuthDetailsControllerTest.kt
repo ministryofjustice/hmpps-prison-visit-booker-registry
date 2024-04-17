@@ -59,6 +59,21 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when auth details are submitted twice with different subs but email an exception is thrown`() {
+    // Given
+    val authDetailsDto1 = AuthDetailDto("IamASub1", "aled.evans@govt.com", "0123456789")
+    val pilotBooker = bookerRepository.saveAndFlush(Booker(email = authDetailsDto1.email, oneLoginSub = authDetailsDto1.oneLoginSub))
+    val authDetailsDto2 = AuthDetailDto("IamASub2", "aled.evans@govt.com", "0123456789")
+
+    // When
+    callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto1)
+    val responseSpec = callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto2)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+  }
+
+  @Test
   fun `when auth details are submitted for the second time with matching booker in db a reference is returned and data is updated`() {
     // Given
     val originalEmail = "aled.evans@govt.com"
