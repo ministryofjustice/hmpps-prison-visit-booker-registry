@@ -8,8 +8,8 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.PrisonerBasicInfoDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 import java.time.Duration
 
 @Component

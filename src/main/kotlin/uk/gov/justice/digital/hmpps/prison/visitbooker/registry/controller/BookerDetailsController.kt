@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.PrisonerBasicInfoDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerDetailsService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorDetailsService
 

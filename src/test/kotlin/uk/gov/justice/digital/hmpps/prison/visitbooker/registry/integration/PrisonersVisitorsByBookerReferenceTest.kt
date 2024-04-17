@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.util.function.Tuples
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.BasicContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisoner
 
@@ -102,9 +102,9 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
         visitor3.personId,
       ),
       listOf(
-        with(visitor1) { BasicContactDto(this.personId, this.firstName, this.middleName, this.lastName) },
-        with(visitor2) { BasicContactDto(this.personId, this.firstName, this.middleName, this.lastName) },
-        with(visitor3) { BasicContactDto(this.personId, this.firstName, this.middleName, this.lastName) },
+        with(visitor1) { VisitorBasicInfoDto(this.personId, this.firstName, this.middleName, this.lastName) },
+        with(visitor2) { VisitorBasicInfoDto(this.personId, this.firstName, this.middleName, this.lastName) },
+        with(visitor3) { VisitorBasicInfoDto(this.personId, this.firstName, this.middleName, this.lastName) },
       ),
     )
 
@@ -131,8 +131,8 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
         visitor3.personId,
       ),
       listOf(
-        with(visitor1) { BasicContactDto(this.personId, this.firstName, this.middleName, this.lastName) },
-        with(visitor3) { BasicContactDto(this.personId, this.firstName, this.middleName, this.lastName) },
+        with(visitor1) { VisitorBasicInfoDto(this.personId, this.firstName, this.middleName, this.lastName) },
+        with(visitor3) { VisitorBasicInfoDto(this.personId, this.firstName, this.middleName, this.lastName) },
       ),
     )
 
@@ -226,11 +226,11 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BasicContactDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<BasicContactDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorBasicInfoDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorBasicInfoDto>::class.java).toList()
   }
 
-  private fun assertVisitorDetails(visitor: BasicContactDto, visitorDetails: PrisonersVisitorDetails) {
+  private fun assertVisitorDetails(visitor: VisitorBasicInfoDto, visitorDetails: PrisonersVisitorDetails) {
     Assertions.assertThat(visitor.personId).isEqualTo(visitorDetails.personId)
     Assertions.assertThat(visitor.firstName).isEqualTo(visitorDetails.firstName)
     Assertions.assertThat(visitor.lastName).isEqualTo(visitorDetails.lastName)
