@@ -8,8 +8,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.BasicContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.PrisonerBasicInfoDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
 
 class VisitsOrchestrationMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8091) {
   fun stubGetBasicPrisonerDetails(prisonerIds: List<String>, basicPrisonerInfoList: List<PrisonerBasicInfoDto>?) {
@@ -27,7 +27,7 @@ class VisitsOrchestrationMockServer(@Autowired private val objectMapper: ObjectM
     )
   }
 
-  fun stubBasicVisitorsBasicDetails(prisonerId: String, visitorIds: List<Long>, basicContactList: List<BasicContactDto>?) {
+  fun stubBasicVisitorsBasicDetails(prisonerId: String, visitorIds: List<Long>, basicContactList: List<VisitorBasicInfoDto>?) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       get("/prisoner/$prisonerId/visitors/${visitorIds.joinToString(",")}/basic-details")
