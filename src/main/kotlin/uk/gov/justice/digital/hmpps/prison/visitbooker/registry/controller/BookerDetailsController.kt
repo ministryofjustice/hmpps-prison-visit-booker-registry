@@ -9,10 +9,11 @@ import jakarta.validation.constraints.NotBlank
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.PrisonerBasicInfoDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.VisitorBasicInfoDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorsDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonersDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerDetailsService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorDetailsService
 
@@ -22,7 +23,7 @@ const val BOOKER_LINKED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/pris
 const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerNumber}/visitors"
 
 @RestController
-class OrchestrationPublicBookerController(
+class BookerDetailsController(
   val prisonerDetailsService: PrisonerDetailsService,
   val visitorDetailsService: VisitorDetailsService,
 ) {
@@ -61,8 +62,14 @@ class OrchestrationPublicBookerController(
     )
     @NotBlank
     bookerReference: String,
-  ): List<PrisonerBasicInfoDto> {
-    return prisonerDetailsService.getAssociatedPrisoners(bookerReference)
+    @RequestParam(value = "active", required = false)
+    @Parameter(
+      description = "Returns active / inactive prisoners or returns all prisoners if this parameter is not passed.",
+      example = "true",
+    )
+    active: Boolean?,
+  ): List<BookerPrisonersDto> {
+    return prisonerDetailsService.getAssociatedPrisoners(bookerReference, active)
   }
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI')")
@@ -103,7 +110,13 @@ class OrchestrationPublicBookerController(
     )
     @NotBlank
     prisonerNumber: String,
-  ): List<VisitorBasicInfoDto> {
-    return visitorDetailsService.getAssociatedVisitors(bookerReference, prisonerNumber)
+    @RequestParam(value = "active", required = false)
+    @Parameter(
+      description = "Returns active / inactive visitors for a prisoner or returns all visitors for the prisoner if this parameter is not passed.",
+      example = "true",
+    )
+    active: Boolean?,
+  ): List<BookerPrisonerVisitorsDto> {
+    return visitorDetailsService.getAssociatedVisitors(bookerReference, prisonerNumber, active)
   }
 }

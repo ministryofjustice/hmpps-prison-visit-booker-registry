@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 
 @Repository
 interface BookerPrisonerRepository : JpaRepository<BookerPrisoner, Long> {
+  fun findByBookerId(bookerId: Long): List<BookerPrisoner>
   fun findByBookerIdAndActive(bookerId: Long, active: Boolean): List<BookerPrisoner>
   fun findByBookerIdAndPrisonNumber(bookerId: Long, prisonNumber: String): BookerPrisoner?
 }
