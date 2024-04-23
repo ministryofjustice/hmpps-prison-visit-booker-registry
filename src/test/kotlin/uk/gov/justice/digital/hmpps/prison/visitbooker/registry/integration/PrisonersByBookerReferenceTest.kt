@@ -9,10 +9,10 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.util.function.Tuples
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonersDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import java.util.*
 
 @DisplayName("Get prisoners for booker")
 class PrisonersByBookerReferenceTest : IntegrationTestBase() {
-  private lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
 
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker
@@ -23,8 +23,6 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI"))
-
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
     // booker 2 has no prisoners associated
@@ -53,7 +51,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     var url = "/public/booker/$bookerReference/prisoners"
-    if (active != null) {
+    active?.let {
       url += "?active=$active"
     }
     return webTestClient.get().uri(url)
@@ -64,7 +62,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get prisoners by valid reference returns all prisoners associated with that booker if active parameter is null`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, null, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, null, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -78,7 +76,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get prisoners by valid reference returns only acitve prisoners associated with that booker if active parameter is true`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, true, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, true, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -91,7 +89,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get prisoners by valid reference returns only inacitve prisoners associated with that booker if active parameter is false`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, false, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, false, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -103,7 +101,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get prisoners by valid reference returns no prisoners when none associated with that booker`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker2.reference, null, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker2.reference, null, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -114,7 +112,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, "invalid-reference", null, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, "invalid-reference", null, orchestrationServiceRoleHttpHeaders)
     responseSpec.expectStatus().isNotFound
   }
 

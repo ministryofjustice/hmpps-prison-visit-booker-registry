@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -42,6 +43,14 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var bookerRepository: BookerRepository
+
+  protected lateinit var orchestrationServiceRoleHttpHeaders: (HttpHeaders) -> Unit
+
+  @BeforeEach
+  internal fun setUpRoles() {
+    orchestrationServiceRoleHttpHeaders =
+      setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE"))
+  }
 
   @AfterEach
   fun deleteAll() {

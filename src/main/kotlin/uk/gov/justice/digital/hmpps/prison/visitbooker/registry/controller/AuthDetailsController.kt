@@ -30,7 +30,7 @@ class AuthDetailsController(
   private val authService: AuthService,
 ) {
 
-  @PreAuthorize("hasAnyRole('ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI')")
+  @PreAuthorize("hasAnyRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(AUTH_DETAILS_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(

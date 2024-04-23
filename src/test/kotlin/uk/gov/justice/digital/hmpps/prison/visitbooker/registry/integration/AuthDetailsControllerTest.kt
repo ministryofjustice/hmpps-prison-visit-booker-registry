@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
@@ -19,21 +18,13 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Migrate $AUTH_DETAILS_CONTROLLER_PATH")
 class AuthDetailsControllerTest : IntegrationTestBase() {
-
-  protected lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
-
-  @BeforeEach
-  internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI"))
-  }
-
   @Test
   fun `when auth details are submitted for the first time with matching booker in db a reference is returned and data auth is saved`() {
     // Given
     val authDetailsDto = AuthDetailDto("IamASub", "aled.evans@govt.com", "0123456789")
     val pilotBooker = bookerRepository.saveAndFlush(Booker(email = authDetailsDto.email))
     // When
-    val responseSpec = callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto)
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -66,8 +57,8 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val authDetailsDto2 = AuthDetailDto("IamASub2", "aled.evans@govt.com", "0123456789")
 
     // When
-    callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto1)
-    val responseSpec = callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto2)
+    callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto1)
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto2)
 
     // Then
     responseSpec.expectStatus().isBadRequest
@@ -82,7 +73,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     authDetailRepository.saveAndFlush(AuthDetail(count = 0, oneLoginSub = "IamASub", email = originalEmail, phoneNumber = "999"))
 
     // When
-    val responseSpec = callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto)
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
     // Then
     responseSpec.expectStatus().isOk
     val reference = getReference(responseSpec)
@@ -111,7 +102,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val authDetailsDto = AuthDetailDto("IamASub", "aled.evans@govt.com", "0123456789")
 
     // When
-    val responseSpec = callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto)
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
 
     // Then
     responseSpec
@@ -129,7 +120,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     authDetailRepository.saveAndFlush(AuthDetail(count = 1, oneLoginSub = authDetailsDto.oneLoginSub, email = authDetailsDto.email, phoneNumber = "999"))
 
     // When
-    val responseSpec = callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto)
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
 
     // Then
     responseSpec
@@ -144,10 +135,10 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     // Given
     val authDetailsDto = AuthDetailDto("IamASub", "aled.evans@govt.com", "0123456789")
 
-    val roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_I_AM_A_HACKER"))
+    val orchestrationServiceRoleHttpHeaders = setAuthorisation(roles = listOf("ROLE_I_AM_A_HACKER"))
 
     // When
-    val responseSpec = callBookerAuth(roleVisitSchedulerHttpHeaders, authDetailsDto)
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
 
     // Then
     responseSpec

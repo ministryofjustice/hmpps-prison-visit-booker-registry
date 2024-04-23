@@ -13,8 +13,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 
 @DisplayName("Get prisoner's visitors for booker")
 class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
-  private lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
-
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker
 
@@ -28,8 +26,6 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI"))
-
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
     // booker 2 has 2 prisoners associated but no visitors
@@ -88,7 +84,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     var url = "/public/booker/$bookerReference/prisoners/$prisonerId/visitors"
-    if (active != null) {
+    active?.let {
       url += "?active=$active"
     }
     return webTestClient.get().uri(url)
@@ -99,7 +95,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns all visitors associated with that prisoner if active param is null`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, null, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, null, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedVisitors = getResults(returnResult)
 
@@ -114,7 +110,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns only active visitors associated with that prisoner if active param is true`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, true, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, true, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedVisitors = getResults(returnResult)
 
@@ -128,7 +124,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns only active visitors associated with that prisoner if active param is false`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, false, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, false, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedVisitors = getResults(returnResult)
 
@@ -140,7 +136,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns no visitors when none associated with that prisoner`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker2.reference, prisoner1.prisonNumber, null, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker2.reference, prisoner1.prisonNumber, null, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -151,7 +147,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, "invalid-reference", prisoner1.prisonNumber, null, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, "invalid-reference", prisoner1.prisonNumber, null, orchestrationServiceRoleHttpHeaders)
 
     responseSpec.expectStatus().isNotFound
   }
@@ -159,7 +155,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when invalid prisoner Id then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, "invalid-prison-number", null, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, "invalid-prison-number", null, orchestrationServiceRoleHttpHeaders)
     responseSpec.expectStatus().isNotFound
   }
 

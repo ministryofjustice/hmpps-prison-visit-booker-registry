@@ -27,7 +27,7 @@ class BookerDetailsController(
   val prisonerDetailsService: PrisonerDetailsService,
   val visitorDetailsService: VisitorDetailsService,
 ) {
-  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI')")
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(BOOKER_LINKED_PRISONERS)
   @Operation(
     summary = "Get prisoners associated with a booker.",
@@ -72,7 +72,7 @@ class BookerDetailsController(
     return prisonerDetailsService.getAssociatedPrisoners(bookerReference, active)
   }
 
-  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI')")
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(BOOKER_LINKED_PRISONER_VISITORS)
   @Operation(
     summary = "Get visitors for a prisoner associated with that booker.",
