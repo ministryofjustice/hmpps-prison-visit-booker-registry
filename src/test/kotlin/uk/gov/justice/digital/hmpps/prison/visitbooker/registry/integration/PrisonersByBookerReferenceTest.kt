@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.util.function.Tuples
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.orchestration.PrisonerBasicInfoDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonersDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import java.util.*
 
 @DisplayName("Get prisoners for booker")
 class PrisonersByBookerReferenceTest : IntegrationTestBase() {
-  private lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
 
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker
@@ -23,18 +23,16 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__PUBLIC_VISIT_BOOKING_UI"))
-
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
     // booker 2 has no prisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PrisonerDetails("AB123456", "PrisonerOne", "NumberUno", true)
-    prisoner2 = PrisonerDetails("AB789012", "PrisonerTwo", "NumberTwo", true)
+    prisoner1 = PrisonerDetails("AB123456", true)
+    prisoner2 = PrisonerDetails("AB789012", true)
 
-    // inactive prisoner should not be returned
-    prisoner3 = PrisonerDetails("AB345678", "PrisonerThree", "NumberThree", false)
+    // inactive prisoner
+    prisoner3 = PrisonerDetails("AB345678", false)
 
     createAssociatedPrisoners(
       booker1,
@@ -49,29 +47,36 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   fun getPrisonersByBookerReference(
     webTestClient: WebTestClient,
     bookerReference: String,
+    active: Boolean? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/public/booker/$bookerReference/prisoners")
+    var url = "/public/booker/$bookerReference/prisoners"
+    active?.let {
+      url += "?active=$active"
+    }
+    return webTestClient.get().uri(url)
       .headers(authHttpHeaders)
       .exchange()
   }
 
   @Test
-  fun `get prisoners by valid reference returns only active prisoners associated with that booker`() {
-    // Given
-    visitsOrchestrationMockServer.stubGetBasicPrisonerDetails(
-      listOf(
-        prisoner1.prisonerNumber,
-        prisoner2.prisonerNumber,
-      ),
-      listOf(
-        with(prisoner1) { PrisonerBasicInfoDto(this.prisonerNumber, this.firstName, this.lastName) },
-        with(prisoner2) { PrisonerBasicInfoDto(this.prisonerNumber, this.firstName, this.lastName) },
-      ),
-    )
-
+  fun `get prisoners by valid reference returns all prisoners associated with that booker if active parameter is null`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, null, orchestrationServiceRoleHttpHeaders)
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val associatedPrisoners = getResults(returnResult)
+
+    // Then
+    Assertions.assertThat(associatedPrisoners.size).isEqualTo(3)
+    assertPrisonerDetails(associatedPrisoners[0], prisoner1)
+    assertPrisonerDetails(associatedPrisoners[1], prisoner2)
+    assertPrisonerDetails(associatedPrisoners[2], prisoner3)
+  }
+
+  @Test
+  fun `get prisoners by valid reference returns only acitve prisoners associated with that booker if active parameter is true`() {
+    // When
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, true, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -82,74 +87,21 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `get prisoners by valid reference returns only details for prisoners whose details were returned by orchestration service`() {
-    // Given
-    visitsOrchestrationMockServer.stubGetBasicPrisonerDetails(
-      listOf(
-        prisoner1.prisonerNumber,
-        prisoner2.prisonerNumber,
-      ),
-      listOf(
-        with(prisoner1) { PrisonerBasicInfoDto(this.prisonerNumber, this.firstName, this.lastName) },
-      ),
-    )
-
+  fun `get prisoners by valid reference returns only inacitve prisoners associated with that booker if active parameter is false`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, false, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
     // Then
     Assertions.assertThat(associatedPrisoners.size).isEqualTo(1)
-    assertPrisonerDetails(associatedPrisoners[0], prisoner1)
+    assertPrisonerDetails(associatedPrisoners[0], prisoner3)
   }
 
   @Test
   fun `get prisoners by valid reference returns no prisoners when none associated with that booker`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker2.reference, roleVisitSchedulerHttpHeaders)
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedPrisoners = getResults(returnResult)
-
-    // Then
-    Assertions.assertThat(associatedPrisoners.size).isEqualTo(0)
-  }
-
-  @Test
-  fun `get prisoners by valid reference returns no records if the orchestration service returns a 404`() {
-    // Given
-    visitsOrchestrationMockServer.stubGetBasicPrisonerDetails(
-      listOf(
-        prisoner1.prisonerNumber,
-        prisoner2.prisonerNumber,
-      ),
-      null,
-    )
-
-    // When
-    val responseSpec =
-      getPrisonersByBookerReference(webTestClient, booker1.reference, roleVisitSchedulerHttpHeaders)
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedPrisoners = getResults(returnResult)
-
-    // Then
-    Assertions.assertThat(associatedPrisoners.size).isEqualTo(0)
-  }
-
-  @Test
-  fun `get prisoners by valid reference returns no records if the orchestration service returns empty response`() {
-    // Given
-    visitsOrchestrationMockServer.stubGetBasicPrisonerDetails(
-      listOf(
-        prisoner1.prisonerNumber,
-        prisoner2.prisonerNumber,
-      ),
-      listOf(),
-    )
-
-    // When
-    val responseSpec =
-      getPrisonersByBookerReference(webTestClient, booker1.reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker2.reference, null, orchestrationServiceRoleHttpHeaders)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
 
@@ -160,31 +112,28 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, "invalid-reference", roleVisitSchedulerHttpHeaders)
+    val responseSpec = getPrisonersByBookerReference(webTestClient, "invalid-reference", null, orchestrationServiceRoleHttpHeaders)
     responseSpec.expectStatus().isNotFound
   }
 
   @Test
   fun `access forbidden when no role`() {
     // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, setAuthorisation(roles = listOf()))
+    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, null, setAuthorisation(roles = listOf()))
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonerBasicInfoDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PrisonerBasicInfoDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonersDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonersDto>::class.java).toList()
   }
 
-  private fun assertPrisonerDetails(associatedPrisoner: PrisonerBasicInfoDto, prisonerDetail: PrisonerDetails) {
-    Assertions.assertThat(associatedPrisoner.prisonerNumber).isEqualTo(prisonerDetail.prisonerNumber)
-    Assertions.assertThat(associatedPrisoner.firstName).isEqualTo(prisonerDetail.firstName)
-    Assertions.assertThat(associatedPrisoner.lastName).isEqualTo(prisonerDetail.lastName)
+  private fun assertPrisonerDetails(bookerPrisoner: BookerPrisonersDto, prisonerDetail: PrisonerDetails) {
+    Assertions.assertThat(bookerPrisoner.prisonerNumber).isEqualTo(prisonerDetail.prisonerNumber)
+    Assertions.assertThat(bookerPrisoner.active).isEqualTo(prisonerDetail.isActive)
   }
 }
 
 class PrisonerDetails(
   val prisonerNumber: String,
-  val firstName: String,
-  val lastName: String,
   val isActive: Boolean,
 )
