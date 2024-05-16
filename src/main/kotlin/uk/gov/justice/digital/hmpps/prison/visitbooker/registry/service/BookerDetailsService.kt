@@ -27,8 +27,10 @@ class BookerDetailsService(
   @Transactional
   fun createOrUpdateBookerDetails(createBookerDto: CreateBookerDto): BookerDto {
     val booker = bookerRepository.findByEmail(createBookerDto.email)?.let {
-      // clear child objects from booker
-      it.prisoners.clear()
+      if (it.prisoners.isNotEmpty()) {
+        // clear child objects from booker
+        it.prisoners.clear()
+      }
       bookerRepository.saveAndFlush(it)
     } ?: run {
       bookerRepository.saveAndFlush(Booker(email = createBookerDto.email))
