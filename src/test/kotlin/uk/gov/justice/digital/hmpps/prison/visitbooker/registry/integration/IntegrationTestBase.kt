@@ -11,13 +11,12 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.util.function.Tuple2
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisonerVisitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Prisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Visitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 
@@ -45,11 +44,14 @@ abstract class IntegrationTestBase {
   protected lateinit var bookerRepository: BookerRepository
 
   protected lateinit var orchestrationServiceRoleHttpHeaders: (HttpHeaders) -> Unit
+  protected lateinit var bookerConfigServiceRoleHttpHeaders: (HttpHeaders) -> Unit
 
   @BeforeEach
   internal fun setUpRoles() {
     orchestrationServiceRoleHttpHeaders =
       setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE"))
+    bookerConfigServiceRoleHttpHeaders =
+      setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG"))
   }
 
   @AfterEach
@@ -64,34 +66,46 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
   fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
-    val booker = Booker(oneLoginSub = oneLoginSub, email = emailAddress)
-    return entityHelper.saveBooker(booker)
+    val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
+    return booker
   }
 
-  fun createAssociatedPrisoners(booker: Booker, associatedPrisoners: List<Tuple2<String, Boolean>>): List<BookerPrisoner> {
-    val bookerPrisonerList = mutableListOf<BookerPrisoner>()
+  fun createPrisoner(booker: Booker, prisonerId: String): Prisoner {
+    return entityHelper.createAssociatedPrisoner(Prisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true))
+  }
+
+  fun createVisitor(prisoner: Prisoner, visitorId: Long): Visitor {
+    return entityHelper.createAssociatedPrisonerVisitor(Visitor(prisonerId = prisoner.id, prisoner = prisoner, visitorId = visitorId, active = true))
+  }
+
+  fun createAssociatedPrisoners(
+    booker: Booker,
+    associatedPrisoners: List<PrisonerDetails>,
+    visitors: List<PrisonersVisitorDetails> = listOf(PrisonersVisitorDetails(1L, true)),
+  ): List<Prisoner> {
+    val prisonerList = mutableListOf<Prisoner>()
     associatedPrisoners.forEach {
-      val bookerPrisoner = BookerPrisoner(bookerId = booker.id, booker = booker, prisonNumber = it.t1, active = it.t2)
-      bookerPrisonerList.add(createAssociatedPrisoner(bookerPrisoner))
+      val prisoner = createAssociatedPrisoner(Prisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, active = it.isActive))
+      prisonerList.add(prisoner)
+      createAssociatedPrisonersVisitors(prisoner, visitors)
     }
-    return bookerPrisonerList
+    return prisonerList
   }
 
-  fun createAssociatedPrisoner(bookerPrisoner: BookerPrisoner): BookerPrisoner {
-    return entityHelper.createAssociatedPrisoner(bookerPrisoner)
+  fun createAssociatedPrisoner(prisoner: Prisoner): Prisoner {
+    return entityHelper.createAssociatedPrisoner(prisoner)
   }
 
-  fun createAssociatedPrisonersVisitors(bookerPrisoner: BookerPrisoner, associatedPrisonersVisitors: List<Tuple2<Long, Boolean>>): List<BookerPrisonerVisitor> {
-    val visitors = mutableListOf<BookerPrisonerVisitor>()
+  fun createAssociatedPrisonersVisitors(prisoner: Prisoner, associatedPrisonersVisitors: List<PrisonersVisitorDetails>): List<Visitor> {
+    val visitors = mutableListOf<Visitor>()
     associatedPrisonersVisitors.forEach {
-      val bookerPrisonerVisitor = BookerPrisonerVisitor(bookerPrisonerId = bookerPrisoner.id, bookerPrisoner = bookerPrisoner, visitorId = it.t1, active = it.t2)
-      visitors.add(createAssociatedPrisonersVisitor(bookerPrisoner, bookerPrisonerVisitor))
+      val visitor = Visitor(prisonerId = prisoner.id, prisoner = prisoner, visitorId = it.visitorId, active = it.isActive)
+      visitors.add(createAssociatedPrisonersVisitor(prisoner, visitor))
     }
-
     return visitors
   }
 
-  fun createAssociatedPrisonersVisitor(bookerPrisoner: BookerPrisoner, bookerPrisonerVisitor: BookerPrisonerVisitor): BookerPrisonerVisitor {
-    return entityHelper.createAssociatedPrisonerVisitor(bookerPrisonerVisitor)
+  fun createAssociatedPrisonersVisitor(prisoner: Prisoner, visitor: Visitor): Visitor {
+    return entityHelper.createAssociatedPrisonerVisitor(visitor)
   }
 }

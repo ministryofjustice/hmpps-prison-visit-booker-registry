@@ -39,11 +39,11 @@ class Booker(
   val createTimestamp: LocalDateTime? = null
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "booker", orphanRemoval = true)
-  val prisoners: MutableList<BookerPrisoner> = mutableListOf()
+  val prisoners: MutableList<Prisoner> = mutableListOf()
 
   @PostPersist
   fun createReference() {
-    if (reference.isNullOrBlank()) {
+    if (reference.isBlank()) {
       reference = QuotableEncoder(minLength = 10).encode(id)
     }
   }

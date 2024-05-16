@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repositor
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Prisoner
 
 @Repository
-interface BookerPrisonerRepository : JpaRepository<BookerPrisoner, Long> {
-  fun findByBookerId(bookerId: Long): List<BookerPrisoner>
-  fun findByBookerIdAndActive(bookerId: Long, active: Boolean): List<BookerPrisoner>
-  fun findByBookerIdAndPrisonNumber(bookerId: Long, prisonNumber: String): BookerPrisoner?
+interface BookerPrisonerRepository : JpaRepository<Prisoner, Long> {
+  fun findByBookerId(bookerId: Long): List<Prisoner>
+  fun findByBookerIdAndActive(bookerId: Long, active: Boolean): List<Prisoner>
+  fun findByBookerIdAndPrisonerId(bookerId: Long, prisonerId: String): Prisoner?
 }
