@@ -69,7 +69,6 @@ abstract class IntegrationTestBase {
     val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
     return booker
   }
-
   fun createPrisoner(booker: Booker, prisonerId: String): Prisoner {
     return entityHelper.createAssociatedPrisoner(Prisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true))
   }

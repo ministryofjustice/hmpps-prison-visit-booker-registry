@@ -137,6 +137,21 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when booker end point is call with incorrect role`() {
+    // Given
+    val visitorIds = listOf(1L, 2L)
+    val prisoners = listOf(CreatePrisonerDto(prisonerId = "1", visitorIds = visitorIds))
+    val createBookerDto = CreateBookerDto(email = "aled@aled.com", prisoners = prisoners)
+
+    // When
+    val responseSpec = callCreateBooker(orchestrationServiceRoleHttpHeaders, createBookerDto)
+
+    // Then
+    responseSpec
+      .expectStatus().isForbidden
+  }
+
+  @Test
   fun `when booker details are cleared all child objects are removed`() {
     // Given
     val emailAddress = "aled@aled.com"
@@ -187,6 +202,7 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
       .headers(authHttpHeaders)
       .exchange()
   }
+
   protected fun getBookerDto(responseSpec: ResponseSpec): BookerDto {
     return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerDto::class.java)
   }
