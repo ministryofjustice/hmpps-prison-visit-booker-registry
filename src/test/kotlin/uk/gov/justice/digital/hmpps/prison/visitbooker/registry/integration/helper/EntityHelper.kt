@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.AuthDetail
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Prisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Visitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerPrisonerRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerPrisonerVisitorRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 
 @Component
 @Transactional
@@ -18,9 +18,9 @@ class EntityHelper(
 
   val testBookerRepository: BookerRepository,
 
-  val testBookerPrisonerRepository: BookerPrisonerRepository,
+  val testPermittedPrisonerRepository: PermittedPrisonerRepository,
 
-  val testBookerPrisonerVisitorRepository: BookerPrisonerVisitorRepository,
+  val testPermittedVisitorRepository: PermittedVisitorRepository,
 ) {
 
   @Transactional
@@ -34,22 +34,22 @@ class EntityHelper(
   }
 
   @Transactional
-  fun createAssociatedPrisoner(prisoner: Prisoner): Prisoner {
-    return testBookerPrisonerRepository.saveAndFlush(prisoner)
+  fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner {
+    return testPermittedPrisonerRepository.saveAndFlush(permittedPrisoner)
   }
 
   @Transactional
-  fun createAssociatedPrisonerVisitor(visitor: Visitor): Visitor {
-    return testBookerPrisonerVisitorRepository.saveAndFlush(visitor)
+  fun createAssociatedPrisonerVisitor(permittedVisitor: PermittedVisitor): PermittedVisitor {
+    return testPermittedVisitorRepository.saveAndFlush(permittedVisitor)
   }
 
   @Transactional
   fun deleteAll() {
-    testBookerPrisonerVisitorRepository.deleteAll()
-    testBookerPrisonerVisitorRepository.flush()
+    testPermittedVisitorRepository.deleteAll()
+    testPermittedVisitorRepository.flush()
 
-    testBookerPrisonerRepository.deleteAll()
-    testBookerPrisonerRepository.flush()
+    testPermittedPrisonerRepository.deleteAll()
+    testPermittedPrisonerRepository.flush()
 
     testBookerRepository.deleteAll()
     testBookerRepository.flush()

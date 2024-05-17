@@ -12,34 +12,32 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerDetailsService
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorDetailsService
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
 
-const val BOOKER_LINKED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/prisoners"
-const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerId}/visitors"
+const val BOOKER_LINKED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
+const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerId}/permitted/visitors"
 
 @RestController
 class BookerDetailsController(
-  val prisonerDetailsService: PrisonerDetailsService,
-  val visitorDetailsService: VisitorDetailsService,
+  val bookerDetailsService: BookerDetailsService,
 ) {
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(BOOKER_LINKED_PRISONERS)
   @Operation(
-    summary = "Get prisoners associated with a booker.",
-    description = "Get prisoners associated with a booker.",
+    summary = "Get permittedPrisoners associated with a booker.",
+    description = "Get permittedPrisoners associated with a booker.",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Returned prisoners associated with a booker",
+        description = "Returned permittedPrisoners associated with a booker",
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Incorrect request to get prisoners associated with a booker",
+        description = "Incorrect request to get permittedPrisoners associated with a booker",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -49,7 +47,7 @@ class BookerDetailsController(
       ),
       ApiResponse(
         responseCode = "403",
-        description = "Incorrect permissions to get prisoners associated with a booker",
+        description = "Incorrect permissions to get permittedPrisoners associated with a booker",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
@@ -64,27 +62,27 @@ class BookerDetailsController(
     bookerReference: String,
     @RequestParam(value = "active", required = false)
     @Parameter(
-      description = "Returns active / inactive prisoners or returns all prisoners if this parameter is not passed.",
+      description = "Returns active / inactive permittedPrisoners or returns all permittedPrisoners if this parameter is not passed.",
       example = "true",
     )
     active: Boolean?,
-  ): List<PrisonerDto> {
-    return prisonerDetailsService.getAssociatedPrisoners(bookerReference, active)
+  ): List<PermittedPrisonerDto> {
+    return bookerDetailsService.getAssociatedPrisoners(bookerReference, active)
   }
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(BOOKER_LINKED_PRISONER_VISITORS)
   @Operation(
-    summary = "Get visitors for a prisoner associated with that booker.",
-    description = "Get visitors for a prisoner associated with that booker.",
+    summary = "Get permittedVisitors for a permittedPrisoner associated with that booker.",
+    description = "Get permittedVisitors for a permittedPrisoner associated with that booker.",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Returned visitors for a prisoner associated with that booker",
+        description = "Returned permittedVisitors for a permittedPrisoner associated with that booker",
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Incorrect request to get visitors for a prisoner associated with that booker",
+        description = "Incorrect request to get permittedVisitors for a permittedPrisoner associated with that booker",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -94,7 +92,7 @@ class BookerDetailsController(
       ),
       ApiResponse(
         responseCode = "403",
-        description = "Incorrect permissions to get visitors for a prisoner associated with that booker",
+        description = "Incorrect permissions to get permittedVisitors for a permittedPrisoner associated with that booker",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
@@ -105,18 +103,18 @@ class BookerDetailsController(
     bookerReference: String,
     @PathVariable(value = "prisonerId", required = true)
     @Parameter(
-      description = "Prisoner Id for whom visitors need to be returned.",
+      description = "prisonerId Id for whom permittedVisitors need to be returned.",
       example = "A12345DC",
     )
     @NotBlank
     prisonerId: String,
     @RequestParam(value = "active", required = false)
     @Parameter(
-      description = "Returns active / inactive visitors for a prisoner or returns all visitors for the prisoner if this parameter is not passed.",
+      description = "Returns active / inactive permittedVisitors for a permittedPrisoner or returns all permittedVisitors for the permittedPrisoner if this parameter is not passed.",
       example = "true",
     )
     active: Boolean?,
-  ): List<VisitorDto> {
-    return visitorDetailsService.getAssociatedVisitors(bookerReference, prisonerId, active)
+  ): List<PermittedVisitorDto> {
+    return bookerDetailsService.getAssociatedVisitors(bookerReference, prisonerId, active)
   }
 }

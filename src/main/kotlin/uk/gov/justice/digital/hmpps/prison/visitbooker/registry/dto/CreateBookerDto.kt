@@ -6,7 +6,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 
-@Schema(description = "Create booker with associated prisoner data.")
+@Schema(description = "Create booker with associated permittedPrisoner data.")
 data class CreateBookerDto(
 
   @JsonProperty("email")
@@ -14,10 +14,10 @@ data class CreateBookerDto(
   @field:NotBlank
   val email: String,
 
-  @JsonProperty("prisoners")
-  @Schema(name = "prisoners", description = "details of prisoners to visit", required = true)
+  @JsonProperty("permittedPrisoners")
+  @Schema(name = "permittedPrisoners", description = "details of permittedPrisoners to visit", required = true)
   @field:NotEmpty
   @field:Valid
-  val prisoners: List<CreatePrisonerDto>,
+  val permittedPrisoners: List<CreatePermittedPrisonerDto>,
 
 )
