@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorsDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonersDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerDetailsService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorDetailsService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
 
 const val BOOKER_LINKED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/prisoners"
-const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerNumber}/visitors"
+const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerId}/visitors"
 
 @RestController
 class BookerDetailsController(
@@ -68,7 +68,7 @@ class BookerDetailsController(
       example = "true",
     )
     active: Boolean?,
-  ): List<BookerPrisonersDto> {
+  ): List<PrisonerDto> {
     return prisonerDetailsService.getAssociatedPrisoners(bookerReference, active)
   }
 
@@ -103,20 +103,20 @@ class BookerDetailsController(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonerNumber", required = true)
+    @PathVariable(value = "prisonerId", required = true)
     @Parameter(
-      description = "Prisoner Number for whom visitors need to be returned.",
+      description = "Prisoner Id for whom visitors need to be returned.",
       example = "A12345DC",
     )
     @NotBlank
-    prisonerNumber: String,
+    prisonerId: String,
     @RequestParam(value = "active", required = false)
     @Parameter(
       description = "Returns active / inactive visitors for a prisoner or returns all visitors for the prisoner if this parameter is not passed.",
       example = "true",
     )
     active: Boolean?,
-  ): List<BookerPrisonerVisitorsDto> {
-    return visitorDetailsService.getAssociatedVisitors(bookerReference, prisonerNumber, active)
+  ): List<VisitorDto> {
+    return visitorDetailsService.getAssociatedVisitors(bookerReference, prisonerId, active)
   }
 }

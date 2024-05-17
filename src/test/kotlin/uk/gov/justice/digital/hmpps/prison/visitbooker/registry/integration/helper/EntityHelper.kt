@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.AuthDetail
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisonerVisitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Prisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Visitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerPrisonerVisitorRepository
@@ -34,13 +34,13 @@ class EntityHelper(
   }
 
   @Transactional
-  fun createAssociatedPrisoner(bookerPrisoner: BookerPrisoner): BookerPrisoner {
-    return testBookerPrisonerRepository.saveAndFlush(bookerPrisoner)
+  fun createAssociatedPrisoner(prisoner: Prisoner): Prisoner {
+    return testBookerPrisonerRepository.saveAndFlush(prisoner)
   }
 
   @Transactional
-  fun createAssociatedPrisonerVisitor(bookerPrisonerVisitor: BookerPrisonerVisitor): BookerPrisonerVisitor {
-    return testBookerPrisonerVisitorRepository.saveAndFlush(bookerPrisonerVisitor)
+  fun createAssociatedPrisonerVisitor(visitor: Visitor): Visitor {
+    return testBookerPrisonerVisitorRepository.saveAndFlush(visitor)
   }
 
   @Transactional

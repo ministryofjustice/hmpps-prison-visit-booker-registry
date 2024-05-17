@@ -6,18 +6,17 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.util.function.Tuples
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorsDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerPrisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Prisoner
 
 @DisplayName("Get prisoner's visitors for booker")
 class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker
 
-  private lateinit var prisoner1: BookerPrisoner
-  private lateinit var prisoner2: BookerPrisoner
+  private lateinit var prisoner1: Prisoner
+  private lateinit var prisoner2: Prisoner
 
   private lateinit var visitor1: PrisonersVisitorDetails
   private lateinit var visitor2: PrisonersVisitorDetails
@@ -36,17 +35,14 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
     val prisoners = createAssociatedPrisoners(
       booker1,
-      listOf(
-        Tuples.of(prisoner1Details.prisonerNumber, prisoner1Details.isActive),
-        Tuples.of(prisoner2Details.prisonerNumber, prisoner2Details.isActive),
-      ),
+      listOf(prisoner1Details, prisoner2Details),
+      visitors = listOf(),
     )
 
     createAssociatedPrisoners(
       booker2,
-      listOf(
-        Tuples.of(prisoner1Details.prisonerNumber, prisoner1Details.isActive),
-      ),
+      listOf(prisoner1Details),
+      visitors = listOf(),
     )
 
     visitor1 = PrisonersVisitorDetails(12, true)
@@ -59,19 +55,14 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
     createAssociatedPrisonersVisitors(
       prisoner1,
-      listOf(
-        Tuples.of(visitor1.personId, visitor1.isActive),
-        Tuples.of(visitor2.personId, visitor2.isActive),
-        Tuples.of(visitor3.personId, visitor3.isActive),
-        Tuples.of(visitor4.personId, visitor4.isActive),
-      ),
+      listOf(visitor1, visitor2, visitor3, visitor4),
     )
 
     createAssociatedPrisonersVisitors(
       prisoner2,
       listOf(
-        Tuples.of(visitor3.personId, visitor3.isActive),
-        Tuples.of(visitor4.personId, visitor4.isActive),
+        visitor3,
+        visitor4,
       ),
     )
   }
@@ -95,11 +86,12 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns all visitors associated with that prisoner if active param is null`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, null, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
+
+    // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedVisitors = getResults(returnResult)
 
-    // Then
     Assertions.assertThat(associatedVisitors.size).isEqualTo(4)
     assertVisitorDetails(associatedVisitors[0], visitor1)
     assertVisitorDetails(associatedVisitors[1], visitor2)
@@ -110,11 +102,11 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns only active visitors associated with that prisoner if active param is true`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, true, orchestrationServiceRoleHttpHeaders)
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedVisitors = getResults(returnResult)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonerId, true, orchestrationServiceRoleHttpHeaders)
 
     // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val associatedVisitors = getResults(returnResult)
     Assertions.assertThat(associatedVisitors.size).isEqualTo(3)
     assertVisitorDetails(associatedVisitors[0], visitor1)
     assertVisitorDetails(associatedVisitors[1], visitor2)
@@ -124,11 +116,11 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns only active visitors associated with that prisoner if active param is false`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, false, orchestrationServiceRoleHttpHeaders)
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedVisitors = getResults(returnResult)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonerId, false, orchestrationServiceRoleHttpHeaders)
 
     // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val associatedVisitors = getResults(returnResult)
     Assertions.assertThat(associatedVisitors.size).isEqualTo(1)
     assertVisitorDetails(associatedVisitors[0], visitor4)
   }
@@ -136,19 +128,20 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns no visitors when none associated with that prisoner`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker2.reference, prisoner1.prisonNumber, null, orchestrationServiceRoleHttpHeaders)
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedPrisoners = getResults(returnResult)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker2.reference, prisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
 
     // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val associatedPrisoners = getResults(returnResult)
     Assertions.assertThat(associatedPrisoners.size).isEqualTo(0)
   }
 
   @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, "invalid-reference", prisoner1.prisonNumber, null, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, "invalid-reference", prisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
 
+    // Then
     responseSpec.expectStatus().isNotFound
   }
 
@@ -156,27 +149,31 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   fun `when invalid prisoner Id then NOT_FOUND status is returned`() {
     // When
     val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, "invalid-prison-number", null, orchestrationServiceRoleHttpHeaders)
+
+    // Then
     responseSpec.expectStatus().isNotFound
   }
 
   @Test
   fun `access forbidden when no role`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonNumber, null, setAuthorisation(roles = listOf()))
+    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, prisoner1.prisonerId, null, setAuthorisation(roles = listOf()))
+
+    // Then
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorsDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerVisitorsDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorDto>::class.java).toList()
   }
 
-  private fun assertVisitorDetails(visitor: BookerPrisonerVisitorsDto, visitorDetails: PrisonersVisitorDetails) {
-    Assertions.assertThat(visitor.personId).isEqualTo(visitorDetails.personId)
+  private fun assertVisitorDetails(visitor: VisitorDto, visitorDetails: PrisonersVisitorDetails) {
+    Assertions.assertThat(visitor.visitorId).isEqualTo(visitorDetails.visitorId)
     Assertions.assertThat(visitor.active).isEqualTo(visitorDetails.isActive)
   }
 }
 
 class PrisonersVisitorDetails(
-  val personId: Long,
+  val visitorId: Long,
   val isActive: Boolean,
 )
