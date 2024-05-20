@@ -20,7 +20,7 @@ data class PermittedPrisonerDto(
   val active: Boolean,
 
   @JsonProperty("permittedVisitors")
-  @Schema(description = " permitted visitors list", required = true)
+  @Schema(description = "Permitted visitors", required = true)
   @field:Valid
   val permittedVisitors: List<PermittedVisitorDto>,
 ) {
