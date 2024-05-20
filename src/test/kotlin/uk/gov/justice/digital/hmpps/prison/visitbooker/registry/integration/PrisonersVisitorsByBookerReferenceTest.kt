@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.BOOKER_LINKED_PRISONER_VISITORS
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PERMITTED_VISITORS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
@@ -164,7 +164,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     active: Boolean? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    var url = BOOKER_LINKED_PRISONER_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
+    var url = PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
     active?.let {
       url += "?active=$active"
     }

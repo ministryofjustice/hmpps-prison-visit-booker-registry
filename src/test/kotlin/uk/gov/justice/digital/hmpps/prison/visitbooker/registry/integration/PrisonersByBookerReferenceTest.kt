@@ -8,7 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.BOOKER_LINKED_PRISONERS
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import java.util.*
@@ -126,7 +126,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     active: Boolean? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    var url = BOOKER_LINKED_PRISONERS.replace("{bookerReference}", bookerReference)
+    var url = PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference)
     active?.let {
       url += "?active=$active"
     }

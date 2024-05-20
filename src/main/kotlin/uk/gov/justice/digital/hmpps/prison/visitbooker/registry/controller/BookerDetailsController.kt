@@ -17,16 +17,15 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVis
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
-
-const val BOOKER_LINKED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
-const val BOOKER_LINKED_PRISONER_VISITORS: String = "$BOOKER_LINKED_PRISONERS/{prisonerId}/permitted/visitors"
+const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
+const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 
 @RestController
 class BookerDetailsController(
   val bookerDetailsService: BookerDetailsService,
 ) {
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(BOOKER_LINKED_PRISONERS)
+  @GetMapping(PERMITTED_PRISONERS)
   @Operation(
     summary = "Get permitted prisoners associated with a booker.",
     description = "Get permitted prisoners associated with a booker.",
@@ -71,7 +70,7 @@ class BookerDetailsController(
   }
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(BOOKER_LINKED_PRISONER_VISITORS)
+  @GetMapping(PERMITTED_VISITORS)
   @Operation(
     summary = "Get permitted visitors for a permitted prisoner associated with that booker.",
     description = "Get permitted visitors for a permitted prisoner associated with that booker.",
