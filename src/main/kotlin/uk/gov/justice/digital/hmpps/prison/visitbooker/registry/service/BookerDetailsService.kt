@@ -74,7 +74,7 @@ class BookerDetailsService(
   }
 
   private fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
-    return getAssociatedPrisoner(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("PermittedPrisoner with prisonNumber - $prisonerId not found for booker reference - $bookerReference")
+    return getAssociatedPrisoner(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner with prisonNumber - $prisonerId not found for booker reference - $bookerReference")
   }
 
   private fun createChildObjects(

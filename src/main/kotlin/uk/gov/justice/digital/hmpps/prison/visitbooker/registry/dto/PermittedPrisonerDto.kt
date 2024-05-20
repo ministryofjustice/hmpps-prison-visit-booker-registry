@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 
-@Schema(description = "PermittedPrisoner associated with the booker.")
+@Schema(description = "Permitted prisoner associated with the booker.")
 data class PermittedPrisonerDto(
   @JsonProperty("prisonerId")
   @Schema(description = "prisoner Id", example = "A1234AA", required = true)

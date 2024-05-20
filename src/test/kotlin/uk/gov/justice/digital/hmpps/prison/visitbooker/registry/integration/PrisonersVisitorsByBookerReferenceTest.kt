@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVis
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 
-@DisplayName("Get permittedPrisoner's permitted visitors for booker")
+@DisplayName("Get permitted prisoner's permitted visitors for booker")
 class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker

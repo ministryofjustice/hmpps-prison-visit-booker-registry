@@ -63,13 +63,13 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   @ExceptionHandler(PrisonerForBookerNotFoundException::class)
   fun handleBookerPrisonerNotFoundException(e: PrisonerForBookerNotFoundException): ResponseEntity<ErrorResponse?>? {
-    log.debug("PermittedPrisoner not found for booker exception caught: {}", e.message)
+    log.debug("Permitted prisoner not found for booker exception caught: {}", e.message)
     return ResponseEntity
       .status(NOT_FOUND)
       .body(
         ErrorResponse(
           status = NOT_FOUND,
-          userMessage = "PermittedPrisoner not found not found",
+          userMessage = "Permitted prisoner not found not found",
           developerMessage = e.message,
         ),
       )
