@@ -46,7 +46,7 @@ class BookerDetailsService(
   }
 
   @Transactional(readOnly = true)
-  fun getAssociatedPrisoners(reference: String, active: Boolean?): List<PermittedPrisonerDto> {
+  fun getPermittedPrisoners(reference: String, active: Boolean?): List<PermittedPrisonerDto> {
     val bookerByReference = getBooker(reference)
     val associatedPrisoners =
       active?.let {
@@ -55,13 +55,8 @@ class BookerDetailsService(
     return associatedPrisoners.map(::PermittedPrisonerDto)
   }
 
-  fun getAssociatedPrisoner(reference: String, prisonerId: String): PermittedPrisoner? {
-    val bookerByReference = getBooker(reference)
-    return prisonerRepository.findByBookerIdAndPrisonerId(bookerByReference.id, prisonerId)
-  }
-
   @Transactional(readOnly = true)
-  fun getAssociatedVisitors(bookerReference: String, prisonerId: String, active: Boolean?): List<PermittedVisitorDto> {
+  fun getPermittedVisitors(bookerReference: String, prisonerId: String, active: Boolean?): List<PermittedVisitorDto> {
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
     val visitors = active?.let {
       visitorRepository.findByPermittedPrisonerIdAndActive(prisoner.id, active)
@@ -69,12 +64,13 @@ class BookerDetailsService(
     return visitors.map { PermittedVisitorDto(it) }
   }
 
-  private fun getBooker(reference: String): Booker {
-    return bookerRepository.findByReference(reference) ?: throw BookerNotFoundException("Booker for reference : $reference not found")
+  private fun getBooker(bookerReference: String): Booker {
+    return bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
   }
 
   private fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
-    return getAssociatedPrisoner(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner with prisonNumber - $prisonerId not found for booker reference - $bookerReference")
+    val bookerByReference = getBooker(bookerReference)
+    return prisonerRepository.findByBookerIdAndPrisonerId(bookerByReference.id, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner with prisonNumber - $prisonerId not found for booker reference - $bookerReference")
   }
 
   private fun createChildObjects(

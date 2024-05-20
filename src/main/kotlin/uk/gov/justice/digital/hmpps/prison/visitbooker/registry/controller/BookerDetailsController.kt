@@ -67,7 +67,7 @@ class BookerDetailsController(
     )
     active: Boolean?,
   ): List<PermittedPrisonerDto> {
-    return bookerDetailsService.getAssociatedPrisoners(bookerReference, active)
+    return bookerDetailsService.getPermittedPrisoners(bookerReference, active)
   }
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
@@ -115,6 +115,6 @@ class BookerDetailsController(
     )
     active: Boolean?,
   ): List<PermittedVisitorDto> {
-    return bookerDetailsService.getAssociatedVisitors(bookerReference, prisonerId, active)
+    return bookerDetailsService.getPermittedVisitors(bookerReference, prisonerId, active)
   }
 }

@@ -69,7 +69,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
       .body(
         ErrorResponse(
           status = NOT_FOUND,
-          userMessage = "Permitted prisoner not found not found",
+          userMessage = "Permitted prisoner not found",
           developerMessage = e.message,
         ),
       )

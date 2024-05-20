@@ -71,7 +71,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns all visitors associated with that prisoner if active param is null`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -87,7 +87,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns only active visitors associated with that prisoner if active param is true`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, true, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, true, orchestrationServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -101,7 +101,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns only active visitors associated with that prisoner if active param is false`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, false, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, false, orchestrationServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -113,7 +113,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `get visitors by valid reference returns no visitors when none associated with that prisoner`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker2.reference, permittedPrisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, booker2.reference, permittedPrisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -124,7 +124,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, "invalid-reference", permittedPrisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, "invalid-reference", permittedPrisoner1.prisonerId, null, orchestrationServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -133,7 +133,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when invalid prisoner Id then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, "invalid-prison-number", null, orchestrationServiceRoleHttpHeaders)
+    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, "invalid-prison-number", null, orchestrationServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -142,7 +142,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `access forbidden when no role`() {
     // When
-    val responseSpec = getPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, null, setAuthorisation(roles = listOf()))
+    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, null, setAuthorisation(roles = listOf()))
 
     // Then
     responseSpec.expectStatus().isForbidden
@@ -157,7 +157,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(visitor.active).isEqualTo(visitorDetails.isActive)
   }
 
-  fun getPrisonerVisitorsByBookerReference(
+  fun getPermittedPrisonerVisitorsByBookerReference(
     webTestClient: WebTestClient,
     bookerReference: String,
     prisonerId: String,
