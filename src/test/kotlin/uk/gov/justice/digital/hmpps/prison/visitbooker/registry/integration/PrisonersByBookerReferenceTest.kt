@@ -20,9 +20,9 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker
 
-  private lateinit var prisoner1: PrisonerDetails
-  private lateinit var prisoner2: PrisonerDetails
-  private lateinit var prisoner3: PrisonerDetails
+  private lateinit var prisoner1: PermittedPrisonerDetails
+  private lateinit var prisoner2: PermittedPrisonerDetails
+  private lateinit var prisoner3: PermittedPrisonerDetails
 
   @BeforeEach
   internal fun setUp() {
@@ -31,11 +31,11 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     // booker 2 has no permittedPrisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PrisonerDetails("AB123456", true)
-    prisoner2 = PrisonerDetails("AB789012", true)
+    prisoner1 = PermittedPrisonerDetails("AB123456", true)
+    prisoner2 = PermittedPrisonerDetails("AB789012", true)
 
     // inactive permittedPrisoner
-    prisoner3 = PrisonerDetails("AB345678", false)
+    prisoner3 = PermittedPrisonerDetails("AB345678", false)
 
     createAssociatedPrisoners(
       booker1,
@@ -112,7 +112,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PermittedPrisonerDto>::class.java).toList()
   }
 
-  private fun assertPrisonerDetails(prisoner: PermittedPrisonerDto, prisonerDetail: PrisonerDetails) {
+  private fun assertPrisonerDetails(prisoner: PermittedPrisonerDto, prisonerDetail: PermittedPrisonerDetails) {
     Assertions.assertThat(prisoner.prisonerId).isEqualTo(prisonerDetail.prisonerId)
     Assertions.assertThat(prisoner.active).isEqualTo(prisonerDetail.isActive)
     Assertions.assertThat(prisoner.permittedVisitors).hasSize(1)
@@ -136,7 +136,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   }
 }
 
-class PrisonerDetails(
+class PermittedPrisonerDetails(
   val prisonerId: String,
   val isActive: Boolean,
 )

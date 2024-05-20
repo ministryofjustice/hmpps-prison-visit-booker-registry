@@ -79,8 +79,8 @@ abstract class IntegrationTestBase {
 
   fun createAssociatedPrisoners(
     booker: Booker,
-    associatedPrisoners: List<PrisonerDetails>,
-    visitors: List<PrisonersVisitorDetails> = listOf(PrisonersVisitorDetails(1L, true)),
+    associatedPrisoners: List<PermittedPrisonerDetails>,
+    visitors: List<PermittedVisitorDetails> = listOf(PermittedVisitorDetails(1L, true)),
   ): List<PermittedPrisoner> {
     val permittedPrisonerList = mutableListOf<PermittedPrisoner>()
     associatedPrisoners.forEach {
@@ -95,7 +95,7 @@ abstract class IntegrationTestBase {
     return entityHelper.createAssociatedPrisoner(permittedPrisoner)
   }
 
-  fun createAssociatedPrisonersVisitors(permittedPrisoner: PermittedPrisoner, associatedPrisonersVisitors: List<PrisonersVisitorDetails>): List<PermittedVisitor> {
+  fun createAssociatedPrisonersVisitors(permittedPrisoner: PermittedPrisoner, associatedPrisonersVisitors: List<PermittedVisitorDetails>): List<PermittedVisitor> {
     val permittedVisitors = mutableListOf<PermittedVisitor>()
     associatedPrisonersVisitors.forEach {
       val permittedVisitor = PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = it.visitorId, active = it.isActive)

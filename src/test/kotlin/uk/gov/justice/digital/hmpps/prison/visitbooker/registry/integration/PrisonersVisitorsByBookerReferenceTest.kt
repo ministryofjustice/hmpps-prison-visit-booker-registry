@@ -19,10 +19,10 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   private lateinit var permittedPrisoner1: PermittedPrisoner
   private lateinit var permittedPrisoner2: PermittedPrisoner
 
-  private lateinit var visitor1: PrisonersVisitorDetails
-  private lateinit var visitor2: PrisonersVisitorDetails
-  private lateinit var visitor3: PrisonersVisitorDetails
-  private lateinit var visitor4: PrisonersVisitorDetails
+  private lateinit var visitor1: PermittedVisitorDetails
+  private lateinit var visitor2: PermittedVisitorDetails
+  private lateinit var visitor3: PermittedVisitorDetails
+  private lateinit var visitor4: PermittedVisitorDetails
 
   @BeforeEach
   internal fun setUp() {
@@ -31,8 +31,8 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     // booker 2 has 2 permittedPrisoners associated but no permittedVisitors
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    val prisoner1Details = PrisonerDetails("AB123456", true)
-    val prisoner2Details = PrisonerDetails("AB789012", true)
+    val prisoner1Details = PermittedPrisonerDetails("AB123456", true)
+    val prisoner2Details = PermittedPrisonerDetails("AB789012", true)
 
     val prisoners = createAssociatedPrisoners(
       booker1,
@@ -46,10 +46,10 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
       visitors = listOf(),
     )
 
-    visitor1 = PrisonersVisitorDetails(12, true)
-    visitor2 = PrisonersVisitorDetails(34, true)
-    visitor3 = PrisonersVisitorDetails(56, true)
-    visitor4 = PrisonersVisitorDetails(78, false)
+    visitor1 = PermittedVisitorDetails(12, true)
+    visitor2 = PermittedVisitorDetails(34, true)
+    visitor3 = PermittedVisitorDetails(56, true)
+    visitor4 = PermittedVisitorDetails(78, false)
 
     permittedPrisoner1 = prisoners[0]
     permittedPrisoner2 = prisoners[1]
@@ -152,7 +152,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PermittedVisitorDto>::class.java).toList()
   }
 
-  private fun assertVisitorDetails(visitor: PermittedVisitorDto, visitorDetails: PrisonersVisitorDetails) {
+  private fun assertVisitorDetails(visitor: PermittedVisitorDto, visitorDetails: PermittedVisitorDetails) {
     Assertions.assertThat(visitor.visitorId).isEqualTo(visitorDetails.visitorId)
     Assertions.assertThat(visitor.active).isEqualTo(visitorDetails.isActive)
   }
@@ -174,7 +174,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   }
 }
 
-class PrisonersVisitorDetails(
+class PermittedVisitorDetails(
   val visitorId: Long,
   val isActive: Boolean,
 )
