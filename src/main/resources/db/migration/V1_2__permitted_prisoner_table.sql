@@ -1,4 +1,4 @@
-CREATE TABLE booker_prisoner
+CREATE TABLE permitted_prisoner
 (
     id                      SERIAL          NOT NULL PRIMARY KEY,
     booker_id               integer         NOT NULL,
@@ -6,5 +6,5 @@ CREATE TABLE booker_prisoner
     active                  boolean         NOT NULL,
     create_timestamp        timestamp       default current_timestamp,
 
-    CONSTRAINT prisoner_to_booker  FOREIGN KEY (booker_id) REFERENCES booker(id)
+    CONSTRAINT permitted_prisoner_to_booker  FOREIGN KEY (booker_id) REFERENCES booker(id)
 );

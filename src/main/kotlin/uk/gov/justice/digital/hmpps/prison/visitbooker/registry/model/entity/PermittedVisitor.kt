@@ -13,19 +13,19 @@ import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "booker_prisoner_visitor")
-class Visitor(
+@Table(name = "permitted_visitor")
+class PermittedVisitor(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID")
   val id: Long = 0,
 
-  @Column(name = "booker_prisoner_id", nullable = false)
-  val prisonerId: Long,
+  @Column(name = "permitted_prisoner_id", nullable = false)
+  val permittedPrisonerId: Long,
 
   @ManyToOne
-  @JoinColumn(name = "booker_prisoner_id", updatable = false, insertable = false)
-  val prisoner: Prisoner,
+  @JoinColumn(name = "permitted_prisoner_id", updatable = false, insertable = false)
+  val permittedPrisoner: PermittedPrisoner,
 
   @Column(name = "visitor_id", nullable = false)
   val visitorId: Long,
@@ -40,7 +40,7 @@ class Visitor(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
-    other as Visitor
+    other as PermittedVisitor
 
     return id == other.id
   }

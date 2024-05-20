@@ -39,7 +39,7 @@ class Booker(
   val createTimestamp: LocalDateTime? = null
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "booker", orphanRemoval = true)
-  val prisoners: MutableList<Prisoner> = mutableListOf()
+  val permittedPrisoners: MutableList<PermittedPrisoner> = mutableListOf()
 
   @PostPersist
   fun createReference() {

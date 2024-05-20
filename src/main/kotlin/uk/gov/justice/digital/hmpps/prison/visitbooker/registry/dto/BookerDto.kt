@@ -23,15 +23,15 @@ data class BookerDto(
   @field:NotBlank
   val email: String,
 
-  @JsonProperty("prisoners")
-  @Schema(description = " prisoners", required = true)
+  @JsonProperty("permittedPrisoners")
+  @Schema(description = "Permitted prisoners list", required = true)
   @field:Valid
-  val prisoners: List<PrisonerDto>,
+  val permittedPrisoners: List<PermittedPrisonerDto>,
 ) {
   constructor(booker: Booker) : this(
     reference = booker.reference,
     oneLoginSub = booker.oneLoginSub,
     email = booker.email,
-    prisoners = booker.prisoners.map { PrisonerDto(it) },
+    permittedPrisoners = booker.permittedPrisoners.map { PermittedPrisonerDto(it) },
   )
 }
