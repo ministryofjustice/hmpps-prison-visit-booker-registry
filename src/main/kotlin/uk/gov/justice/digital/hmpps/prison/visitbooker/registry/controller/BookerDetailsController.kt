@@ -52,7 +52,7 @@ class BookerDetailsController(
       ),
     ],
   )
-  fun getPrisonersForBooker(
+  fun getPermittedPrisonersForBooker(
     @PathVariable(value = "bookerReference", required = true)
     @Parameter(
       description = "Booker's unique reference.",
@@ -97,7 +97,7 @@ class BookerDetailsController(
       ),
     ],
   )
-  fun getVisitorsForPrisoner(
+  fun getPermittedVisitorsForPrisoner(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
