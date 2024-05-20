@@ -8,33 +8,34 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PERMITTED_PRISONERS
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import java.util.*
 
 @Transactional(propagation = SUPPORTS)
-@DisplayName("Get prisoners for booker")
+@DisplayName("Get permittedPrisoners for booker")
 class PrisonersByBookerReferenceTest : IntegrationTestBase() {
 
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker
 
-  private lateinit var prisoner1: PrisonerDetails
-  private lateinit var prisoner2: PrisonerDetails
-  private lateinit var prisoner3: PrisonerDetails
+  private lateinit var prisoner1: PermittedPrisonerDetails
+  private lateinit var prisoner2: PermittedPrisonerDetails
+  private lateinit var prisoner3: PermittedPrisonerDetails
 
   @BeforeEach
   internal fun setUp() {
     booker1 = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
-    // booker 2 has no prisoners associated
+    // booker 2 has no permittedPrisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PrisonerDetails("AB123456", true)
-    prisoner2 = PrisonerDetails("AB789012", true)
+    prisoner1 = PermittedPrisonerDetails("AB123456", true)
+    prisoner2 = PermittedPrisonerDetails("AB789012", true)
 
-    // inactive prisoner
-    prisoner3 = PrisonerDetails("AB345678", false)
+    // inactive permittedPrisoner
+    prisoner3 = PermittedPrisonerDetails("AB345678", false)
 
     createAssociatedPrisoners(
       booker1,
@@ -107,16 +108,16 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonerDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PrisonerDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PermittedPrisonerDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PermittedPrisonerDto>::class.java).toList()
   }
 
-  private fun assertPrisonerDetails(prisoner: PrisonerDto, prisonerDetail: PrisonerDetails) {
+  private fun assertPrisonerDetails(prisoner: PermittedPrisonerDto, prisonerDetail: PermittedPrisonerDetails) {
     Assertions.assertThat(prisoner.prisonerId).isEqualTo(prisonerDetail.prisonerId)
     Assertions.assertThat(prisoner.active).isEqualTo(prisonerDetail.isActive)
-    Assertions.assertThat(prisoner.visitors).hasSize(1)
-    Assertions.assertThat(prisoner.visitors[0].visitorId).isEqualTo(1)
-    Assertions.assertThat(prisoner.visitors[0].active).isTrue()
+    Assertions.assertThat(prisoner.permittedVisitors).hasSize(1)
+    Assertions.assertThat(prisoner.permittedVisitors[0].visitorId).isEqualTo(1)
+    Assertions.assertThat(prisoner.permittedVisitors[0].active).isTrue()
   }
 
   fun getPrisonersByBookerReference(
@@ -125,7 +126,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     active: Boolean? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    var url = "/public/booker/$bookerReference/prisoners"
+    var url = PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference)
     active?.let {
       url += "?active=$active"
     }
@@ -135,7 +136,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
   }
 }
 
-class PrisonerDetails(
+class PermittedPrisonerDetails(
   val prisonerId: String,
   val isActive: Boolean,
 )

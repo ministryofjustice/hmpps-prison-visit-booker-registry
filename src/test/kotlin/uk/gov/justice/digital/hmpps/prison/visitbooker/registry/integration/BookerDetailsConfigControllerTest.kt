@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CLEAR
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Migrate $AUTH_DETAILS_CONTROLLER_PATH")
@@ -23,8 +23,8 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
   fun `when booker dose not exist then booker is created with all child objects`() {
     // Given
     val visitorIds = listOf(1L, 2L)
-    val prisoners = listOf(CreatePrisonerDto(prisonerId = "1233", visitorIds = visitorIds))
-    val createBookerDto = CreateBookerDto(email = "aled@aled.com", prisoners = prisoners)
+    val permittedPrisoners = listOf(CreatePermittedPrisonerDto(prisonerId = "1233", visitorIds = visitorIds))
+    val createBookerDto = CreateBookerDto(email = "aled@aled.com", permittedPrisoners = permittedPrisoners)
 
     // When
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
@@ -35,11 +35,11 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
 
     assertThat(dto.reference).isNotNull()
     assertThat(dto.email).isEqualTo(createBookerDto.email)
-    assertThat(dto.prisoners[0].prisonerId).isEqualTo(prisoners[0].prisonerId)
-    assertThat(dto.prisoners[0].active).isTrue()
-    assertThat(dto.prisoners[0].visitors.size).isEqualTo(visitorIds.size)
+    assertThat(dto.permittedPrisoners[0].prisonerId).isEqualTo(permittedPrisoners[0].prisonerId)
+    assertThat(dto.permittedPrisoners[0].active).isTrue()
+    assertThat(dto.permittedPrisoners[0].permittedVisitors.size).isEqualTo(visitorIds.size)
     visitorIds.forEachIndexed { index, visitorId ->
-      dto.prisoners[0].visitors[index].let {
+      dto.permittedPrisoners[0].permittedVisitors[index].let {
         assertThat(it.visitorId).isEqualTo(visitorId)
         assertThat(it.active).isTrue()
       }
@@ -53,14 +53,14 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
     val oneLoginSub = "123"
     val booker = createBooker(oneLoginSub = oneLoginSub, emailAddress = emailAddress)
     val prisoner = createPrisoner(booker, prisonerId = "IM GONE")
-    booker.prisoners.add(prisoner)
+    booker.permittedPrisoners.add(prisoner)
     val visitor = createVisitor(prisoner, visitorId = 0L)
-    prisoner.visitors.add(visitor)
+    prisoner.permittedVisitors.add(visitor)
     bookerRepository.saveAndFlush(booker)
 
     val visitorIds = listOf(1L, 2L)
-    val prisoners = listOf(CreatePrisonerDto(prisonerId = "1235", visitorIds = visitorIds))
-    val createBookerDto = CreateBookerDto(email = "aled@aled.com", prisoners = prisoners)
+    val permittedPrisoners = listOf(CreatePermittedPrisonerDto(prisonerId = "1235", visitorIds = visitorIds))
+    val createBookerDto = CreateBookerDto(email = "aled@aled.com", permittedPrisoners = permittedPrisoners)
 
     // When
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
@@ -72,11 +72,11 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
     assertThat(dto.oneLoginSub).isEqualTo(booker.oneLoginSub)
     assertThat(dto.email).isEqualTo(booker.email)
     assertThat(dto.email).isEqualTo(createBookerDto.email)
-    assertThat(dto.prisoners[0].prisonerId).isEqualTo(prisoners[0].prisonerId)
-    assertThat(dto.prisoners[0].active).isTrue()
-    assertThat(dto.prisoners[0].visitors.size).isEqualTo(visitorIds.size)
+    assertThat(dto.permittedPrisoners[0].prisonerId).isEqualTo(permittedPrisoners[0].prisonerId)
+    assertThat(dto.permittedPrisoners[0].active).isTrue()
+    assertThat(dto.permittedPrisoners[0].permittedVisitors.size).isEqualTo(visitorIds.size)
     visitorIds.forEachIndexed { index, visitorId ->
-      dto.prisoners[0].visitors[index].let {
+      dto.permittedPrisoners[0].permittedVisitors[index].let {
         assertThat(it.visitorId).isEqualTo(visitorId)
         assertThat(it.active).isTrue()
       }
@@ -87,8 +87,8 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
   fun `when booker email is not given exception is thrown`() {
     // Given
     val visitorIds = listOf(1L, 2L)
-    val prisoners = listOf(CreatePrisonerDto(prisonerId = "1233", visitorIds = visitorIds))
-    val createBookerDto = CreateBookerDto(email = "", prisoners = prisoners)
+    val permittedPrisoners = listOf(CreatePermittedPrisonerDto(prisonerId = "1233", visitorIds = visitorIds))
+    val createBookerDto = CreateBookerDto(email = "", permittedPrisoners = permittedPrisoners)
 
     // When
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
@@ -100,48 +100,48 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
   @Test
   fun `when booker prisoners are not given exception is thrown`() {
     // Given
-    val createBookerDto = CreateBookerDto(email = "aled@aled.com", prisoners = listOf())
+    val createBookerDto = CreateBookerDto(email = "aled@aled.com", permittedPrisoners = listOf())
 
     // When
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
 
     // Then
-    assertError(responseSpec, "Invalid Argument: prisoners", "must not be empty")
+    assertError(responseSpec, "Invalid Argument: permittedPrisoners", "must not be empty")
   }
 
   @Test
   fun `when booker prisonerId is not given exception is thrown`() {
     // Given
     val visitorIds = listOf(1L, 2L)
-    val prisoners = listOf(CreatePrisonerDto(prisonerId = "", visitorIds = visitorIds))
-    val createBookerDto = CreateBookerDto(email = "aled@aled.com", prisoners = prisoners)
+    val permittedPrisoners = listOf(CreatePermittedPrisonerDto(prisonerId = "", visitorIds = visitorIds))
+    val createBookerDto = CreateBookerDto(email = "aled@aled.com", permittedPrisoners = permittedPrisoners)
 
     // When
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
 
     // Then
-    assertError(responseSpec, "Invalid Argument: prisoners[0].prisonerId", "must not be blank")
+    assertError(responseSpec, "Invalid Argument: permittedPrisoners[0].prisonerId", "must not be blank")
   }
 
   @Test
   fun `when booker visitors are not given exception is thrown`() {
     // Given
-    val prisoners = listOf(CreatePrisonerDto(prisonerId = "1233", visitorIds = listOf()))
-    val createBookerDto = CreateBookerDto(email = "aled@aled.com", prisoners = prisoners)
+    val permittedPrisoners = listOf(CreatePermittedPrisonerDto(prisonerId = "1233", visitorIds = listOf()))
+    val createBookerDto = CreateBookerDto(email = "aled@aled.com", permittedPrisoners = permittedPrisoners)
 
     // When
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
 
     // Then
-    assertError(responseSpec, "Invalid Argument: prisoners[0].visitorIds", "must not be empty")
+    assertError(responseSpec, "Invalid Argument: permittedPrisoners[0].visitorIds", "must not be empty")
   }
 
   @Test
   fun `when booker end point is call with incorrect role`() {
     // Given
     val visitorIds = listOf(1L, 2L)
-    val prisoners = listOf(CreatePrisonerDto(prisonerId = "1", visitorIds = visitorIds))
-    val createBookerDto = CreateBookerDto(email = "aled@aled.com", prisoners = prisoners)
+    val permittedPrisoners = listOf(CreatePermittedPrisonerDto(prisonerId = "1", visitorIds = visitorIds))
+    val createBookerDto = CreateBookerDto(email = "aled@aled.com", permittedPrisoners = permittedPrisoners)
 
     // When
     val responseSpec = callCreateBooker(orchestrationServiceRoleHttpHeaders, createBookerDto)
@@ -158,9 +158,9 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
     val oneLoginSub = "123"
     val booker = createBooker(oneLoginSub = oneLoginSub, emailAddress = emailAddress)
     val prisoner = createPrisoner(booker, prisonerId = "IM GONE")
-    booker.prisoners.add(prisoner)
+    booker.permittedPrisoners.add(prisoner)
     val visitor = createVisitor(prisoner, visitorId = 0L)
-    prisoner.visitors.add(visitor)
+    prisoner.permittedVisitors.add(visitor)
     bookerRepository.saveAndFlush(booker)
 
     // When
@@ -172,7 +172,7 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
     assertThat(dto.email).isEqualTo(booker.email)
     assertThat(dto.reference).isEqualTo(booker.reference)
     assertThat(dto.oneLoginSub).isEqualTo(booker.oneLoginSub)
-    assertThat(dto.prisoners).isEmpty()
+    assertThat(dto.permittedPrisoners).isEmpty()
 
     val savedBooker = bookerRepository.findByReference(booker.reference)
     assertThat(savedBooker).isNotNull
@@ -180,7 +180,7 @@ class BookerDetailsConfigControllerTest : IntegrationTestBase() {
       assertThat(savedBooker.email).isEqualTo(booker.email)
       assertThat(savedBooker.reference).isEqualTo(booker.reference)
       assertThat(savedBooker.oneLoginSub).isEqualTo(booker.oneLoginSub)
-      assertThat(savedBooker.prisoners).isEmpty()
+      assertThat(savedBooker.permittedPrisoners).isEmpty()
     }
   }
 

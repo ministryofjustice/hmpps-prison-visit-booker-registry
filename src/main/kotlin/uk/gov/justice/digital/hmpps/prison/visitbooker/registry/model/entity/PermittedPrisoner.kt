@@ -16,8 +16,8 @@ import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "booker_prisoner")
-class Prisoner(
+@Table(name = "permitted_prisoner")
+class PermittedPrisoner(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID")
@@ -36,8 +36,8 @@ class Prisoner(
   @Column(name = "active", nullable = false)
   val active: Boolean,
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "prisoner", orphanRemoval = true)
-  val visitors: MutableList<Visitor> = mutableListOf(),
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "permittedPrisoner", orphanRemoval = true)
+  val permittedVisitors: MutableList<PermittedVisitor> = mutableListOf(),
 ) {
 
   @CreationTimestamp
@@ -47,7 +47,7 @@ class Prisoner(
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
-    other as Prisoner
+    other as PermittedPrisoner
 
     return id == other.id
   }

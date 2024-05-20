@@ -15,8 +15,8 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.help
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Prisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Visitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 
@@ -69,42 +69,42 @@ abstract class IntegrationTestBase {
     val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
     return booker
   }
-  fun createPrisoner(booker: Booker, prisonerId: String): Prisoner {
-    return entityHelper.createAssociatedPrisoner(Prisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true))
+  fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner {
+    return entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true))
   }
 
-  fun createVisitor(prisoner: Prisoner, visitorId: Long): Visitor {
-    return entityHelper.createAssociatedPrisonerVisitor(Visitor(prisonerId = prisoner.id, prisoner = prisoner, visitorId = visitorId, active = true))
+  fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor {
+    return entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId, active = true))
   }
 
   fun createAssociatedPrisoners(
     booker: Booker,
-    associatedPrisoners: List<PrisonerDetails>,
-    visitors: List<PrisonersVisitorDetails> = listOf(PrisonersVisitorDetails(1L, true)),
-  ): List<Prisoner> {
-    val prisonerList = mutableListOf<Prisoner>()
+    associatedPrisoners: List<PermittedPrisonerDetails>,
+    visitors: List<PermittedVisitorDetails> = listOf(PermittedVisitorDetails(1L, true)),
+  ): List<PermittedPrisoner> {
+    val permittedPrisonerList = mutableListOf<PermittedPrisoner>()
     associatedPrisoners.forEach {
-      val prisoner = createAssociatedPrisoner(Prisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, active = it.isActive))
-      prisonerList.add(prisoner)
-      createAssociatedPrisonersVisitors(prisoner, visitors)
+      val permittedPrisoner = createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, active = it.isActive))
+      permittedPrisonerList.add(permittedPrisoner)
+      createAssociatedPrisonersVisitors(permittedPrisoner, visitors)
     }
-    return prisonerList
+    return permittedPrisonerList
   }
 
-  fun createAssociatedPrisoner(prisoner: Prisoner): Prisoner {
-    return entityHelper.createAssociatedPrisoner(prisoner)
+  fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner {
+    return entityHelper.createAssociatedPrisoner(permittedPrisoner)
   }
 
-  fun createAssociatedPrisonersVisitors(prisoner: Prisoner, associatedPrisonersVisitors: List<PrisonersVisitorDetails>): List<Visitor> {
-    val visitors = mutableListOf<Visitor>()
+  fun createAssociatedPrisonersVisitors(permittedPrisoner: PermittedPrisoner, associatedPrisonersVisitors: List<PermittedVisitorDetails>): List<PermittedVisitor> {
+    val permittedVisitors = mutableListOf<PermittedVisitor>()
     associatedPrisonersVisitors.forEach {
-      val visitor = Visitor(prisonerId = prisoner.id, prisoner = prisoner, visitorId = it.visitorId, active = it.isActive)
-      visitors.add(createAssociatedPrisonersVisitor(prisoner, visitor))
+      val permittedVisitor = PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = it.visitorId, active = it.isActive)
+      permittedVisitors.add(createAssociatedPrisonersVisitor(permittedPrisoner, permittedVisitor))
     }
-    return visitors
+    return permittedVisitors
   }
 
-  fun createAssociatedPrisonersVisitor(prisoner: Prisoner, visitor: Visitor): Visitor {
-    return entityHelper.createAssociatedPrisonerVisitor(visitor)
+  fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner, permittedVisitor: PermittedVisitor): PermittedVisitor {
+    return entityHelper.createAssociatedPrisonerVisitor(permittedVisitor)
   }
 }

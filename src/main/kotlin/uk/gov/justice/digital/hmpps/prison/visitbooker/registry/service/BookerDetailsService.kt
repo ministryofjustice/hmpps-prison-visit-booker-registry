@@ -4,32 +4,30 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Prisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Visitor
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerPrisonerRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerPrisonerVisitorRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 
 @Service
 class BookerDetailsService(
   private val bookerRepository: BookerRepository,
-  private val prisonerRepository: BookerPrisonerRepository,
-  private val visitorRepository: BookerPrisonerVisitorRepository,
+  private val prisonerRepository: PermittedPrisonerRepository,
+  private val visitorRepository: PermittedVisitorRepository,
 ) {
-
-  @Transactional
-  fun getBooker(reference: String): Booker {
-    return bookerRepository.findByReference(reference) ?: throw BookerNotFoundException("Booker for reference : $reference not found")
-  }
 
   @Transactional
   fun createOrUpdateBookerDetails(createBookerDto: CreateBookerDto): BookerDto {
     val booker = bookerRepository.findByEmail(createBookerDto.email)?.let {
-      if (it.prisoners.isNotEmpty()) {
+      if (it.permittedPrisoners.isNotEmpty()) {
         // clear child objects from booker
-        it.prisoners.clear()
+        it.permittedPrisoners.clear()
       }
       bookerRepository.saveAndFlush(it)
     } ?: run {
@@ -43,17 +41,45 @@ class BookerDetailsService(
   @Transactional
   fun clearBookerDetails(bookerReference: String): BookerDto {
     val booker = getBooker(bookerReference)
-    booker.prisoners.clear()
+    booker.permittedPrisoners.clear()
     return BookerDto(bookerRepository.saveAndFlush(booker))
+  }
+
+  @Transactional(readOnly = true)
+  fun getPermittedPrisoners(reference: String, active: Boolean?): List<PermittedPrisonerDto> {
+    val bookerByReference = getBooker(reference)
+    val associatedPrisoners =
+      active?.let {
+        prisonerRepository.findByBookerIdAndActive(bookerByReference.id, it)
+      } ?: prisonerRepository.findByBookerId(bookerByReference.id)
+    return associatedPrisoners.map(::PermittedPrisonerDto)
+  }
+
+  @Transactional(readOnly = true)
+  fun getPermittedVisitors(bookerReference: String, prisonerId: String, active: Boolean?): List<PermittedVisitorDto> {
+    val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
+    val visitors = active?.let {
+      visitorRepository.findByPermittedPrisonerIdAndActive(prisoner.id, active)
+    } ?: visitorRepository.findByPermittedPrisonerId(prisoner.id)
+    return visitors.map { PermittedVisitorDto(it) }
+  }
+
+  private fun getBooker(bookerReference: String): Booker {
+    return bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
+  }
+
+  private fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
+    val bookerByReference = getBooker(bookerReference)
+    return prisonerRepository.findByBookerIdAndPrisonerId(bookerByReference.id, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner with prisonNumber - $prisonerId not found for booker reference - $bookerReference")
   }
 
   private fun createChildObjects(
     createBookerDto: CreateBookerDto,
     booker: Booker,
   ): Booker {
-    createBookerDto.prisoners.forEach { prisonerDto ->
-      val prisoner = prisonerRepository.saveAndFlush(
-        Prisoner(
+    createBookerDto.permittedPrisoners.forEach { prisonerDto ->
+      val permittedPrisoner = prisonerRepository.saveAndFlush(
+        PermittedPrisoner(
           bookerId = booker.id,
           booker = booker,
           prisonerId = prisonerDto.prisonerId,
@@ -61,17 +87,17 @@ class BookerDetailsService(
         ),
       )
       prisonerDto.visitorIds.forEach {
-        val visitor = visitorRepository.saveAndFlush(
-          Visitor(
-            prisonerId = prisoner.id,
-            prisoner = prisoner,
+        val permittedVisitor = visitorRepository.saveAndFlush(
+          PermittedVisitor(
+            permittedPrisonerId = permittedPrisoner.id,
+            permittedPrisoner = permittedPrisoner,
             visitorId = it,
             active = true,
           ),
         )
-        prisoner.visitors.add(visitor)
+        permittedPrisoner.permittedVisitors.add(permittedVisitor)
       }
-      booker.prisoners.add(prisoner)
+      booker.permittedPrisoners.add(permittedPrisoner)
     }
 
     return bookerRepository.saveAndFlush(booker)
