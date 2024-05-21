@@ -1,7 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.6"
-  kotlin("plugin.spring") version "1.9.23"
-  kotlin("plugin.jpa") version "1.9.23"
+  kotlin("plugin.spring") version "1.9.24"
+  kotlin("plugin.jpa") version "1.9.24"
   idea
 }
 
@@ -24,13 +24,13 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.3.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.4.0")
 
-  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0")
-  implementation("org.springframework.data:spring-data-commons:3.2.5")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1")
+  implementation("org.springframework.data:spring-data-commons:3.3.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.5.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
   implementation("org.springdoc:springdoc-openapi-starter-common:2.5.0")
@@ -51,10 +51,10 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.12.5")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:postgresql:1.19.7")
-  testImplementation("org.testcontainers:localstack:1.19.7")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.708")
-  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.0")
+  testImplementation("org.testcontainers:postgresql:1.19.8")
+  testImplementation("org.testcontainers:localstack:1.19.8")
+  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.726")
+  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1")
 }
 
 java {
