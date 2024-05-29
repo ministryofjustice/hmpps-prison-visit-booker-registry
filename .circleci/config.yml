@@ -130,6 +130,8 @@ workflows:
             branches:
               only:
                 - main
+          requires:
+            - deploy_dev
 
       - acceptance_tests_main:
           requires:
@@ -142,6 +144,10 @@ workflows:
           type: approval
           requires:
             - deploy_staging
+          filters:
+            branches:
+              only:
+                - main
 
       - hmpps/deploy_env:
           name: deploy_preprod
@@ -159,6 +165,10 @@ workflows:
           type: approval
           requires:
             - deploy_staging
+          filters:
+            branches:
+              only:
+                - main
 
       - hmpps/deploy_env:
           name: deploy_prod
@@ -178,6 +188,10 @@ workflows:
           type: approval
           requires:
             - deploy_preprod
+          filters:
+            branches:
+              only:
+                - main
 
   build-test-deploy-feature:
     jobs:
@@ -218,6 +232,10 @@ workflows:
             - request-dev-approval
       - request-dev-approval:
           type: approval
+          filters:
+            branches:
+              ignore:
+                - main
 
       - hmpps/deploy_env:
           name: deploy_staging
@@ -235,6 +253,10 @@ workflows:
           type: approval
           requires:
             - deploy_dev
+          filters:
+            branches:
+              ignore:
+                - main
 
   security:
     triggers:
