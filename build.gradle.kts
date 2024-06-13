@@ -36,7 +36,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-common:2.5.0")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.freemarker:freemarker:2.3.32")
+  implementation("org.freemarker:freemarker:2.3.33")
 
   runtimeOnly("org.postgresql:postgresql:42.7.3")
   runtimeOnly("org.flywaydb:flyway-core")
@@ -53,7 +53,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.testcontainers:postgresql:1.19.8")
   testImplementation("org.testcontainers:localstack:1.19.8")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.730")
+  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.742")
   testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1")
 }
 
