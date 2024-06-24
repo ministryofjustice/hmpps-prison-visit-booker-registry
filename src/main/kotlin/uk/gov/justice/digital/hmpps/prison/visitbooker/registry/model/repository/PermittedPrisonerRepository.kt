@@ -14,7 +14,6 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   fun findByBookerIdAndPrisonerId(bookerId: Long, prisonerId: String): PermittedPrisoner?
 
   @Transactional
-  @Modifying
   @Query(
     "Select pp.* FROM permitted_prisoner pp" +
       "   LEFT JOIN booker b ON b.id = pp.booker_id " +
