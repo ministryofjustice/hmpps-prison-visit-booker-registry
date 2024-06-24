@@ -66,8 +66,7 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
   fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
-    val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
-    return booker
+    return entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
   }
   fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner {
     return entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true))
@@ -79,8 +78,8 @@ abstract class IntegrationTestBase {
 
   fun createAssociatedPrisoners(
     booker: Booker,
-    associatedPrisoners: List<PermittedPrisonerDetails>,
-    visitors: List<PermittedVisitorDetails> = listOf(PermittedVisitorDetails(1L, true)),
+    associatedPrisoners: List<PermittedPrisonerTestObject>,
+    visitors: List<PermittedVisitorTestObject> = listOf(PermittedVisitorTestObject(1L, true)),
   ): List<PermittedPrisoner> {
     val permittedPrisonerList = mutableListOf<PermittedPrisoner>()
     associatedPrisoners.forEach {
@@ -88,6 +87,9 @@ abstract class IntegrationTestBase {
       permittedPrisonerList.add(permittedPrisoner)
       createAssociatedPrisonersVisitors(permittedPrisoner, visitors)
     }
+    booker.permittedPrisoners.clear()
+    booker.permittedPrisoners.addAll(permittedPrisonerList)
+
     return permittedPrisonerList
   }
 
@@ -95,7 +97,7 @@ abstract class IntegrationTestBase {
     return entityHelper.createAssociatedPrisoner(permittedPrisoner)
   }
 
-  fun createAssociatedPrisonersVisitors(permittedPrisoner: PermittedPrisoner, associatedPrisonersVisitors: List<PermittedVisitorDetails>): List<PermittedVisitor> {
+  fun createAssociatedPrisonersVisitors(permittedPrisoner: PermittedPrisoner, associatedPrisonersVisitors: List<PermittedVisitorTestObject>): List<PermittedVisitor> {
     val permittedVisitors = mutableListOf<PermittedVisitor>()
     associatedPrisonersVisitors.forEach {
       val permittedVisitor = PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = it.visitorId, active = it.isActive)

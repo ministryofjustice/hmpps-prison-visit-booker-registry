@@ -102,4 +102,24 @@ class BookerDetailsService(
 
     return bookerRepository.saveAndFlush(booker)
   }
+
+  @Transactional
+  fun activateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
+    return activateDeactivatePrisoner(bookerReference, prisonerId, true)
+  }
+
+  @Transactional
+  fun deactivateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
+    return activateDeactivatePrisoner(bookerReference, prisonerId, false)
+  }
+
+  private fun activateDeactivatePrisoner(
+    bookerReference: String,
+    prisonerId: String,
+    active: Boolean,
+  ): PermittedPrisonerDto {
+    val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
+    prisoner.active = active
+    return PermittedPrisonerDto(prisoner)
+  }
 }
