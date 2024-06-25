@@ -90,6 +90,11 @@ class BookerDetailConfigController(
         description = "Incorrect permissions for this action",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Booker not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
     ],
   )
   fun clearBookerDetails(
@@ -119,6 +124,11 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Prisoner not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
     ],
@@ -153,6 +163,11 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visitor not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
     ],
@@ -192,6 +207,11 @@ class BookerDetailConfigController(
         description = "Incorrect permissions for this action",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Prisoner not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
     ],
   )
   fun deactivateBookerPrisoner(
@@ -224,6 +244,11 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "visitor not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
     ],
