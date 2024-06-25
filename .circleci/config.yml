@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  hmpps: ministryofjustice/hmpps@8
+  hmpps: ministryofjustice/hmpps@9
 
 parameters:
   alerts-slack-channel:
@@ -12,68 +12,6 @@ parameters:
     default: prison-visit-booking-alerts
 
 jobs:
-  acceptance_tests_main:
-    docker:
-      - image: maven:3.9.5-eclipse-temurin-21
-      - image: seleniarm/standalone-chromium
-        environment:
-          CHROME_HEADLESS: 1
-    circleci_ip_ranges: true
-
-    steps:
-      - run:
-          name: Checkout VSIP UI Tests
-          command: git clone https://github.com/ministryofjustice/hmpps-vsip-ui-tests.git
-      - run:
-          name: get git status
-          command: |
-            cd hmpps-vsip-ui-tests
-            git checkout main
-            git pull
-            git status
-      - run:
-          name: Change to project directory then clean install
-          command: |
-            cd hmpps-vsip-ui-tests
-            mvn -f pom.xml clean install -Dmaven.test.skip=true
-      - run:
-          name: Change to project directory and run tests
-          command: |
-            cd hmpps-vsip-ui-tests
-            mvn test -Dbrowser=remote-chrome -Dspring.profiles.active="staging" -Dtest=uk.gov.justice.digital.hmpps.vsip.suites.RunSuite 
-
-
-  acceptance_tests_develop:
-    docker:
-      - image: maven:3.9.5-eclipse-temurin-21
-      - image: seleniarm/standalone-chromium
-        environment:
-          CHROME_HEADLESS: 1
-    circleci_ip_ranges: true
-
-    steps:
-      - run:
-          name: Checkout VSIP UI Tests
-          command: git clone https://github.com/ministryofjustice/hmpps-vsip-ui-tests.git
-      - run:
-          name: get git status
-          command: |
-            cd hmpps-vsip-ui-tests
-            git checkout develop
-            git pull
-            git status
-      - run:
-          name: Change to project directory then clean install
-          command: |
-            cd hmpps-vsip-ui-tests
-            mvn -f pom.xml clean install -Dmaven.test.skip=true
-      - run:
-          name: Change to project directory and run tests
-          command: |
-            cd hmpps-vsip-ui-tests
-            mvn test -Dbrowser=remote-chrome -Dspring.profiles.active="staging" -Dtest=uk.gov.justice.digital.hmpps.vsip.suites.RunSuite
-
-
   validate:
     executor:
       name: hmpps/java_localstack_postgres
@@ -115,24 +53,30 @@ jobs:
 workflows:
   version: 2
 
-  build-test-and-deploy-flow:
-    when:
-      and:
-        - not:
-            equal: [ develop, << pipeline.git.branch >> ]
+  build-test-deploy-main:
     jobs:
       - validate:
           filters:
             tags:
               ignore: /.*/
+            branches:
+              only:
+                - main
+
       - hmpps/helm_lint:
           name: helm_lint
+          filters:
+            branches:
+              only:
+                - main
+
       - hmpps/build_docker:
           name: build_docker
           filters:
             branches:
               only:
                 - main
+
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -145,41 +89,41 @@ workflows:
             - validate
             - build_docker
             - helm_lint
-      - request-staging-approval:
-          type: approval
-          requires:
-            - deploy_dev
+
       - hmpps/deploy_env:
           name: deploy_staging
           env: "staging"
           context:
             - hmpps-common-vars
             - prison-visit-booker-registry-stage
+          filters:
+            branches:
+              only:
+                - main
           requires:
-            - request-staging-approval
-      - request-acceptance-tests-approval:
-          type: approval
-          requires:
-            - deploy_staging
-      - acceptance_tests_main:
-          requires:
-            - request-acceptance-tests-approval
-      - request-preprod-approval:
-          type: approval
-          requires:
-            - deploy_staging
+            - deploy_dev
+
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
           context:
             - hmpps-common-vars
-            - prison-visit-booker-registry-preprod
+            - hmpps-prison-visit-booker-registry-preprod
+          filters:
+            branches:
+              only:
+                - main
           requires:
             - request-preprod-approval
-      - request-prod-approval:
+      - request-preprod-approval:
           type: approval
           requires:
-            - deploy_preprod
+            - deploy_staging
+          filters:
+            branches:
+              only:
+                - main
+
       - hmpps/deploy_env:
           name: deploy_prod
           env: "prod"
@@ -187,76 +131,94 @@ workflows:
           slack_channel_name: << pipeline.parameters.releases-slack-channel >>
           context:
             - hmpps-common-vars
-            - prison-visit-booker-registry-prod
+            - hmpps-prison-visit-booker-registry-prod
+          filters:
+            branches:
+              only:
+                - main
           requires:
             - request-prod-approval
-  build-test-develop-flow:
-    when:
-      and:
-        - equal: [ develop, << pipeline.git.branch >> ]
+      - request-prod-approval:
+          type: approval
+          requires:
+            - deploy_preprod
+          filters:
+            branches:
+              only:
+                - main
+
+  build-test-deploy-feature:
     jobs:
       - validate:
           filters:
             tags:
               ignore: /.*/
+            branches:
+              ignore:
+                - main
+
       - hmpps/helm_lint:
           name: helm_lint
+          filters:
+            branches:
+              ignore:
+                - main
+
       - hmpps/build_docker:
           name: build_docker
           filters:
             branches:
-              only:
-                - develop
-      - request-dev-approval:
-          type: approval
+              ignore:
+                - main
+
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
           context: hmpps-common-vars
           filters:
             branches:
-              only:
-                - develop
+              ignore:
+                - main
+          requires:
+            - request-dev-approval
+      - request-dev-approval:
+          type: approval
           requires:
             - validate
             - build_docker
             - helm_lint
-            - request-dev-approval
-      - request-staging-approval:
-          type: approval
-          requires:
-            - deploy_dev
+          filters:
+            branches:
+              ignore:
+                - main
+
       - hmpps/deploy_env:
           name: deploy_staging
           env: "staging"
           context:
             - hmpps-common-vars
             - prison-visit-booker-registry-stage
+          filters:
+            branches:
+              ignore:
+                - main
           requires:
             - request-staging-approval
-      - request-acceptance-tests-approval:
+      - request-staging-approval:
           type: approval
           requires:
-            - deploy_staging
-      - acceptance_tests_develop:
-          requires:
-            - request-acceptance-tests-approval
-      - request-preprod-approval:
-          type: approval
-          requires:
-            - deploy_staging
-      - hmpps/deploy_env:
-          name: deploy_preprod
-          env: "preprod"
-          context:
-            - hmpps-common-vars
-            - prison-visit-booker-registry-preprod
-          requires:
-            - request-preprod-approval
+            - validate
+            - build_docker
+            - helm_lint
+          filters:
+            branches:
+              ignore:
+                - main
+
   security:
     triggers:
       - schedule:
-          cron: "11 5 * * 1-5"
+          cron: "21 5 * * 1-5"
           filters:
             branches:
               only:
@@ -264,6 +226,8 @@ workflows:
     jobs:
       - hmpps/gradle_owasp_dependency_check:
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          jdk_tag: "21.0"
+          cache_key: "v2_0"
           context:
             - hmpps-common-vars
       - hmpps/trivy_latest_scan:
@@ -272,6 +236,7 @@ workflows:
             - hmpps-common-vars
       - hmpps/veracode_pipeline_scan:
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          jdk_tag: "21.0"
           context:
             - veracode-credentials
             - hmpps-common-vars
@@ -286,6 +251,7 @@ workflows:
     jobs:
       - hmpps/veracode_policy_scan:
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          jdk_tag: "21.0"
           context:
             - veracode-credentials
             - hmpps-common-vars

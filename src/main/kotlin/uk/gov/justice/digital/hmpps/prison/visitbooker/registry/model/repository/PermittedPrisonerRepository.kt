@@ -19,4 +19,14 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
     nativeQuery = true,
   )
   fun findByBookerIdAndPrisonerId(bookerReference: String, prisonerId: String): PermittedPrisoner?
+
+
+  @Transactional
+  @Query(
+    "Select pp.* FROM permitted_prisoner pp" +
+      "   LEFT JOIN booker b ON b.id = pp.booker_id " +
+      " WHERE b.referenc = :bookerReference AND prisoner_id=:prisonerId ",
+    nativeQuery = true,
+  )
+  fun getBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner?
 }

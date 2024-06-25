@@ -2,6 +2,7 @@
 # Per environment values which override defaults in hmpps-prison-visit-booker-registry/values.yaml
 
 generic-service:
+  replicaCount: 2
 
   ingress:
     host: hmpps-prison-visit-booker-registry-staging.prison.service.justice.gov.uk
