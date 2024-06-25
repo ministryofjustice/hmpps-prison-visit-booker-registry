@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -46,11 +46,11 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk
     val associatedPrisoner = getResults(returnResult.expectBody())
 
-    Assertions.assertThat(associatedPrisoner.active).isTrue()
+    assertThat(associatedPrisoner.active).isTrue()
 
     val permittedPrisoners = prisonerRepository.findByBookerId(booker.id)
-    Assertions.assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isTrue
-    Assertions.assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isFalse
+    assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isTrue
+    assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isFalse
   }
 
   @Test

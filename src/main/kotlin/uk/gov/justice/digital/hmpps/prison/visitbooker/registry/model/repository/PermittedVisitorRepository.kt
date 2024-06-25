@@ -11,7 +11,7 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
   fun findByPermittedPrisonerId(prisonerPermittedId: Long): List<PermittedVisitor>
   fun findByPermittedPrisonerIdAndActive(prisonerPermittedId: Long, active: Boolean): List<PermittedVisitor>
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Query(
     "Select pv.* FROM permitted_visitor pv " +
       "   LEFT JOIN permitted_prisoner pp ON pp.id = pv.permitted_prisoner_id" +

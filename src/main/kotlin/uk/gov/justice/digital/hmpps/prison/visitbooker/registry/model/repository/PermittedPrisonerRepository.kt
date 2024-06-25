@@ -11,7 +11,7 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   fun findByBookerId(bookerId: Long): List<PermittedPrisoner>
   fun findByBookerIdAndActive(bookerId: Long, active: Boolean): List<PermittedPrisoner>
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Query(
     "Select pp.* FROM permitted_prisoner pp " +
       "   LEFT JOIN booker b ON b.id = pp.booker_id " +
@@ -20,7 +20,7 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   )
   fun findByBookerIdAndPrisonerId(bookerReference: String, prisonerId: String): PermittedPrisoner?
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Query(
     "Select pp.* FROM permitted_prisoner pp" +
       "   LEFT JOIN booker b ON b.id = pp.booker_id " +
