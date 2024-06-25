@@ -89,6 +89,10 @@ class BookerDetailsService(
     return bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
   }
 
+  private fun findBookerByEmail(emailAddress: String): Booker {
+    return bookerRepository.findByEmail(emailAddress) ?: throw BookerNotFoundException("Booker for email : $emailAddress not found")
+  }
+
   private fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
     return prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner with prisonNumber - $bookerReference/$prisonerId not found")
   }
@@ -146,5 +150,10 @@ class BookerDetailsService(
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
     prisoner.active = active
     return PermittedPrisonerDto(prisoner)
+  }
+
+  @Transactional(readOnly = true)
+  fun getBookerByEmail(emailAddress: String): BookerDto {
+    return BookerDto(findBookerByEmail(emailAddress))
   }
 }

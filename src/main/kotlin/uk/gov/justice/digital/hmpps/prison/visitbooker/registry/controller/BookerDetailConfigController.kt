@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -29,6 +30,8 @@ const val ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CON
 const val DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/deactivate"
 const val ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/activate"
 const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/deactivate"
+
+const val GET_BOOKER_USING_EMAIL: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/email/{emailAddress}"
 
 @RestController
 class BookerDetailConfigController(
@@ -265,5 +268,41 @@ class BookerDetailConfigController(
     visitorId: Long,
   ): PermittedVisitorDto {
     return bookerDetailsService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
+  }
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @GetMapping(GET_BOOKER_USING_EMAIL)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "get booker by email",
+    description = "get booker by email",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "has got booker by email",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "booker not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+    ],
+  )
+  fun getBookerByEmail(
+    @PathVariable(value = "emailAddress", required = true)
+    @NotBlank
+    emailAddress: String,
+  ): BookerDto {
+    return bookerDetailsService.getBookerByEmail(emailAddress)
   }
 }

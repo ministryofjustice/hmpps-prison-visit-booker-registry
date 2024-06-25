@@ -11,5 +11,5 @@ interface BookerRepository : JpaRepository<Booker, Long> {
 
   fun findByReference(reference: String): Booker?
 
-  fun findByEmail(authReference: String): Booker?
+  fun findByEmail(emailAddress: String): Booker?
 }
