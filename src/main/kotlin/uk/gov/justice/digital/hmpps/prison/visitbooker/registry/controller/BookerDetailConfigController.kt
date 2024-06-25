@@ -293,7 +293,7 @@ class BookerDetailConfigController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "visitor not found",
+        description = "booker not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
     ],
