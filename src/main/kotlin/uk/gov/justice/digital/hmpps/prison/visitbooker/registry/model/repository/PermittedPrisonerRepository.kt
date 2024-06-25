@@ -20,7 +20,6 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   )
   fun findByBookerIdAndPrisonerId(bookerReference: String, prisonerId: String): PermittedPrisoner?
 
-
   @Transactional
   @Query(
     "Select pp.* FROM permitted_prisoner pp" +
