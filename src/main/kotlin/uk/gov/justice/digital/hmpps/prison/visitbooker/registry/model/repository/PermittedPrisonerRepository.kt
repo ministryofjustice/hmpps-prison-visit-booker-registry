@@ -10,14 +10,13 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   fun findByBookerId(bookerId: Long): List<PermittedPrisoner>
   fun findByBookerIdAndActive(bookerId: Long, active: Boolean): List<PermittedPrisoner>
-  fun findByBookerIdAndPrisonerId(bookerId: Long, prisonerId: String): PermittedPrisoner?
 
   @Transactional
   @Query(
-    "Select pp.* FROM permitted_prisoner pp" +
+    "Select pp.* FROM permitted_prisoner pp " +
       "   LEFT JOIN booker b ON b.id = pp.booker_id " +
-      " WHERE b.referenc = :bookerReference AND prisoner_id=:prisonerId ",
+      " WHERE b.reference = :bookerReference AND prisoner_id=:prisonerId",
     nativeQuery = true,
   )
-  fun getBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner?
+  fun findByBookerIdAndPrisonerId(bookerReference: String, prisonerId: String): PermittedPrisoner?
 }

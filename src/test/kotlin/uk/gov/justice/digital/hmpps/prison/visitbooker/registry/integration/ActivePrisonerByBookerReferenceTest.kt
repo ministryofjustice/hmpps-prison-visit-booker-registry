@@ -57,10 +57,30 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // Given
     // When
-    val responseSpec = activatePrisonersByBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = activatePrisonersByBookerReference(webTestClient, "invalid-reference", prisonerId = prisoner1.prisonerId, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
+    responseSpec
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found")
+      .jsonPath("$.developerMessage")
+      .isEqualTo("Permitted prisoner with prisonNumber - invalid-reference/${prisoner1.prisonerId} not found")
+  }
+
+  @Test
+  fun `when invalid prisoner id then NOT_FOUND status is returned`() {
+    // Given
+    // When
+    val responseSpec = activatePrisonersByBookerReference(webTestClient, booker.reference, prisonerId = "invalid-prisoner-id", bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+    responseSpec
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found")
+      .jsonPath("$.developerMessage")
+      .isEqualTo("Permitted prisoner with prisonNumber - ${booker.reference}/invalid-prisoner-id not found")
   }
 
   @Test

@@ -31,7 +31,7 @@ class PermittedVisitor(
   val visitorId: Long,
 
   @Column(nullable = false)
-  val active: Boolean,
+  var active: Boolean,
 ) {
   @CreationTimestamp
   @Column
