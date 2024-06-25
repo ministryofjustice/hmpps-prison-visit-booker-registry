@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -46,21 +46,42 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk
     val associatedPrisoner = getResults(returnResult.expectBody())
 
-    Assertions.assertThat(associatedPrisoner.active).isTrue()
+    assertThat(associatedPrisoner.active).isTrue()
 
     val permittedPrisoners = prisonerRepository.findByBookerId(booker.id)
-    Assertions.assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isTrue
-    Assertions.assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isFalse
+    assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isTrue
+    assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isFalse
   }
 
   @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // Given
     // When
-    val responseSpec = activatePrisonersByBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", bookerConfigServiceRoleHttpHeaders)
+
+    val responseSpec = activatePrisonersByBookerReference(webTestClient, "invalid-reference", prisonerId = prisoner1.prisonerId, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
+    responseSpec
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found")
+      .jsonPath("$.developerMessage")
+      .isEqualTo("Permitted prisoner with prisonNumber - invalid-reference/${prisoner1.prisonerId} not found")
+  }
+
+  @Test
+  fun `when invalid prisoner id then NOT_FOUND status is returned`() {
+    // Given
+    // When
+    val responseSpec = activatePrisonersByBookerReference(webTestClient, booker.reference, prisonerId = "invalid-prisoner-id", bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+    responseSpec
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found")
+      .jsonPath("$.developerMessage")
+      .isEqualTo("Permitted prisoner with prisonNumber - ${booker.reference}/invalid-prisoner-id not found")
   }
 
   @Test

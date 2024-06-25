@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -19,12 +20,15 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH: String = "/public/booker/config"
 const val CLEAR_BOOKER_CONFIG_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
 const val ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/activate"
 const val DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/deactivate"
+const val ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/activate"
+const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/deactivate"
 
 @RestController
 class BookerDetailConfigController(
@@ -86,6 +90,11 @@ class BookerDetailConfigController(
         description = "Incorrect permissions for this action",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Booker not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
     ],
   )
   fun clearBookerDetails(
@@ -101,7 +110,7 @@ class BookerDetailConfigController(
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "activate booker prisoner",
-    description = "activate booker prisoners",
+    description = "activate booker prisoner",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -117,6 +126,11 @@ class BookerDetailConfigController(
         description = "Incorrect permissions for this action",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Prisoner not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
     ],
   )
   fun activateBookerPrisoner(
@@ -128,6 +142,48 @@ class BookerDetailConfigController(
     prisonerId: String,
   ): PermittedPrisonerDto {
     return bookerDetailsService.activateBookerPrisoner(bookerReference, prisonerId)
+  }
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @PutMapping(ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "activate booker prisoner visitor",
+    description = "activate booker prisoner visitor",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Have activated booker prisoner visitor",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visitor not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+    ],
+  )
+  fun activateBookerPrisonerVisitor(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+    @PathVariable(value = "visitorId", required = true)
+    @NotNull
+    visitorId: Long,
+  ): PermittedVisitorDto {
+    return bookerDetailsService.activateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
   }
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
@@ -151,6 +207,11 @@ class BookerDetailConfigController(
         description = "Incorrect permissions for this action",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Prisoner not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
     ],
   )
   fun deactivateBookerPrisoner(
@@ -162,5 +223,47 @@ class BookerDetailConfigController(
     prisonerId: String,
   ): PermittedPrisonerDto {
     return bookerDetailsService.deactivateBookerPrisoner(bookerReference, prisonerId)
+  }
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @PutMapping(DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "deactivate booker prisoner visitor",
+    description = "deactivate booker prisoner visitor",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Have deactivated booker prisoner visitor",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "visitor not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+    ],
+  )
+  fun deactivateBookerPrisonerVisitor(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+    @PathVariable(value = "visitorId", required = true)
+    @NotNull
+    visitorId: Long,
+  ): PermittedVisitorDto {
+    return bookerDetailsService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
   }
 }

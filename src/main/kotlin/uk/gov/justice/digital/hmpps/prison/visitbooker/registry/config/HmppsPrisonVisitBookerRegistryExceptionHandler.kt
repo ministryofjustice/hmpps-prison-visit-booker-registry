@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.VisitorForPrisonerBookerNotFoundException
 
 @RestControllerAdvice
 class HmppsPrisonVisitBookerRegistryExceptionHandler {
@@ -70,6 +71,20 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         ErrorResponse(
           status = NOT_FOUND,
           userMessage = "Permitted prisoner not found",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(VisitorForPrisonerBookerNotFoundException::class)
+  fun handleBookerPrisonerNotFoundException(e: VisitorForPrisonerBookerNotFoundException): ResponseEntity<ErrorResponse?>? {
+    log.debug("Visitor not found for prisoner booker exception caught: {}", e.message)
+    return ResponseEntity
+      .status(NOT_FOUND)
+      .body(
+        ErrorResponse(
+          status = NOT_FOUND,
+          userMessage = "Visitor not found",
           developerMessage = e.message,
         ),
       )
