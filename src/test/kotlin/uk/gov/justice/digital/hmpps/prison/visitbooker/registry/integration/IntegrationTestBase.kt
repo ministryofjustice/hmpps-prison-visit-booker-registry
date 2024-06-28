@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -9,8 +10,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
+import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CLEAR_BOOKER_CONFIG_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_VISITOR_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
@@ -19,6 +33,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -42,6 +57,9 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var bookerRepository: BookerRepository
+
+  @Autowired
+  protected lateinit var permittedPrisonerRepository: PermittedPrisonerRepository
 
   protected lateinit var orchestrationServiceRoleHttpHeaders: (HttpHeaders) -> Unit
   protected lateinit var bookerConfigServiceRoleHttpHeaders: (HttpHeaders) -> Unit
@@ -108,5 +126,71 @@ abstract class IntegrationTestBase {
 
   fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner, permittedVisitor: PermittedVisitor): PermittedVisitor {
     return entityHelper.createAssociatedPrisonerVisitor(permittedVisitor)
+  }
+
+  protected fun callCreateBooker(
+    authHttpHeaders: (HttpHeaders) -> Unit,
+    createBookerDto: CreateBookerDto,
+  ): ResponseSpec {
+    return webTestClient.put().uri(CREATE_BOOKER_PATH)
+      .headers(authHttpHeaders)
+      .body(BodyInserters.fromValue(createBookerDto))
+      .exchange()
+  }
+
+  protected fun callCreateBookerPrisoner(
+    authHttpHeaders: (HttpHeaders) -> Unit,
+    createPermittedPrisonerDto: CreatePermittedPrisonerDto,
+    bookerReference: String,
+  ): ResponseSpec {
+    val uri = CREATE_BOOKER_PRISONER_PATH.replace("{bookerReference}", bookerReference)
+    return webTestClient.put().uri(uri)
+      .headers(authHttpHeaders)
+      .body(BodyInserters.fromValue(createPermittedPrisonerDto))
+      .exchange()
+  }
+
+  protected fun callCreateBookerPrisonerVisitor(
+    authHttpHeaders: (HttpHeaders) -> Unit,
+    createPermittedVisitorDto: CreatePermittedVisitorDto,
+    bookerReference: String,
+    prisonerId: String,
+  ): ResponseSpec {
+    val uri = CREATE_BOOKER_PRISONER_VISITOR_PATH.replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerId)
+
+    return webTestClient.put().uri(uri)
+      .headers(authHttpHeaders)
+      .body(BodyInserters.fromValue(createPermittedVisitorDto))
+      .exchange()
+  }
+
+  protected fun assertError(responseSpec: ResponseSpec, userMessage: String, developerMessage: String, status: HttpStatus) {
+    responseSpec
+      .expectStatus().isEqualTo(status)
+      .expectBody()
+      .jsonPath("$.userMessage").value(Matchers.equalTo(userMessage))
+      .jsonPath("$.developerMessage").value(Matchers.containsString(developerMessage))
+  }
+
+  protected fun callClearBookerDetails(
+    authHttpHeaders: (HttpHeaders) -> Unit,
+    bookerReference: String,
+  ): ResponseSpec {
+    return webTestClient.delete().uri(CLEAR_BOOKER_CONFIG_CONTROLLER_PATH.replace("{bookerReference}", bookerReference))
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  protected fun getBookerDto(responseSpec: ResponseSpec): BookerDto {
+    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerDto::class.java)
+  }
+
+  protected fun getPermittedPrisonerDto(responseSpec: ResponseSpec): PermittedPrisonerDto {
+    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedPrisonerDto::class.java)
+  }
+
+  protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto {
+    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
   }
 }
