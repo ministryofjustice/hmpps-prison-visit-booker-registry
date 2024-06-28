@@ -53,7 +53,7 @@ class BookerDetailConfigController(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Have created or updated correctly",
+        description = "Have created booker correctly",
       ),
       ApiResponse(
         responseCode = "400",
@@ -87,7 +87,7 @@ class BookerDetailConfigController(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Have created or updated correctly",
+        description = "Have created booker prisoner correctly",
       ),
       ApiResponse(
         responseCode = "400",
@@ -119,12 +119,12 @@ class BookerDetailConfigController(
   @PutMapping(CREATE_BOOKER_PRISONER_VISITOR_PATH)
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(
-    summary = "Create booker prisoner details",
-    description = "Create booker prisoner details",
+    summary = "Create booker prisoner visitor details",
+    description = "Create booker prisoner visitor details",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Have created or updated correctly",
+        description = "Have created booker prisoner visitor correctly",
       ),
       ApiResponse(
         responseCode = "400",
