@@ -57,7 +57,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   }
 
   @ExceptionHandler(BookerAlreadyExistsException::class)
-  fun handleBookerNotFoundException(e: BookerAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
+  fun handleBookerAlreadyExistsException(e: BookerAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
     LOG.debug("Booker already exists exception caught: {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
@@ -71,7 +71,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   }
 
   @ExceptionHandler(BookerPrisonerAlreadyExistsException::class)
-  fun handleBookerNotFoundException(e: BookerPrisonerAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
+  fun handleBookerPrisonerAlreadyExistsException(e: BookerPrisonerAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
     LOG.debug("Booker prisoner already exists exception caught: {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
@@ -85,7 +85,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   }
 
   @ExceptionHandler(BookerPrisonerVisitorAlreadyExistsException::class)
-  fun handleBookerNotFoundException(e: BookerPrisonerVisitorAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
+  fun handleBookerPrisonerVisitorAlreadyExistsException(e: BookerPrisonerVisitorAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
     LOG.debug("Booker prisoner visitor already exists exception caught: {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
@@ -99,7 +99,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   }
 
   @ExceptionHandler(DataIntegrityViolationException::class)
-  fun handleBookerNotFoundException(e: DataIntegrityViolationException): ResponseEntity<ErrorResponse?>? {
+  fun handleDataIntegrityViolationException(e: DataIntegrityViolationException): ResponseEntity<ErrorResponse?>? {
     LOG.debug("DataBase exception caught: {}", e.message)
 
     return ResponseEntity
@@ -164,7 +164,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
     ).also { LOG.info("No resource found exception: {}", e.message) }
 
   @ExceptionHandler(MethodArgumentNotValidException::class)
-  fun handleValidationException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?>? {
+  fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?>? {
     LOG.info("Bad Request invalid argument {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
@@ -178,7 +178,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   }
 
   @ExceptionHandler(HandlerMethodValidationException::class)
-  fun handleValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse?>? {
+  fun handleMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse?>? {
     LOG.info("${e.statusCode} invalid argument {}", e.message)
     return ResponseEntity
       .status(e.statusCode)

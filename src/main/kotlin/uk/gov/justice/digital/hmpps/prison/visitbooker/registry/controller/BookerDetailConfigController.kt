@@ -104,6 +104,11 @@ class BookerDetailConfigController(
         description = "Incorrect permissions for this action",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The booker does not exist",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
     ],
   )
   fun createBookerPrisoner(
@@ -139,6 +144,11 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The booker or the booker prisoner does not exist",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
     ],

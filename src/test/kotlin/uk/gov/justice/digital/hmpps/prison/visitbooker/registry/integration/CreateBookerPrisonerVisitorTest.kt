@@ -30,7 +30,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visitor dose not exist then visitor is created`() {
+  fun `when visitor does not exist then visitor is created`() {
     // Given
     val createPrisoner = CreatePermittedVisitorDto(visitorId = 1233, active = true)
 
@@ -62,7 +62,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker reference not dose exist then exception is thrown`() {
+  fun `when booker reference not does exist then exception is thrown`() {
     // Given
     val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, active = true)
     val bookerReference = "IDontExist"
@@ -75,7 +75,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisonerId not dose exist then exception is thrown`() {
+  fun `when prisonerId not does exist then exception is thrown`() {
     // Given
     val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, active = true)
     val bookerReference = booker.reference

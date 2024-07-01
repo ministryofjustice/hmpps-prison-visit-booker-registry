@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBooker
 @DisplayName("Create booker $CREATE_BOOKER_PATH")
 class CreateBookerTest : IntegrationTestBase() {
   @Test
-  fun `when booker dose not exist then booker is created with all child objects`() {
+  fun `when booker does not exist then booker is created with all child objects`() {
     // Given
     val emailAddress = "aled@aled.com"
     val createBookerDto = CreateBookerDto(email = "aled@aled.com")
@@ -31,7 +31,7 @@ class CreateBookerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker dose exist then exception is thrown`() {
+  fun `when booker does exist then exception is thrown`() {
     // Given
     val emailAddress = "aled@aled.com"
 
