@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -84,7 +85,9 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
   fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
-    return entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
+    val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
+    booker.reference = QuotableEncoder(minLength = 10).encode(booker.id)
+    return entityHelper.saveBooker(booker)
   }
   fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner {
     return entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true))

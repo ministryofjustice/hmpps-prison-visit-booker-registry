@@ -27,8 +27,8 @@ class AuthService(
     if (authDetail.count == 0) {
       booker = bookerRepository.findByEmail(authDetail.email) ?: throw BookerNotFoundException("Booker for Email : ${authDetail.email} not found")
       booker.oneLoginSub = authDetail.oneLoginSub
-      // Create reference and then save TODO this should be using post persist, we using when we stop manual entry for bookers
-      if (booker.reference.isBlank()) {
+      // Create reference and then save
+      if (booker.reference.isNullOrBlank()) {
         booker.reference = bookerDetailsService.createBookerReference(booker.id)
       }
       booker = bookerRepository.saveAndFlush(booker)
