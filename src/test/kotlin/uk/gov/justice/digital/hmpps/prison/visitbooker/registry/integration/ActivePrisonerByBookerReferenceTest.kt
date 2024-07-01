@@ -64,9 +64,9 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     responseSpec
       .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found")
+      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found for booker")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Permitted prisoner with prisonNumber - invalid-reference/${prisoner1.prisonerId} not found")
+      .isEqualTo("Permitted prisoner for - invalid-reference/${prisoner1.prisonerId} not found")
   }
 
   @Test
@@ -79,9 +79,9 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     responseSpec
       .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found")
+      .jsonPath("$.userMessage").isEqualTo("Permitted prisoner not found for booker")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Permitted prisoner with prisonNumber - ${booker.reference}/invalid-prisoner-id not found")
+      .isEqualTo("Permitted prisoner for - ${booker.reference}/invalid-prisoner-id not found")
   }
 
   @Test

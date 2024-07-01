@@ -11,17 +11,26 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerVisitorAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.VisitorForPrisonerBookerNotFoundException
+import java.util.*
 
 @RestControllerAdvice
 class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
+  private companion object {
+    private val LOG = LoggerFactory.getLogger(this::class.java)
+  }
+
   @ExceptionHandler(org.springframework.security.access.AccessDeniedException::class)
   fun handleAccessDeniedException(e: org.springframework.security.access.AccessDeniedException): ResponseEntity<ErrorResponse?>? {
-    log.debug("Access denied exception caught: {}", e.message)
+    LOG.debug("Access denied exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.FORBIDDEN)
       .body(
@@ -35,7 +44,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   @ExceptionHandler(BookerNotFoundException::class)
   fun handleBookerNotFoundException(e: BookerNotFoundException): ResponseEntity<ErrorResponse?>? {
-    log.debug("Booker found exception caught: {}", e.message)
+    LOG.debug("Booker found exception caught: {}", e.message)
     return ResponseEntity
       .status(NOT_FOUND)
       .body(
@@ -47,9 +56,51 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
       )
   }
 
+  @ExceptionHandler(BookerAlreadyExistsException::class)
+  fun handleBookerAlreadyExistsException(e: BookerAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
+    LOG.debug("Booker already exists exception caught: {}", e.message)
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "Booker already exists",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(BookerPrisonerAlreadyExistsException::class)
+  fun handleBookerPrisonerAlreadyExistsException(e: BookerPrisonerAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
+    LOG.debug("Booker prisoner already exists exception caught: {}", e.message)
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "Booker prisoner already exists",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(BookerPrisonerVisitorAlreadyExistsException::class)
+  fun handleBookerPrisonerVisitorAlreadyExistsException(e: BookerPrisonerVisitorAlreadyExistsException): ResponseEntity<ErrorResponse?>? {
+    LOG.debug("Booker prisoner visitor already exists exception caught: {}", e.message)
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "Booker prisoner visitor already exists",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
   @ExceptionHandler(DataIntegrityViolationException::class)
-  fun handleBookerNotFoundException(e: DataIntegrityViolationException): ResponseEntity<ErrorResponse?>? {
-    log.debug("DataBase exception caught: {}", e.message)
+  fun handleDataIntegrityViolationException(e: DataIntegrityViolationException): ResponseEntity<ErrorResponse?>? {
+    LOG.debug("DataBase exception caught: {}", e.message)
 
     return ResponseEntity
       .status(BAD_REQUEST)
@@ -64,13 +115,13 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   @ExceptionHandler(PrisonerForBookerNotFoundException::class)
   fun handleBookerPrisonerNotFoundException(e: PrisonerForBookerNotFoundException): ResponseEntity<ErrorResponse?>? {
-    log.debug("Permitted prisoner not found for booker exception caught: {}", e.message)
+    LOG.debug("Permitted prisoner not found for booker exception caught: {}", e.message)
     return ResponseEntity
       .status(NOT_FOUND)
       .body(
         ErrorResponse(
           status = NOT_FOUND,
-          userMessage = "Permitted prisoner not found",
+          userMessage = "Permitted prisoner not found for booker",
           developerMessage = e.message,
         ),
       )
@@ -78,7 +129,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   @ExceptionHandler(VisitorForPrisonerBookerNotFoundException::class)
   fun handleBookerPrisonerNotFoundException(e: VisitorForPrisonerBookerNotFoundException): ResponseEntity<ErrorResponse?>? {
-    log.debug("Visitor not found for prisoner booker exception caught: {}", e.message)
+    LOG.debug("Visitor not found for prisoner booker exception caught: {}", e.message)
     return ResponseEntity
       .status(NOT_FOUND)
       .body(
@@ -99,7 +150,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         userMessage = "Validation failure: ${e.message}",
         developerMessage = e.message,
       ),
-    ).also { log.info("Validation exception: {}", e.message) }
+    ).also { LOG.info("Validation exception: {}", e.message) }
 
   @ExceptionHandler(NoResourceFoundException::class)
   fun handleNoResourceFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> = ResponseEntity
@@ -110,11 +161,11 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         userMessage = "No resource found failure: ${e.message}",
         developerMessage = e.message,
       ),
-    ).also { log.info("No resource found exception: {}", e.message) }
+    ).also { LOG.info("No resource found exception: {}", e.message) }
 
   @ExceptionHandler(MethodArgumentNotValidException::class)
-  fun handleValidationException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?>? {
-    log.info("Bad Request invalid argument {}", e.message)
+  fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?>? {
+    LOG.info("Bad Request invalid argument {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
       .body(
@@ -126,6 +177,30 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
       )
   }
 
+  @ExceptionHandler(HandlerMethodValidationException::class)
+  fun handleMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse?>? {
+    LOG.info("${e.statusCode} invalid argument {}", e.message)
+    return ResponseEntity
+      .status(e.statusCode)
+      .body(
+        ErrorResponse(
+          status = e.statusCode.value(),
+          userMessage = "Invalid Argument in request",
+          developerMessage = getJSRMessage(e),
+        ),
+      )
+  }
+
+  private fun getJSRMessage(e: HandlerMethodValidationException): String {
+    val errorMessage = StringJoiner(", ")
+    e.allValidationResults.forEach {
+      it.resolvableErrors.forEach {
+        errorMessage.add(it.codes?.first() ?: it.defaultMessage)
+      }
+    }
+    return errorMessage.toString()
+  }
+
   @ExceptionHandler(Exception::class)
   fun handleException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(INTERNAL_SERVER_ERROR)
@@ -135,11 +210,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         userMessage = "Unexpected error: ${e.message}",
         developerMessage = e.message,
       ),
-    ).also { log.error("Unexpected exception", e) }
-
-  private companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
+    ).also { LOG.error("Unexpected exception", e) }
 }
 
 data class ErrorResponse(

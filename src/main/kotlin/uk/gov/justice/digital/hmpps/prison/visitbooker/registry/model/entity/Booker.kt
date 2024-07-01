@@ -8,11 +8,9 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
-import jakarta.persistence.PostPersist
 import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
 import java.time.LocalDateTime
 
 @Entity
@@ -40,13 +38,6 @@ class Booker(
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "booker", orphanRemoval = true)
   val permittedPrisoners: MutableList<PermittedPrisoner> = mutableListOf()
-
-  @PostPersist
-  fun createReference() {
-    if (reference.isBlank()) {
-      reference = QuotableEncoder(minLength = 10).encode(id)
-    }
-  }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

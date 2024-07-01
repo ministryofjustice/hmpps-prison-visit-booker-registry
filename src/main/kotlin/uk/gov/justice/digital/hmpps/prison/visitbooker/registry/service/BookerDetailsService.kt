@@ -3,10 +3,14 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerVisitorAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.VisitorForPrisonerBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
@@ -15,6 +19,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
 
 @Service
 class BookerDetailsService(
@@ -24,19 +29,62 @@ class BookerDetailsService(
 ) {
 
   @Transactional
-  fun createOrUpdateBookerDetails(createBookerDto: CreateBookerDto): BookerDto {
-    val booker = bookerRepository.findByEmail(createBookerDto.email)?.let {
-      if (it.permittedPrisoners.isNotEmpty()) {
-        // clear child objects from booker
-        it.permittedPrisoners.clear()
-      }
-      bookerRepository.saveAndFlush(it)
-    } ?: run {
-      bookerRepository.saveAndFlush(Booker(email = createBookerDto.email))
+  fun create(emailAddress: String): BookerDto {
+    bookerRepository.findByEmail(emailAddress)?.let {
+      throw BookerAlreadyExistsException("The given email address already exists")
     }
 
-    val saveBooker = createChildObjects(createBookerDto, booker)
-    return BookerDto(saveBooker)
+    val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress))
+    booker.reference = createBookerReference(booker.id)
+    return BookerDto(booker)
+  }
+
+  @Transactional
+  fun createBookerPrisoner(bookerReference: String, createPermittedPrisonerDto: CreatePermittedPrisonerDto): PermittedPrisonerDto {
+    val booker = getBooker(bookerReference)
+    if (booker.permittedPrisoners.any { createPermittedPrisonerDto.prisonerId == it.prisonerId }) {
+      throw BookerPrisonerAlreadyExistsException("BookerPrisoner for $bookerReference already exists")
+    }
+
+    val permittedPrisoner = prisonerRepository.saveAndFlush(
+      PermittedPrisoner(
+        bookerId = booker.id,
+        booker = booker,
+        prisonerId = createPermittedPrisonerDto.prisonerId,
+        active = createPermittedPrisonerDto.active,
+      ),
+    )
+
+    booker.permittedPrisoners.add(permittedPrisoner)
+
+    return PermittedPrisonerDto(permittedPrisoner)
+  }
+
+  @Transactional
+  fun createBookerPrisonerVisitor(bookerReference: String, prisonerId: String, createPermittedVisitorDto: CreatePermittedVisitorDto): PermittedVisitorDto {
+    val bookerPrisoner = getPermittedPrisoner(bookerReference, prisonerId)
+
+    if (bookerPrisoner.permittedVisitors.any { createPermittedVisitorDto.visitorId == it.visitorId }) {
+      throw BookerPrisonerVisitorAlreadyExistsException("BookerPrisonerVisitor for $bookerReference/$prisonerId already exists")
+    }
+
+    val permittedVisitor = visitorRepository.saveAndFlush(
+      PermittedVisitor(
+        permittedPrisonerId = bookerPrisoner.id,
+        permittedPrisoner = bookerPrisoner,
+        visitorId = createPermittedVisitorDto.visitorId,
+        active = createPermittedVisitorDto.active,
+      ),
+    )
+    bookerPrisoner.permittedVisitors.add(permittedVisitor)
+
+    return PermittedVisitorDto(permittedVisitor)
+  }
+
+  fun createBookerReference(bookerId: Long): String {
+    return bookerRepository.findByBookerId(bookerId) ?: run {
+      QuotableEncoder(minLength = 10).encode(bookerId)
+    }
   }
 
   @Transactional
@@ -94,37 +142,7 @@ class BookerDetailsService(
   }
 
   private fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
-    return prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner with prisonNumber - $bookerReference/$prisonerId not found")
-  }
-
-  private fun createChildObjects(
-    createBookerDto: CreateBookerDto,
-    booker: Booker,
-  ): Booker {
-    createBookerDto.permittedPrisoners.forEach { prisonerDto ->
-      val permittedPrisoner = prisonerRepository.saveAndFlush(
-        PermittedPrisoner(
-          bookerId = booker.id,
-          booker = booker,
-          prisonerId = prisonerDto.prisonerId,
-          active = true,
-        ),
-      )
-      prisonerDto.visitorIds.forEach {
-        val permittedVisitor = visitorRepository.saveAndFlush(
-          PermittedVisitor(
-            permittedPrisonerId = permittedPrisoner.id,
-            permittedPrisoner = permittedPrisoner,
-            visitorId = it,
-            active = true,
-          ),
-        )
-        permittedPrisoner.permittedVisitors.add(permittedVisitor)
-      }
-      booker.permittedPrisoners.add(permittedPrisoner)
-    }
-
-    return bookerRepository.saveAndFlush(booker)
+    return prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
   }
 
   private fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor {
