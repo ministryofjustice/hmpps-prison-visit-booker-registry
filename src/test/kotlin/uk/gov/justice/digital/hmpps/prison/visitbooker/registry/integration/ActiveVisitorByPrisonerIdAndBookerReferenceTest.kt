@@ -73,7 +73,7 @@ class ActiveVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when invalid reference then NOT_FOUND status is returned`() {
+  fun `when invalid booker reference then NOT_FOUND status is returned`() {
     // Given
     // When
     val responseSpec = activateVisitorByPrisonerIsAndBookerReference(webTestClient, "invalid-reference", prisoner.prisonerId, visitor1.visitorId, bookerConfigServiceRoleHttpHeaders)
