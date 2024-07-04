@@ -82,9 +82,11 @@ class BookerDetailsService(
   }
 
   fun createBookerReference(bookerId: Long): String {
-    return bookerRepository.findByBookerId(bookerId) ?: run {
-      QuotableEncoder(minLength = 10).encode(bookerId)
+    val existingReference = bookerRepository.findByBookerId(bookerId)
+    if (existingReference.isNullOrBlank()) {
+      return QuotableEncoder(minLength = 10).encode(bookerId)
     }
+    return existingReference
   }
 
   @Transactional
