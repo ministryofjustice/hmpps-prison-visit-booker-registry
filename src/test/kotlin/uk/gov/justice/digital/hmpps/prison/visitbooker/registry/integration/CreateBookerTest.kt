@@ -16,15 +16,20 @@ class CreateBookerTest : IntegrationTestBase() {
   fun `when booker does not exist then booker is created with all child objects`() {
     // Given
     val emailAddress = "aled@aled.com"
-    val createBookerDto = CreateBookerDto(email = "aled@aled.com")
+    val createBookerDto = CreateBookerDto(email = emailAddress)
 
     // When
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
 
     // Then
     responseSpec.expectStatus().isCreated
+
+    val createdEntity = bookerRepository.findByEmail(emailAddress)
+    assertThat(createdEntity).isNotNull
+
     val dto = getBookerDto(responseSpec)
-    assertThat(dto.reference).isNotNull()
+    assertThat(dto.reference).hasSizeGreaterThan(9)
+    assertThat(dto.reference).isEqualTo(createdEntity!!.reference)
     assertThat(dto.oneLoginSub).isNull()
     assertThat(dto.email).isEqualTo(emailAddress)
     assertThat(dto.permittedPrisoners).isEmpty()

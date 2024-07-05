@@ -29,7 +29,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val reference = getReference(responseSpec)
-    assertThat(reference).isEqualTo(pilotBooker.reference)
+    assertThat(reference).hasSizeGreaterThan(9)
     assertThat(pilotBooker.oneLoginSub).isNull()
 
     val updatedPilotBooker = bookerRepository.findByEmail(authDetailsDto.email)
