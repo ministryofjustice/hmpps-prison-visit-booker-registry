@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
@@ -16,8 +17,14 @@ class AuthService(
   private val bookerDetailsService: BookerDetailsService,
 ) {
 
+  private companion object {
+    private val LOG = LoggerFactory.getLogger(this::class.java)
+  }
+
   @Transactional
   fun bookerAuthorisation(createBookerAuthDetailDto: AuthDetailDto): String {
+    LOG.info("Enter AuthService bookerAuthorisation")
+
     val authDetail = saveOrGet(createBookerAuthDetailDto)
     return match(authDetail).reference
   }
@@ -28,7 +35,8 @@ class AuthService(
       booker = bookerRepository.findByEmail(authDetail.email) ?: throw BookerNotFoundException("Booker for Email : ${authDetail.email} not found")
       booker.oneLoginSub = authDetail.oneLoginSub
       // Create reference and then save
-      if (booker.reference.isNullOrBlank()) {
+      if (booker.reference.isBlank()) {
+        LOG.info("Generating booker reference")
         booker.reference = bookerDetailsService.createBookerReference(booker.id)
       }
       booker = bookerRepository.saveAndFlush(booker)
