@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
@@ -28,21 +29,31 @@ class BookerDetailsService(
   private val visitorRepository: PermittedVisitorRepository,
 ) {
 
+  private companion object {
+    private val LOG = LoggerFactory.getLogger(this::class.java)
+  }
+
   @Transactional
   fun create(emailAddress: String): BookerDto {
+    LOG.info("Enter BookerDetailsService create")
     bookerRepository.findByEmail(emailAddress)?.let {
+      LOG.error("Found existing user for given email address")
       throw BookerAlreadyExistsException("The given email address already exists")
     }
 
     val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress))
     booker.reference = createBookerReference(booker.id)
+    LOG.info("Booker created, returning new booker with reference {}", booker.reference)
     return BookerDto(booker)
   }
 
   @Transactional
   fun createBookerPrisoner(bookerReference: String, createPermittedPrisonerDto: CreatePermittedPrisonerDto): PermittedPrisonerDto {
+    LOG.info("Enter BookerDetailsService createBookerPrisoner for booker {}", bookerReference)
+
     val booker = getBooker(bookerReference)
     if (booker.permittedPrisoners.any { createPermittedPrisonerDto.prisonerId == it.prisonerId }) {
+      LOG.error("Prisoner already exists for booker {}", bookerReference)
       throw BookerPrisonerAlreadyExistsException("BookerPrisoner for $bookerReference already exists")
     }
 
@@ -57,14 +68,18 @@ class BookerDetailsService(
 
     booker.permittedPrisoners.add(permittedPrisoner)
 
+    LOG.info("Prisoner added to permitted prisoners for booker {}", bookerReference)
     return PermittedPrisonerDto(permittedPrisoner)
   }
 
   @Transactional
   fun createBookerPrisonerVisitor(bookerReference: String, prisonerId: String, createPermittedVisitorDto: CreatePermittedVisitorDto): PermittedVisitorDto {
+    LOG.info("Enter BookerDetailsService createBookerPrisonerVisitor for booker {}", bookerReference)
+
     val bookerPrisoner = getPermittedPrisoner(bookerReference, prisonerId)
 
     if (bookerPrisoner.permittedVisitors.any { createPermittedVisitorDto.visitorId == it.visitorId }) {
+      LOG.error("Visitor already exists for booker {}", bookerReference)
       throw BookerPrisonerVisitorAlreadyExistsException("BookerPrisonerVisitor for $bookerReference/$prisonerId already exists")
     }
 
@@ -78,10 +93,13 @@ class BookerDetailsService(
     )
     bookerPrisoner.permittedVisitors.add(permittedVisitor)
 
+    LOG.info("Visitor added to permitted visitors for booker {}", bookerReference)
     return PermittedVisitorDto(permittedVisitor)
   }
 
   fun createBookerReference(bookerId: Long): String {
+    LOG.info("Enter BookerDetailsService createBookerReference for bookerId {}", bookerId)
+
     val existingReference = bookerRepository.findByBookerId(bookerId)
     if (existingReference.isNullOrBlank()) {
       return QuotableEncoder(minLength = 10).encode(bookerId)
@@ -91,6 +109,8 @@ class BookerDetailsService(
 
   @Transactional
   fun clearBookerDetails(bookerReference: String): BookerDto {
+    LOG.info("Enter BookerDetailsService clearBookerDetails for booker {}", bookerReference)
+
     val booker = getBooker(bookerReference)
     booker.permittedPrisoners.clear()
     return BookerDto(bookerRepository.saveAndFlush(booker))
@@ -98,6 +118,8 @@ class BookerDetailsService(
 
   @Transactional(readOnly = true)
   fun getPermittedPrisoners(reference: String, active: Boolean?): List<PermittedPrisonerDto> {
+    LOG.info("Enter BookerDetailsService getPermittedPrisoners for booker {}", reference)
+
     val bookerByReference = getBooker(reference)
     val associatedPrisoners =
       active?.let {
@@ -108,6 +130,8 @@ class BookerDetailsService(
 
   @Transactional(readOnly = true)
   fun getPermittedVisitors(bookerReference: String, prisonerId: String, active: Boolean?): List<PermittedVisitorDto> {
+    LOG.info("Enter BookerDetailsService getPermittedVisitors for booker {}", bookerReference)
+
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
     val visitors = active?.let {
       visitorRepository.findByPermittedPrisonerIdAndActive(prisoner.id, active)
@@ -117,22 +141,32 @@ class BookerDetailsService(
 
   @Transactional
   fun activateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
+    LOG.info("Enter BookerDetailsService activateBookerPrisoner for booker {}", bookerReference)
     return setPrisonerBooker(bookerReference, prisonerId, true)
   }
 
   @Transactional
   fun deactivateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
+    LOG.info("Enter BookerDetailsService deactivateBookerPrisoner for booker {}", bookerReference)
     return setPrisonerBooker(bookerReference, prisonerId, false)
   }
 
   @Transactional
   fun activateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
+    LOG.info("Enter BookerDetailsService activateBookerPrisonerVisitor for booker {}", bookerReference)
     return setVisitorPrisonerBooker(bookerReference, prisonerId, visitorId, true)
   }
 
   @Transactional
   fun deactivateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
+    LOG.info("Enter BookerDetailsService deactivateBookerPrisonerVisitor for booker {}", bookerReference)
     return setVisitorPrisonerBooker(bookerReference, prisonerId, visitorId, false)
+  }
+
+  @Transactional(readOnly = true)
+  fun getBookerByEmail(emailAddress: String): BookerDto {
+    LOG.info("Enter BookerDetailsService getBookerByEmail")
+    return BookerDto(findBookerByEmail(emailAddress))
   }
 
   private fun getBooker(bookerReference: String): Booker {
@@ -170,10 +204,5 @@ class BookerDetailsService(
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
     prisoner.active = active
     return PermittedPrisonerDto(prisoner)
-  }
-
-  @Transactional(readOnly = true)
-  fun getBookerByEmail(emailAddress: String): BookerDto {
-    return BookerDto(findBookerByEmail(emailAddress))
   }
 }
