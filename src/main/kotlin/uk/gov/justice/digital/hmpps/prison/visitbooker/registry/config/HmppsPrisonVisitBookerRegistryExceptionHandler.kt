@@ -44,7 +44,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   @ExceptionHandler(BookerNotFoundException::class)
   fun handleBookerNotFoundException(e: BookerNotFoundException): ResponseEntity<ErrorResponse?>? {
-    LOG.debug("Booker found exception caught: {}", e.message)
+    LOG.debug("Booker not found exception caught: {}", e.message)
     return ResponseEntity
       .status(NOT_FOUND)
       .body(
