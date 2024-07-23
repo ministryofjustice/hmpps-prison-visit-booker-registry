@@ -60,7 +60,6 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     // authDetailsDto has email address in lower case
     val authDetailsDto = AuthDetailDto("IamASub", emailAddress.lowercase(), "0123456789")
 
-
     // When
     val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
 
