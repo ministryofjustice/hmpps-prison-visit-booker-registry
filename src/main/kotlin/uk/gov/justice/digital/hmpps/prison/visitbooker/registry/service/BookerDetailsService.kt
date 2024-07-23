@@ -36,14 +36,14 @@ class BookerDetailsService(
   @Transactional
   fun create(emailAddress: String): BookerDto {
     LOG.info("Enter BookerDetailsService create")
-    bookerRepository.findByEmail(emailAddress)?.let {
-      LOG.error("Found existing user for given email address")
-      throw BookerAlreadyExistsException("The given email address already exists")
+    bookerRepository.findByEmailIgnoreCase(emailAddress)?.let {
+      LOG.error("Found existing user for given email address - {}", emailAddress)
+      throw BookerAlreadyExistsException("The given email address - $emailAddress already exists")
     }
 
     val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress))
     booker.reference = createBookerReference(booker.id)
-    LOG.info("Booker created, returning new booker with reference {}", booker.reference)
+    LOG.info("Booker created with email address - {}, returning new booker with reference {}", emailAddress, booker.reference)
     return BookerDto(booker)
   }
 
@@ -174,7 +174,7 @@ class BookerDetailsService(
   }
 
   private fun findBookerByEmail(emailAddress: String): Booker {
-    return bookerRepository.findByEmail(emailAddress) ?: throw BookerNotFoundException("Booker for email : $emailAddress not found")
+    return bookerRepository.findByEmailIgnoreCase(emailAddress) ?: throw BookerNotFoundException("Booker for email : $emailAddress not found")
   }
 
   private fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {

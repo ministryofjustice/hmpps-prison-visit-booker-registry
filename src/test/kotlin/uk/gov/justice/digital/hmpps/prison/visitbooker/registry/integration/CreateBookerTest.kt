@@ -24,7 +24,7 @@ class CreateBookerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isCreated
 
-    val createdEntity = bookerRepository.findByEmail(emailAddress)
+    val createdEntity = bookerRepository.findByEmailIgnoreCase(emailAddress)
     assertThat(createdEntity).isNotNull
 
     val dto = getBookerDto(responseSpec)
@@ -50,7 +50,7 @@ class CreateBookerTest : IntegrationTestBase() {
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
 
     // Then
-    assertError(responseSpec, "Booker already exists", "The given email address already exists", BAD_REQUEST)
+    assertError(responseSpec, "Booker already exists", "The given email address - $emailAddress already exists", BAD_REQUEST)
   }
 
   @Test

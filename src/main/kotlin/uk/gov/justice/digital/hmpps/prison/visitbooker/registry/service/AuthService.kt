@@ -32,7 +32,7 @@ class AuthService(
   private fun match(authDetail: AuthDetail): Booker {
     var booker: Booker
     if (authDetail.count == 0) {
-      booker = bookerRepository.findByEmail(authDetail.email) ?: throw BookerNotFoundException("Booker for Email : ${authDetail.email} not found")
+      booker = bookerRepository.findByEmailIgnoreCase(authDetail.email) ?: throw BookerNotFoundException("Booker for Email : ${authDetail.email} not found")
       booker.oneLoginSub = authDetail.oneLoginSub
       // Create reference and then save
       if (booker.reference.isBlank()) {

@@ -32,7 +32,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     assertThat(reference).hasSizeGreaterThan(9)
     assertThat(pilotBooker.oneLoginSub).isNull()
 
-    val updatedPilotBooker = bookerRepository.findByEmail(authDetailsDto.email)
+    val updatedPilotBooker = bookerRepository.findByEmailIgnoreCase(authDetailsDto.email)
     assertThat(updatedPilotBooker).isNotNull
     updatedPilotBooker?.let {
       assertThat(it.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)
@@ -47,6 +47,28 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
       assertThat(it.phoneNumber).isEqualTo(authDetailsDto.phoneNumber)
       assertThat(it.count).isEqualTo(0)
     }
+  }
+
+  @Test
+  fun `when auth details are submitted for the first time but the email address is in a different case even then a reference is returned and data auth is saved`() {
+    // Given
+    val emailAddress = "aled.evans@govt.com"
+
+    // booker details email address is all upper case
+    val pilotBooker = bookerRepository.saveAndFlush(Booker(email = emailAddress.uppercase()))
+
+    // authDetailsDto has email address in lower case
+    val authDetailsDto = AuthDetailDto("IamASub", emailAddress.lowercase(), "0123456789")
+
+
+    // When
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val reference = getReference(responseSpec)
+    assertThat(reference).hasSizeGreaterThan(9)
+    assertThat(pilotBooker.oneLoginSub).isNull()
   }
 
   @Test
@@ -79,7 +101,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val reference = getReference(responseSpec)
     assertThat(reference).isEqualTo(pilotBooker.reference)
 
-    val updatedPilotBooker = bookerRepository.findByEmail(originalEmail)
+    val updatedPilotBooker = bookerRepository.findByEmailIgnoreCase(originalEmail)
     assertThat(updatedPilotBooker).isNotNull
     updatedPilotBooker?.let {
       assertThat(it.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)

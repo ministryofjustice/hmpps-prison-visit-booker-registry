@@ -12,7 +12,7 @@ interface BookerRepository : JpaRepository<Booker, Long> {
 
   fun findByReference(reference: String): Booker?
 
-  fun findByEmail(emailAddress: String): Booker?
+  fun findByEmailIgnoreCase(emailAddress: String): Booker?
 
   @Query(
     "SELECT reference FROM booker WHERE id = :id ",
