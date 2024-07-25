@@ -27,10 +27,10 @@ dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.5.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.6.0")
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2")
-  implementation("org.springframework.data:spring-data-commons:3.3.1")
+  implementation("org.springframework.data:spring-data-commons:3.3.2")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
   implementation("org.springdoc:springdoc-openapi-starter-common:2.6.0")
@@ -52,9 +52,9 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.12.6")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:postgresql:1.19.8")
-  testImplementation("org.testcontainers:localstack:1.19.8")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.759")
+  testImplementation("org.testcontainers:postgresql:1.20.0")
+  testImplementation("org.testcontainers:localstack:1.20.0")
+  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.765")
   testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2")
 }
 
