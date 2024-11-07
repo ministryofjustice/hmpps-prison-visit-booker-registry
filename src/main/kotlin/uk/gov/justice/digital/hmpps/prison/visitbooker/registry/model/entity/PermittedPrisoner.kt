@@ -33,7 +33,7 @@ class PermittedPrisoner(
   @Column(name = "prisoner_id", nullable = false)
   val prisonerId: String,
 
-  @Column(name = "prison_code", nullable = true)
+  @Column(name = "prison_code", nullable = false)
   val prisonCode: String,
 
   @Column(name = "active", nullable = false)
