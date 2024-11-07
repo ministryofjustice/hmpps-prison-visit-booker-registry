@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEnc
 abstract class IntegrationTestBase {
   companion object {
     val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    const val PRISON_CODE = "HEI"
   }
 
   @Autowired
@@ -90,7 +91,7 @@ abstract class IntegrationTestBase {
     return entityHelper.saveBooker(booker)
   }
   fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner {
-    return entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true))
+    return entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true, prisonCode = PRISON_CODE))
   }
 
   fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor {
@@ -104,7 +105,7 @@ abstract class IntegrationTestBase {
   ): List<PermittedPrisoner> {
     val permittedPrisonerList = mutableListOf<PermittedPrisoner>()
     associatedPrisoners.forEach {
-      val permittedPrisoner = createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, active = it.isActive))
+      val permittedPrisoner = createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, active = it.isActive, prisonCode = PRISON_CODE))
       permittedPrisonerList.add(permittedPrisoner)
       createAssociatedPrisonersVisitors(permittedPrisoner, visitors)
     }
