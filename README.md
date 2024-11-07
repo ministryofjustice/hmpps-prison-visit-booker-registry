@@ -4,7 +4,6 @@
 
 This is a Spring Boot application, written in Kotlin, providing API services for prison visit booker. Used by [Visits UI](https://github.com/ministryofjustice/book-a-prison-visit-staff-ui).
 
-
 ## Building
 
 To build the project (without tests):
