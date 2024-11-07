@@ -20,7 +20,7 @@ data class PermittedPrisonerDto(
   val active: Boolean,
 
   @JsonProperty("prisonCode")
-  @Schema(description = "Prison Code", example = "HEI", required = true)
+  @Schema(description = "prison code", example = "MDI", required = true)
   @field:NotNull
   val prisonCode: String,
 
