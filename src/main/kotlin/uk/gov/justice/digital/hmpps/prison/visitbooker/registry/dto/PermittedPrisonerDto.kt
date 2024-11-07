@@ -19,6 +19,11 @@ data class PermittedPrisonerDto(
   @field:NotNull
   val active: Boolean,
 
+  @JsonProperty("prisonCode")
+  @Schema(description = "prison code", example = "MDI", required = true)
+  @field:NotNull
+  val prisonCode: String,
+
   @JsonProperty("permittedVisitors")
   @Schema(description = "Permitted visitors", required = true)
   @field:Valid
@@ -27,6 +32,7 @@ data class PermittedPrisonerDto(
   constructor(permittedPrisoner: PermittedPrisoner) : this(
     prisonerId = permittedPrisoner.prisonerId,
     active = permittedPrisoner.active,
+    prisonCode = permittedPrisoner.prisonCode,
     permittedVisitors = permittedPrisoner.permittedVisitors.map { PermittedVisitorDto(it) },
   )
 }

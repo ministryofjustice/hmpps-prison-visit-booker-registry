@@ -63,6 +63,7 @@ class BookerDetailsService(
         booker = booker,
         prisonerId = createPermittedPrisonerDto.prisonerId,
         active = createPermittedPrisonerDto.active,
+        prisonCode = createPermittedPrisonerDto.prisonCode,
       ),
     )
 
