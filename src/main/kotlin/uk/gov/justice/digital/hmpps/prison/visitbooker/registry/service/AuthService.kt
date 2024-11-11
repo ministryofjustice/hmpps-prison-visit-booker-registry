@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.AuthDetail
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository

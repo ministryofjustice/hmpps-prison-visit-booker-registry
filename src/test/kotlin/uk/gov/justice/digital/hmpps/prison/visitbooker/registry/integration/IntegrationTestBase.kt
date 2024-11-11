@@ -2,8 +2,11 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import org.hamcrest.Matchers
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +31,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVis
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
@@ -41,8 +45,22 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEnc
 @ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
-    val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    val objectMapper: ObjectMapper = ObjectMapper().registerModules(JavaTimeModule(), kotlinModule())
     const val PRISON_CODE = "HEI"
+
+    internal val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer()
+
+    @BeforeAll
+    @JvmStatic
+    fun startMocks() {
+      prisonOffenderSearchMockServer.start()
+    }
+
+    @AfterAll
+    @JvmStatic
+    fun stopMocks() {
+      prisonOffenderSearchMockServer.stop()
+    }
   }
 
   @Autowired
@@ -72,6 +90,11 @@ abstract class IntegrationTestBase {
       setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE"))
     bookerConfigServiceRoleHttpHeaders =
       setAuthorisation(roles = listOf("ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG"))
+  }
+
+  @BeforeEach
+  fun resetStubs() {
+    prisonOffenderSearchMockServer.resetAll()
   }
 
   @AfterEach

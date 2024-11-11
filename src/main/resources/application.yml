@@ -87,3 +87,5 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+
+prisoner.search.timeout: 10s
