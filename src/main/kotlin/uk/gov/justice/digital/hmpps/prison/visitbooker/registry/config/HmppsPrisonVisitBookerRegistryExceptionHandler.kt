@@ -220,7 +220,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
       .status(HttpStatus.UNPROCESSABLE_ENTITY)
       .body(
         ValidationErrorResponse(
-          validationErrorCodes = e.errorCodes.map { it.name }.toList(),
+          validationErrors = e.errorCodes.map { it.name }.toList(),
         ),
       )
   }
@@ -244,5 +244,5 @@ open class ErrorResponse(
 }
 
 data class ValidationErrorResponse(
-  val validationErrorCodes: List<String>,
+  val validationErrors: List<String>,
 ) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY)

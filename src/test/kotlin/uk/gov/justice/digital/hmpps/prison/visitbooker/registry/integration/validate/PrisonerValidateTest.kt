@@ -70,8 +70,8 @@ class PrisonerValidateTest : IntegrationTestBase() {
     // Then
     val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(returnResult)
-    Assertions.assertThat(errorResponse.validationErrorCodes.size).isEqualTo(1)
-    Assertions.assertThat(errorResponse.validationErrorCodes[0]).isEqualTo(PRISONER_RELEASED.name)
+    Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_RELEASED.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
   }
 
@@ -86,8 +86,8 @@ class PrisonerValidateTest : IntegrationTestBase() {
     // Then
     val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(returnResult)
-    Assertions.assertThat(errorResponse.validationErrorCodes.size).isEqualTo(1)
-    Assertions.assertThat(errorResponse.validationErrorCodes[0]).isEqualTo(PRISONER_TRANSFERRED.name)
+    Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
   }
 
@@ -102,8 +102,8 @@ class PrisonerValidateTest : IntegrationTestBase() {
     // Then
     val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(returnResult)
-    Assertions.assertThat(errorResponse.validationErrorCodes.size).isEqualTo(1)
-    Assertions.assertThat(errorResponse.validationErrorCodes[0]).isEqualTo(PRISONER_TRANSFERRED.name)
+    Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
   }
 
