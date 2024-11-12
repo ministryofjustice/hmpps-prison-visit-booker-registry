@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_RELEASED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_SUPPORTED_PRISON
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
 
@@ -12,6 +14,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Prison
 class PrisonerValidationService(
   private val bookerDetailsService: BookerDetailsService,
   private val prisonerSearchService: PrisonerSearchService,
+  private val visitSchedulerService: VisitSchedulerService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -47,8 +50,11 @@ class PrisonerValidationService(
       if (hasPrisonerBeenReleased(prisonerSearchPrisoner)) {
         errorCodes.add(PRISONER_RELEASED)
       } else {
-        // TODO - to be changed to TRANSFERRED as part of a 2nd PR
-        errorCodes.add(PRISONER_RELEASED)
+        if (hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner)) {
+          errorCodes.add(PRISONER_TRANSFERRED_SUPPORTED_PRISON)
+        } else {
+          errorCodes.add(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON)
+        }
       }
     }
 
@@ -59,5 +65,9 @@ class PrisonerValidationService(
     return prisonerSearchPrisoner.inOutStatus?.let { inOutStatus ->
       (inOutStatus == "OUT")
     } ?: false
+  }
+
+  private fun hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner: PrisonerDto): Boolean {
+    return visitSchedulerService.getSupportedPublicPrisons().contains(prisonerSearchPrisoner.prisonId)
   }
 }
