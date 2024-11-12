@@ -44,7 +44,12 @@ class PrisonerValidationService(
 
     if (permittedPrisoner.prisonCode != prisonerSearchPrisoner.prisonId) {
       LOG.info("Prison code {} on booker registry for prisoner - {} and booker reference - {} does not match with prison code - {} on prisoner offender search", permittedPrisoner.prisonCode, permittedPrisoner.prisonerId, bookerReference, prisonerSearchPrisoner.prisonId)
-      errorCodes.add(PRISONER_RELEASED)
+      if (hasPrisonerBeenReleased(prisonerSearchPrisoner)) {
+        errorCodes.add(PRISONER_RELEASED)
+      } else {
+        // TODO - to be changed to TRANSFERRED as part of a 2nd PR
+        errorCodes.add(PRISONER_RELEASED)
+      }
     }
 
     return errorCodes.toList()
