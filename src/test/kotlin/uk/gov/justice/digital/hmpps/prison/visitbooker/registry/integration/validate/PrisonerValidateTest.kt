@@ -15,12 +15,14 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_RELEASED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_SUPPORTED_PRISON
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.PermittedPrisonerTestObject
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerSearchService
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitSchedulerService
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Validate prisoner added for a booker.")
@@ -31,6 +33,9 @@ class PrisonerValidateTest : IntegrationTestBase() {
 
   @SpyBean
   private lateinit var prisonerSearchService: PrisonerSearchService
+
+  @SpyBean
+  private lateinit var visitSchedulerService: VisitSchedulerService
 
   @BeforeEach
   internal fun setUp() {
@@ -76,9 +81,12 @@ class PrisonerValidateTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisoner is in different prison than when registered and inOutStatus as null validation fails with PRISONER_TRANSFERRED as error code`() {
+  fun `when prisoner is in a different prison than when registered and inOutStatus is null and prison is supported validation fails with PRISONER_TRANSFERRED_SUPPORTED_PRISON as error code`() {
     // When
+    visitSchedulerMockServer.stubGetSupportedPublicPrisons(listOf("HEI", "CFI"))
     val prisonerId = prisoner.prisonerId
+
+    // new prison is a supported prison
     val prisoner1OffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = null)
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisoner1OffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
@@ -87,14 +95,18 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
-    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED.name)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED_SUPPORTED_PRISON.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
+    verify(visitSchedulerService, times(1)).getSupportedPublicPrisons()
   }
 
   @Test
-  fun `when prisoner is in different prison than when registered and inOutStatus as IN validation fails with PRISONER_TRANSFERRED as error code`() {
+  fun `when prisoner is in different prison than when registered and inOutStatus as IN and prison is supported validation fails with PRISONER_TRANSFERRED_SUPPORTED_PRISON as error code`() {
     // When
+    visitSchedulerMockServer.stubGetSupportedPublicPrisons(listOf("HEI", "CFI"))
     val prisonerId = prisoner.prisonerId
+
+    // new prison is a supported prison
     val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = "IN")
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
@@ -103,8 +115,49 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
-    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED.name)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED_SUPPORTED_PRISON.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
+    verify(visitSchedulerService, times(1)).getSupportedPublicPrisons()
+  }
+
+  @Test
+  fun `when prisoner is in a different prison than when registered and inOutStatus is null and prison is unsupported validation fails with PRISONER_TRANSFERRED_UNSUPPORTED_PRISON as error code`() {
+    // When
+    visitSchedulerMockServer.stubGetSupportedPublicPrisons(listOf("HEI", "CFI"))
+    val prisonerId = prisoner.prisonerId
+
+    // new prison is an unsupported prison
+    val prisoner1OffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = null)
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisoner1OffenderDetails)
+    val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(returnResult)
+    Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON.name)
+    verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
+    verify(visitSchedulerService, times(1)).getSupportedPublicPrisons()
+  }
+
+  @Test
+  fun `when prisoner is in different prison than when registered and inOutStatus as IN and prison is unsupported validation fails with PRISONER_TRANSFERRED_UNSUPPORTED_PRISON as error code`() {
+    // When
+    visitSchedulerMockServer.stubGetSupportedPublicPrisons(listOf("HEI", "CFI"))
+    val prisonerId = prisoner.prisonerId
+
+    // new prison is a supported prison
+    val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
+    val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(returnResult)
+    Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON.name)
+    verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
+    verify(visitSchedulerService, times(1)).getSupportedPublicPrisons()
   }
 
   @Test
@@ -135,6 +188,35 @@ class PrisonerValidateTest : IntegrationTestBase() {
     // When
     val prisonerId = prisoner.prisonerId
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+  }
+
+  @Test
+  fun `when call to visit scheduler returns NOT_FOUND then NOT_FOUND status is returned`() {
+    // When
+    val prisonerId = prisoner.prisonerId
+    val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.SC_NOT_FOUND)
+    visitSchedulerMockServer.stubGetSupportedPublicPrisons(null)
+
+    val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
+    // Then
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(returnResult)
+    Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON.name)
+    verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
+    verify(visitSchedulerService, times(1)).getSupportedPublicPrisons()
+  }
+
+  @Test
+  fun `when call to visit scheduler returns INTERNAL_SERVER_ERROR then INTERNAL_SERVER_ERROR status is returned`() {
+    // When
+    val prisonerId = prisoner.prisonerId
+    val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.SC_NOT_FOUND)
+    visitSchedulerMockServer.stubGetSupportedPublicPrisons(null, HttpStatus.SC_INTERNAL_SERVER_ERROR)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
     responseSpec.expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
   }

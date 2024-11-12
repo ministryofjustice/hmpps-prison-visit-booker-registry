@@ -15,10 +15,20 @@ class WebClientConfiguration(
 
   @Value("\${prisoner.search.timeout}")
   private val prisonSearchTimeout: Duration,
+
+  @Value("\${visit-scheduler.api.url}")
+  private val visitSchedulerUrl: String,
+
+  @Value("\${visit-scheduler.api.timeout}")
+  private val visitSchedulerTimeout: Duration,
 ) {
   private final val clientRegistrationId: String = "hmpps-apis"
 
   @Bean
   fun prisonerOffenderSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
     builder.authorisedWebClient(authorizedClientManager, registrationId = clientRegistrationId, url = prisonSearchBaseUrl, timeout = prisonSearchTimeout)
+
+  @Bean
+  fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = clientRegistrationId, url = visitSchedulerUrl, timeout = visitSchedulerTimeout)
 }

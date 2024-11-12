@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.help
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonOffenderSearchMockServer
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.VisitSchedulerMockServer
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
@@ -49,17 +50,20 @@ abstract class IntegrationTestBase {
     const val PRISON_CODE = "HEI"
 
     internal val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer()
+    internal val visitSchedulerMockServer = VisitSchedulerMockServer()
 
     @BeforeAll
     @JvmStatic
     fun startMocks() {
       prisonOffenderSearchMockServer.start()
+      visitSchedulerMockServer.start()
     }
 
     @AfterAll
     @JvmStatic
     fun stopMocks() {
       prisonOffenderSearchMockServer.stop()
+      visitSchedulerMockServer.stop()
     }
   }
 
@@ -95,6 +99,7 @@ abstract class IntegrationTestBase {
   @BeforeEach
   fun resetStubs() {
     prisonOffenderSearchMockServer.resetAll()
+    visitSchedulerMockServer.resetAll()
   }
 
   @AfterEach
