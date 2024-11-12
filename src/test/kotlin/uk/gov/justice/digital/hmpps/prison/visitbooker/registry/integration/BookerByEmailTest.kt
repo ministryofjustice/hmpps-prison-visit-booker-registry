@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_BOOKER_USING_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import java.util.*
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Get booker by email")
@@ -31,11 +30,11 @@ class BookerByEmailTest : IntegrationTestBase() {
     // booker 2 has no permittedPrisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PermittedPrisonerTestObject("AB123456", true)
-    prisoner2 = PermittedPrisonerTestObject("AB789012", true)
+    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
+    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE, true)
 
     // inactive permittedPrisoner
-    prisoner3 = PermittedPrisonerTestObject("AB345678", false)
+    prisoner3 = PermittedPrisonerTestObject("AB345678", PRISON_CODE, false)
 
     createAssociatedPrisoners(
       booker1,
@@ -85,7 +84,7 @@ class BookerByEmailTest : IntegrationTestBase() {
     emailAddress: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    var url = GET_BOOKER_USING_EMAIL.replace("{emailAddress}", emailAddress)
+    val url = GET_BOOKER_USING_EMAIL.replace("{emailAddress}", emailAddress)
     return webTestClient.get().uri(url)
       .headers(authHttpHeaders)
       .exchange()

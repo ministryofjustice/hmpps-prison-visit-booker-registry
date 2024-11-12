@@ -26,8 +26,8 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
   @BeforeEach
   internal fun setUp() {
     booker = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
-    prisoner1 = PermittedPrisonerTestObject("AB123451", false)
-    prisoner2 = PermittedPrisonerTestObject("AB123452", false)
+    prisoner1 = PermittedPrisonerTestObject("AB123451", PRISON_CODE, false)
+    prisoner2 = PermittedPrisonerTestObject("AB123452", PRISON_CODE, false)
 
     createAssociatedPrisoners(
       booker,

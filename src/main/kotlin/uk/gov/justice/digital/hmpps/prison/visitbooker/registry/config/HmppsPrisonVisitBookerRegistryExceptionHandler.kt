@@ -13,12 +13,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.servlet.resource.NoResourceFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerVisitorAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.VisitorForPrisonerBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerForBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
 import java.util.*
 
 @RestControllerAdvice
@@ -211,9 +212,21 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { LOG.error("Unexpected exception", e) }
+
+  @ExceptionHandler(PrisonerValidationException::class)
+  fun handlePrisonerValidationException(e: PrisonerValidationException): ResponseEntity<ValidationErrorResponse?>? {
+    LOG.error("Validation exception", e)
+    return ResponseEntity
+      .status(HttpStatus.UNPROCESSABLE_ENTITY)
+      .body(
+        ValidationErrorResponse(
+          validationErrors = e.errorCodes.map { it.name }.toList(),
+        ),
+      )
+  }
 }
 
-data class ErrorResponse(
+open class ErrorResponse(
   val status: Int,
   val errorCode: Int? = null,
   val userMessage: String? = null,
@@ -229,3 +242,7 @@ data class ErrorResponse(
   ) :
     this(status.value(), errorCode, userMessage, developerMessage, moreInfo)
 }
+
+data class ValidationErrorResponse(
+  val validationErrors: List<String>,
+) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY)

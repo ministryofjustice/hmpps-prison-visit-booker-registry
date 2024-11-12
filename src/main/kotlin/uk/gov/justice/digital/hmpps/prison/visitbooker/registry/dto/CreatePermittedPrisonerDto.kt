@@ -13,6 +13,11 @@ data class CreatePermittedPrisonerDto(
   @field:NotBlank
   val prisonerId: String,
 
+  @JsonProperty("prisonCode")
+  @Schema(description = "prison code", example = "MDI", required = true)
+  @field:NotBlank
+  val prisonCode: String,
+
   @JsonProperty("active")
   @Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
   @field:NotNull
