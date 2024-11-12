@@ -4,5 +4,4 @@ enum class PrisonerValidationErrorCodes(
   val description: String,
 ) {
   PRISONER_RELEASED("Prisoner released"),
-  PRISONER_TRANSFERRED("Prisoner transferred"),
 }

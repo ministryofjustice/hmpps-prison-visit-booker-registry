@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -8,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.NotBlank
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -25,13 +23,12 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.Prisoner
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
 const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
-const val VALIDATE_PRISONER: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/prisoner/{prisonerId}/validate"
+const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
 
 @RestController
 class BookerDetailsController(
   val bookerDetailsService: BookerDetailsService,
   val prisonerValidationService: PrisonerValidationService,
-  private val objectMapper: ObjectMapper,
 ) {
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PERMITTED_PRISONERS)
@@ -165,10 +162,7 @@ class BookerDetailsController(
     )
     @NotBlank
     prisonerId: String,
-  ): ResponseEntity<String> {
+  ) {
     prisonerValidationService.validatePrisoner(bookerReference, prisonerId)
-    return ResponseEntity.status(HttpStatus.OK).body(
-      objectMapper.writeValueAsString("Prisoner - $prisonerId for booker reference - $bookerReference successfully validated"),
-    )
   }
 }

@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_RELEASED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.PermittedPrisonerTestObject
@@ -76,7 +75,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisoner is in different prison than when registered and inOutStatus as null validation fails with PRISONER_TRANSFERRED as error code`() {
+  fun `when prisoner is in different prison than when registered and inOutStatus as null validation fails with PRISONER_RELEASED as error code`() {
     // When
     val prisonerId = prisoner.prisonerId
     val prisoner1OffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = null)
@@ -87,12 +86,12 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
-    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED.name)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_RELEASED.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
   }
 
   @Test
-  fun `when prisoner is in different prison than when registered and inOutStatus as IN validation fails with PRISONER_TRANSFERRED as error code`() {
+  fun `when prisoner is in different prison than when registered and inOutStatus as IN validation fails with PRISONER_RELEASED as error code`() {
     // When
     val prisonerId = prisoner.prisonerId
     val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = "IN")
@@ -103,7 +102,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationErrors.size).isEqualTo(1)
-    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_TRANSFERRED.name)
+    Assertions.assertThat(errorResponse.validationErrors[0]).isEqualTo(PRISONER_RELEASED.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
   }
 

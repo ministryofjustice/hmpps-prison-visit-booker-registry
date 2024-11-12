@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_RELEASED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
 
@@ -45,11 +44,7 @@ class PrisonerValidationService(
 
     if (permittedPrisoner.prisonCode != prisonerSearchPrisoner.prisonId) {
       LOG.info("Prison code {} on booker registry for prisoner - {} and booker reference - {} does not match with prison code - {} on prisoner offender search", permittedPrisoner.prisonCode, permittedPrisoner.prisonerId, bookerReference, prisonerSearchPrisoner.prisonId)
-      if (hasPrisonerBeenReleased(prisonerSearchPrisoner)) {
-        errorCodes.add(PRISONER_RELEASED)
-      } else {
-        errorCodes.add(PRISONER_TRANSFERRED)
-      }
+      errorCodes.add(PRISONER_RELEASED)
     }
 
     return errorCodes.toList()
