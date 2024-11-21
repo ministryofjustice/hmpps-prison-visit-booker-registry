@@ -50,8 +50,8 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.12.6")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:postgresql:1.20.3")
-  testImplementation("org.testcontainers:localstack:1.20.3")
+  testImplementation("org.testcontainers:postgresql:1.20.4")
+  testImplementation("org.testcontainers:localstack:1.20.4")
   testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.778")
   testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.1")
 }
