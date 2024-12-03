@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.9"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.1.0"
   kotlin("plugin.spring") version "2.0.21"
   kotlin("plugin.jpa") version "2.0.21"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.0.21"
@@ -31,9 +31,9 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.10.0")
 
   implementation("org.springframework.data:spring-data-commons:3.4.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-  implementation("org.springdoc:springdoc-openapi-starter-common:2.6.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.7.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+  implementation("org.springdoc:springdoc-openapi-starter-common:2.7.0")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.freemarker:freemarker:2.3.33")
@@ -52,10 +52,10 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.12.6")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:postgresql:1.20.3")
-  testImplementation("org.testcontainers:localstack:1.20.3")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.778")
-  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.1")
+  testImplementation("org.testcontainers:postgresql:1.20.4")
+  testImplementation("org.testcontainers:localstack:1.20.4")
+  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.779")
+  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
 }
 
 java {
