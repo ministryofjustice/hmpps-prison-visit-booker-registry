@@ -32,8 +32,8 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     // booker 2 has 2 permittedPrisoners associated but no permittedVisitors
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    val prisoner1Details = PermittedPrisonerTestObject("AB123456", true)
-    val prisoner2Details = PermittedPrisonerTestObject("AB789012", true)
+    val prisoner1Details = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
+    val prisoner2Details = PermittedPrisonerTestObject("AB789012", PRISON_CODE, true)
 
     val prisoners = createAssociatedPrisoners(
       booker1,

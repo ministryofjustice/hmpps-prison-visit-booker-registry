@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions
+package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception
 
 import java.util.function.Supplier
 

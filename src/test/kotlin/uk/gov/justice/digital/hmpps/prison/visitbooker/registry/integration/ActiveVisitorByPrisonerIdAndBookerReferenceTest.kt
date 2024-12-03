@@ -34,8 +34,8 @@ class ActiveVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     val prisoners = createAssociatedPrisoners(
       booker,
       listOf(
-        PermittedPrisonerTestObject("AB123456", true),
-        PermittedPrisonerTestObject("AB789012", true),
+        PermittedPrisonerTestObject("AB123456", PRISON_CODE, true),
+        PermittedPrisonerTestObject("AB789012", PRISON_CODE, true),
       ),
       visitors = listOf(),
     )

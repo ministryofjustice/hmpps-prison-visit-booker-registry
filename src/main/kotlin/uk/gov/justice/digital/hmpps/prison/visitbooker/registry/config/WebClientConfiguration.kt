@@ -1,24 +1,34 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import org.springframework.web.reactive.function.client.WebClient
+import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
+import java.time.Duration
 
 @Configuration
-class WebClientConfiguration {
+class WebClientConfiguration(
+  @Value("\${prisoner.search.url}")
+  private val prisonSearchBaseUrl: String,
+
+  @Value("\${prisoner.search.timeout}")
+  private val prisonSearchTimeout: Duration,
+
+  @Value("\${visit-scheduler.api.url}")
+  private val visitSchedulerUrl: String,
+
+  @Value("\${visit-scheduler.api.timeout}")
+  private val visitSchedulerTimeout: Duration,
+) {
+  private final val clientRegistrationId: String = "hmpps-apis"
+
   @Bean
-  fun authorizedClientManager(
-    clientRegistrationRepository: ClientRegistrationRepository?,
-    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?,
-  ): OAuth2AuthorizedClientManager? {
-    val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
-    val authorizedClientManager =
-      AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, oAuth2AuthorizedClientService)
-    authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
-    return authorizedClientManager
-  }
+  fun prisonerOffenderSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = clientRegistrationId, url = prisonSearchBaseUrl, timeout = prisonSearchTimeout)
+
+  @Bean
+  fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = clientRegistrationId, url = visitSchedulerUrl, timeout = visitSchedulerTimeout)
 }
