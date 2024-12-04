@@ -214,13 +214,13 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
     ).also { LOG.error("Unexpected exception", e) }
 
   @ExceptionHandler(PrisonerValidationException::class)
-  fun handlePrisonerValidationException(e: PrisonerValidationException): ResponseEntity<ValidationErrorResponse?>? {
+  fun handlePrisonerValidationException(e: PrisonerValidationException): ResponseEntity<BookerPrisonerValidationErrorResponse?>? {
     LOG.error("Validation exception", e)
     return ResponseEntity
       .status(HttpStatus.UNPROCESSABLE_ENTITY)
       .body(
-        ValidationErrorResponse(
-          validationErrors = listOf(e.error.name),
+        BookerPrisonerValidationErrorResponse(
+          validationError = e.error.name,
         ),
       )
   }
@@ -245,4 +245,8 @@ open class ErrorResponse(
 
 data class ValidationErrorResponse(
   val validationErrors: List<String>,
+) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY)
+
+data class BookerPrisonerValidationErrorResponse(
+  val validationError: String,
 ) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY)
