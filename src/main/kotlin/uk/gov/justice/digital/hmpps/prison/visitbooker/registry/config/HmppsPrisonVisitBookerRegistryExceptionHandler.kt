@@ -194,8 +194,8 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
 
   private fun getJSRMessage(e: HandlerMethodValidationException): String {
     val errorMessage = StringJoiner(", ")
-    e.allValidationResults.forEach {
-      it.resolvableErrors.forEach {
+    e.parameterValidationResults.forEach { parameterValidationResult ->
+      parameterValidationResult.resolvableErrors.forEach {
         errorMessage.add(it.codes?.first() ?: it.defaultMessage)
       }
     }
@@ -220,7 +220,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
       .status(HttpStatus.UNPROCESSABLE_ENTITY)
       .body(
         ValidationErrorResponse(
-          validationErrors = e.errorCodes.map { it.name }.toList(),
+          validationErrors = listOf(e.error.name),
         ),
       )
   }

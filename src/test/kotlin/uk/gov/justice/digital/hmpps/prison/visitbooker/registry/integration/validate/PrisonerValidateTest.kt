@@ -7,16 +7,16 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.VALIDATE_PRISONER
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_RELEASED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_SUPPORTED_PRISON
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_RELEASED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_SUPPORTED_PRISON
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.PermittedPrisonerTestObject
@@ -31,10 +31,10 @@ class PrisonerValidateTest : IntegrationTestBase() {
 
   private lateinit var prisoner: PermittedPrisonerTestObject
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var prisonerSearchService: PrisonerSearchService
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var visitSchedulerService: VisitSchedulerService
 
   @BeforeEach

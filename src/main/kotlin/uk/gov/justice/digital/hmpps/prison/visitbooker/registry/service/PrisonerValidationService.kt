@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_RELEASED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_SUPPORTED_PRISON
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationErrorCodes.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_RELEASED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_SUPPORTED_PRISON
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
 
@@ -35,30 +35,28 @@ class PrisonerValidationService(
     val prisonerSearchPrisoner = prisonerSearchService.getPrisoner(prisonerId)
 
     // validate the prisoner returned
-    val errorCodes = getPrisonerValidationErrorCodes(bookerReference, permittedPrisoner, prisonerSearchPrisoner)
-    if (errorCodes.isNotEmpty()) {
-      LOG.info("Prisoner validation for bookerReference - {}, prisoner id - {} failed with error codes - {}", bookerReference, prisonerId, errorCodes)
-      throw PrisonerValidationException(errorCodes)
+    val errorCode = getPrisonerValidationErrorCodes(bookerReference, permittedPrisoner, prisonerSearchPrisoner)
+    if (errorCode != null) {
+      LOG.info("Prisoner validation for bookerReference - {}, prisoner id - {} failed with error code - {}", bookerReference, prisonerId, errorCode)
+      throw PrisonerValidationException(errorCode)
     }
   }
 
-  private fun getPrisonerValidationErrorCodes(bookerReference: String, permittedPrisoner: PermittedPrisonerDto, prisonerSearchPrisoner: PrisonerDto): List<PrisonerValidationErrorCodes> {
-    val errorCodes = mutableListOf<PrisonerValidationErrorCodes>()
-
-    if (permittedPrisoner.prisonCode != prisonerSearchPrisoner.prisonId) {
+  private fun getPrisonerValidationErrorCodes(bookerReference: String, permittedPrisoner: PermittedPrisonerDto, prisonerSearchPrisoner: PrisonerDto): PrisonerValidationError? {
+    return if (permittedPrisoner.prisonCode != prisonerSearchPrisoner.prisonId) {
       LOG.info("Prison code {} on booker registry for prisoner - {} and booker reference - {} does not match with prison code - {} on prisoner offender search", permittedPrisoner.prisonCode, permittedPrisoner.prisonerId, bookerReference, prisonerSearchPrisoner.prisonId)
       if (hasPrisonerBeenReleased(prisonerSearchPrisoner)) {
-        errorCodes.add(PRISONER_RELEASED)
+        PRISONER_RELEASED
       } else {
         if (hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner)) {
-          errorCodes.add(PRISONER_TRANSFERRED_SUPPORTED_PRISON)
+          PRISONER_TRANSFERRED_SUPPORTED_PRISON
         } else {
-          errorCodes.add(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON)
+          PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
         }
       }
+    } else {
+      null
     }
-
-    return errorCodes.toList()
   }
 
   private fun hasPrisonerBeenReleased(prisonerSearchPrisoner: PrisonerDto): Boolean {
