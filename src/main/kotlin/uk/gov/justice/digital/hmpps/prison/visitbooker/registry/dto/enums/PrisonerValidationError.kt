@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums
 
-enum class PrisonerValidationErrorCodes(
+enum class PrisonerValidationError(
   val description: String,
 ) {
   PRISONER_RELEASED("Prisoner released"),
