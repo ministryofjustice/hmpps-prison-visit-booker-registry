@@ -8,12 +8,12 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerNotFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.BookerPrisonerVisitorAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.PrisonerForBookerNotFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exceptions.VisitorForPrisonerBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerForBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
@@ -63,6 +63,7 @@ class BookerDetailsService(
         booker = booker,
         prisonerId = createPermittedPrisonerDto.prisonerId,
         active = createPermittedPrisonerDto.active,
+        prisonCode = createPermittedPrisonerDto.prisonCode,
       ),
     )
 
@@ -169,16 +170,16 @@ class BookerDetailsService(
     return BookerDto(findBookerByEmail(emailAddress))
   }
 
+  fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
+    return prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
+  }
+
   private fun getBooker(bookerReference: String): Booker {
     return bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
   }
 
   private fun findBookerByEmail(emailAddress: String): Booker {
     return bookerRepository.findByEmailIgnoreCase(emailAddress) ?: throw BookerNotFoundException("Booker for email : $emailAddress not found")
-  }
-
-  private fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
-    return prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
   }
 
   private fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor {

@@ -31,11 +31,11 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     // booker 2 has no permittedPrisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PermittedPrisonerTestObject("AB123456", true)
-    prisoner2 = PermittedPrisonerTestObject("AB789012", true)
+    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
+    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE, true)
 
     // inactive permittedPrisoner
-    prisoner3 = PermittedPrisonerTestObject("AB345678", false)
+    prisoner3 = PermittedPrisonerTestObject("AB345678", PRISON_CODE, false)
 
     createAssociatedPrisoners(
       booker1,
