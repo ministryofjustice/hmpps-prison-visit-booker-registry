@@ -13,7 +13,11 @@ generic-service:
     PRISONER_SEARCH_URL: https://prisoner-search-dev.prison.service.justice.gov.uk
     VISIT-SCHEDULER_API_URL: https://visit-scheduler-dev.prison.service.justice.gov.uk
 
+  scheduledDowntime:
+    enabled: true
+
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
+  businessHoursOnly: true
   alertSeverity: visits-alerts-nonprod
