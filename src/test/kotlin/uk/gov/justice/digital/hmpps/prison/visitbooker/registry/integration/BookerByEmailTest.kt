@@ -75,9 +75,7 @@ class BookerByEmailTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerDto {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, BookerDto::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerDto = objectMapper.readValue(returnResult.returnResult().responseBody, BookerDto::class.java)
 
   fun getBookerByEmail(
     webTestClient: WebTestClient,

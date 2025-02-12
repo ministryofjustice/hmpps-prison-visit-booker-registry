@@ -7,7 +7,5 @@ import java.util.function.Supplier
 class PrisonerValidationException(val error: PrisonerValidationError) :
   ValidationException("Failed to validate prisoner being booked."),
   Supplier<PrisonerValidationException> {
-  override fun get(): PrisonerValidationException {
-    return PrisonerValidationException(error)
-  }
+  override fun get(): PrisonerValidationException = PrisonerValidationException(error)
 }

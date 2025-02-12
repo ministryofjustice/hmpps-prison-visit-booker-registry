@@ -71,9 +71,7 @@ class BookerDetailsController(
       example = "true",
     )
     active: Boolean?,
-  ): List<PermittedPrisonerDto> {
-    return bookerDetailsService.getPermittedPrisoners(bookerReference, active)
-  }
+  ): List<PermittedPrisonerDto> = bookerDetailsService.getPermittedPrisoners(bookerReference, active)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PERMITTED_VISITORS)
@@ -119,9 +117,7 @@ class BookerDetailsController(
       example = "true",
     )
     active: Boolean?,
-  ): List<PermittedVisitorDto> {
-    return bookerDetailsService.getPermittedVisitors(bookerReference, prisonerId, active)
-  }
+  ): List<PermittedVisitorDto> = bookerDetailsService.getPermittedVisitors(bookerReference, prisonerId, active)
 
   @PreAuthorize("hasAnyRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(VALIDATE_PRISONER)

@@ -46,14 +46,12 @@ class AuthService(
     return booker
   }
 
-  private fun saveOrGet(createBookerAuthDetailDto: AuthDetailDto): AuthDetail {
-    return authDetailRepository.findByOneLoginSub(createBookerAuthDetailDto.oneLoginSub)?.let {
-      it.email = createBookerAuthDetailDto.email
-      it.phoneNumber = createBookerAuthDetailDto.phoneNumber
-      it.count++
-      it
-    } ?: run {
-      authDetailRepository.saveAndFlush(AuthDetail(createBookerAuthDetailDto))
-    }
+  private fun saveOrGet(createBookerAuthDetailDto: AuthDetailDto): AuthDetail = authDetailRepository.findByOneLoginSub(createBookerAuthDetailDto.oneLoginSub)?.let {
+    it.email = createBookerAuthDetailDto.email
+    it.phoneNumber = createBookerAuthDetailDto.phoneNumber
+    it.count++
+    it
+  } ?: run {
+    authDetailRepository.saveAndFlush(AuthDetail(createBookerAuthDetailDto))
   }
 }

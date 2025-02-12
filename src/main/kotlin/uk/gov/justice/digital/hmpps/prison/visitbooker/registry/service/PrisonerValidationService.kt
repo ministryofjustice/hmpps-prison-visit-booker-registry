@@ -42,30 +42,24 @@ class PrisonerValidationService(
     }
   }
 
-  private fun getPrisonerValidationErrorCodes(bookerReference: String, permittedPrisoner: PermittedPrisonerDto, prisonerSearchPrisoner: PrisonerDto): PrisonerValidationError? {
-    return if (permittedPrisoner.prisonCode != prisonerSearchPrisoner.prisonId) {
-      LOG.info("Prison code {} on booker registry for prisoner - {} and booker reference - {} does not match with prison code - {} on prisoner offender search", permittedPrisoner.prisonCode, permittedPrisoner.prisonerId, bookerReference, prisonerSearchPrisoner.prisonId)
-      if (hasPrisonerBeenReleased(prisonerSearchPrisoner)) {
-        PRISONER_RELEASED
-      } else {
-        if (hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner)) {
-          PRISONER_TRANSFERRED_SUPPORTED_PRISON
-        } else {
-          PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
-        }
-      }
+  private fun getPrisonerValidationErrorCodes(bookerReference: String, permittedPrisoner: PermittedPrisonerDto, prisonerSearchPrisoner: PrisonerDto): PrisonerValidationError? = if (permittedPrisoner.prisonCode != prisonerSearchPrisoner.prisonId) {
+    LOG.info("Prison code {} on booker registry for prisoner - {} and booker reference - {} does not match with prison code - {} on prisoner offender search", permittedPrisoner.prisonCode, permittedPrisoner.prisonerId, bookerReference, prisonerSearchPrisoner.prisonId)
+    if (hasPrisonerBeenReleased(prisonerSearchPrisoner)) {
+      PRISONER_RELEASED
     } else {
-      null
+      if (hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner)) {
+        PRISONER_TRANSFERRED_SUPPORTED_PRISON
+      } else {
+        PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
+      }
     }
+  } else {
+    null
   }
 
-  private fun hasPrisonerBeenReleased(prisonerSearchPrisoner: PrisonerDto): Boolean {
-    return prisonerSearchPrisoner.inOutStatus?.let { inOutStatus ->
-      (inOutStatus == "OUT")
-    } ?: false
-  }
+  private fun hasPrisonerBeenReleased(prisonerSearchPrisoner: PrisonerDto): Boolean = prisonerSearchPrisoner.inOutStatus?.let { inOutStatus ->
+    (inOutStatus == "OUT")
+  } ?: false
 
-  private fun hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner: PrisonerDto): Boolean {
-    return visitSchedulerService.getSupportedPublicPrisons().contains(prisonerSearchPrisoner.prisonId)
-  }
+  private fun hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner: PrisonerDto): Boolean = visitSchedulerService.getSupportedPublicPrisons().contains(prisonerSearchPrisoner.prisonId)
 }

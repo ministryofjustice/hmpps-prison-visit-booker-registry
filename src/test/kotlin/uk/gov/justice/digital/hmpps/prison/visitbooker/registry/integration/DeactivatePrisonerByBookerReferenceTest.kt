@@ -72,9 +72,7 @@ class DeactivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PermittedPrisonerDto {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, PermittedPrisonerDto::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PermittedPrisonerDto = objectMapper.readValue(returnResult.returnResult().responseBody, PermittedPrisonerDto::class.java)
 
   fun deactivatePrisonersByBookerReference(
     webTestClient: WebTestClient,

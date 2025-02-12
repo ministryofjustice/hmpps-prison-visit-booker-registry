@@ -5,7 +5,5 @@ import java.util.function.Supplier
 class VisitorForPrisonerBookerNotFoundException(message: String? = null, cause: Throwable? = null) :
   RuntimeException(message, cause),
   Supplier<VisitorForPrisonerBookerNotFoundException> {
-  override fun get(): VisitorForPrisonerBookerNotFoundException {
-    return VisitorForPrisonerBookerNotFoundException(message, cause)
-  }
+  override fun get(): VisitorForPrisonerBookerNotFoundException = VisitorForPrisonerBookerNotFoundException(message, cause)
 }

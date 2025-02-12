@@ -7,7 +7,5 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.VisitSche
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
 ) {
-  fun getSupportedPublicPrisons(): List<String> {
-    return visitSchedulerClient.getSupportedPublicPrisons()
-  }
+  fun getSupportedPublicPrisons(): List<String> = visitSchedulerClient.getSupportedPublicPrisons()
 }

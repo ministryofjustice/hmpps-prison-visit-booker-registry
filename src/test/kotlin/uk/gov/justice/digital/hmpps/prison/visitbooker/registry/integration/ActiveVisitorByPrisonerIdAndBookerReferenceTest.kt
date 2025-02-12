@@ -124,9 +124,7 @@ class ActiveVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PermittedVisitorDto? {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, PermittedVisitorDto::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PermittedVisitorDto? = objectMapper.readValue(returnResult.returnResult().responseBody, PermittedVisitorDto::class.java)
 
   fun activateVisitorByPrisonerIsAndBookerReference(
     webTestClient: WebTestClient,

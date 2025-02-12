@@ -53,7 +53,5 @@ class AuthDetailsController(
       ),
     ],
   )
-  fun bookerAuthorisation(@RequestBody @Valid authDetailDto: AuthDetailDto): BookerReference {
-    return BookerReference(authService.bookerAuthorisation(authDetailDto))
-  }
+  fun bookerAuthorisation(@RequestBody @Valid authDetailDto: AuthDetailDto): BookerReference = BookerReference(authService.bookerAuthorisation(authDetailDto))
 }

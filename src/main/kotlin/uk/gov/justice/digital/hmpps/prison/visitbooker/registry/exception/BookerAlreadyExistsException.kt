@@ -5,7 +5,5 @@ import java.util.function.Supplier
 class BookerAlreadyExistsException(message: String? = null, cause: Throwable? = null) :
   RuntimeException(message, cause),
   Supplier<BookerAlreadyExistsException> {
-  override fun get(): BookerAlreadyExistsException {
-    return BookerAlreadyExistsException(message, cause)
-  }
+  override fun get(): BookerAlreadyExistsException = BookerAlreadyExistsException(message, cause)
 }

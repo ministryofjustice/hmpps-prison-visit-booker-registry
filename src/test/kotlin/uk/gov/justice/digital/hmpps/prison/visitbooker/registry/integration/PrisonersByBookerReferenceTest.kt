@@ -108,9 +108,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PermittedPrisonerDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PermittedPrisonerDto>::class.java).toList()
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PermittedPrisonerDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<PermittedPrisonerDto>::class.java).toList()
 
   private fun assertPrisonerDetails(prisoner: PermittedPrisonerDto, prisonerDetail: PermittedPrisonerTestObject) {
     Assertions.assertThat(prisoner.prisonerId).isEqualTo(prisonerDetail.prisonerId)
