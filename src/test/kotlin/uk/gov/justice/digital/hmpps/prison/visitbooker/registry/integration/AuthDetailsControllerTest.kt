@@ -172,12 +172,10 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
   protected fun callBookerAuth(
     authHttpHeaders: (HttpHeaders) -> Unit,
     authDetailDto: AuthDetailDto,
-  ): ResponseSpec {
-    return webTestClient.put().uri(AUTH_DETAILS_CONTROLLER_PATH)
-      .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(authDetailDto))
-      .exchange()
-  }
+  ): ResponseSpec = webTestClient.put().uri(AUTH_DETAILS_CONTROLLER_PATH)
+    .headers(authHttpHeaders)
+    .body(BodyInserters.fromValue(authDetailDto))
+    .exchange()
 
   protected fun getReference(responseSpec: ResponseSpec): String {
     val bookerReferenceObject = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerReference::class.java)

@@ -14,7 +14,10 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 
-class HmppsAuthExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
+class HmppsAuthExtension :
+  BeforeAllCallback,
+  AfterAllCallback,
+  BeforeEachCallback {
 
   companion object {
     @JvmField

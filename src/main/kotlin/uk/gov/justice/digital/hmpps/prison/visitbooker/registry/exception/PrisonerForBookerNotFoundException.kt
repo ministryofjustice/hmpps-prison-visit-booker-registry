@@ -5,7 +5,5 @@ import java.util.function.Supplier
 class PrisonerForBookerNotFoundException(message: String? = null, cause: Throwable? = null) :
   RuntimeException(message, cause),
   Supplier<PrisonerForBookerNotFoundException> {
-  override fun get(): PrisonerForBookerNotFoundException {
-    return PrisonerForBookerNotFoundException(message, cause)
-  }
+  override fun get(): PrisonerForBookerNotFoundException = PrisonerForBookerNotFoundException(message, cause)
 }

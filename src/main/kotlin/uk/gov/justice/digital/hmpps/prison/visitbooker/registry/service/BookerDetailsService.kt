@@ -170,21 +170,13 @@ class BookerDetailsService(
     return BookerDto(findBookerByEmail(emailAddress))
   }
 
-  fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner {
-    return prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
-  }
+  fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner = prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
 
-  private fun getBooker(bookerReference: String): Booker {
-    return bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
-  }
+  private fun getBooker(bookerReference: String): Booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
 
-  private fun findBookerByEmail(emailAddress: String): Booker {
-    return bookerRepository.findByEmailIgnoreCase(emailAddress) ?: throw BookerNotFoundException("Booker for email : $emailAddress not found")
-  }
+  private fun findBookerByEmail(emailAddress: String): Booker = bookerRepository.findByEmailIgnoreCase(emailAddress) ?: throw BookerNotFoundException("Booker for email : $emailAddress not found")
 
-  private fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor {
-    return visitorRepository.findVisitorBy(bookerReference, prisonerId, visitorId) ?: throw VisitorForPrisonerBookerNotFoundException("Visitor for prisoner booker $bookerReference/$prisonerId/$visitorId not found")
-  }
+  private fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor = visitorRepository.findVisitorBy(bookerReference, prisonerId, visitorId) ?: throw VisitorForPrisonerBookerNotFoundException("Visitor for prisoner booker $bookerReference/$prisonerId/$visitorId not found")
 
   private fun setVisitorPrisonerBooker(
     bookerReference: String,

@@ -118,13 +118,9 @@ abstract class IntegrationTestBase {
     booker.reference = QuotableEncoder(minLength = 10).encode(booker.id)
     return entityHelper.saveBooker(booker)
   }
-  fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner {
-    return entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true, prisonCode = PRISON_CODE))
-  }
+  fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true, prisonCode = PRISON_CODE))
 
-  fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor {
-    return entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId, active = true))
-  }
+  fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId, active = true))
 
   fun createAssociatedPrisoners(
     booker: Booker,
@@ -143,9 +139,7 @@ abstract class IntegrationTestBase {
     return permittedPrisonerList
   }
 
-  fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner {
-    return entityHelper.createAssociatedPrisoner(permittedPrisoner)
-  }
+  fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner = entityHelper.createAssociatedPrisoner(permittedPrisoner)
 
   fun createAssociatedPrisonersVisitors(permittedPrisoner: PermittedPrisoner, associatedPrisonersVisitors: List<PermittedVisitorTestObject>): List<PermittedVisitor> {
     val permittedVisitors = mutableListOf<PermittedVisitor>()
@@ -156,19 +150,15 @@ abstract class IntegrationTestBase {
     return permittedVisitors
   }
 
-  fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner, permittedVisitor: PermittedVisitor): PermittedVisitor {
-    return entityHelper.createAssociatedPrisonerVisitor(permittedVisitor)
-  }
+  fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner, permittedVisitor: PermittedVisitor): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(permittedVisitor)
 
   protected fun callCreateBooker(
     authHttpHeaders: (HttpHeaders) -> Unit,
     createBookerDto: CreateBookerDto,
-  ): ResponseSpec {
-    return webTestClient.put().uri(CREATE_BOOKER_PATH)
-      .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(createBookerDto))
-      .exchange()
-  }
+  ): ResponseSpec = webTestClient.put().uri(CREATE_BOOKER_PATH)
+    .headers(authHttpHeaders)
+    .body(BodyInserters.fromValue(createBookerDto))
+    .exchange()
 
   protected fun callCreateBookerPrisoner(
     authHttpHeaders: (HttpHeaders) -> Unit,
@@ -208,21 +198,13 @@ abstract class IntegrationTestBase {
   protected fun callClearBookerDetails(
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
-  ): ResponseSpec {
-    return webTestClient.delete().uri(CLEAR_BOOKER_CONFIG_CONTROLLER_PATH.replace("{bookerReference}", bookerReference))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): ResponseSpec = webTestClient.delete().uri(CLEAR_BOOKER_CONFIG_CONTROLLER_PATH.replace("{bookerReference}", bookerReference))
+    .headers(authHttpHeaders)
+    .exchange()
 
-  protected fun getBookerDto(responseSpec: ResponseSpec): BookerDto {
-    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerDto::class.java)
-  }
+  protected fun getBookerDto(responseSpec: ResponseSpec): BookerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerDto::class.java)
 
-  protected fun getPermittedPrisonerDto(responseSpec: ResponseSpec): PermittedPrisonerDto {
-    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedPrisonerDto::class.java)
-  }
+  protected fun getPermittedPrisonerDto(responseSpec: ResponseSpec): PermittedPrisonerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedPrisonerDto::class.java)
 
-  protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto {
-    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
-  }
+  protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
 }

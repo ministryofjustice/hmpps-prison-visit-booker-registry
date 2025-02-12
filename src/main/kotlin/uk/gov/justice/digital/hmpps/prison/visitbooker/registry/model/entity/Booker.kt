@@ -49,7 +49,5 @@ class Booker(
 
   override fun hashCode(): Int = id.hashCode()
 
-  override fun toString(): String {
-    return this::class.simpleName + "(id=$id, reference='$reference', created = $createTimestamp)"
-  }
+  override fun toString(): String = this::class.simpleName + "(id=$id, reference='$reference', created = $createTimestamp)"
 }

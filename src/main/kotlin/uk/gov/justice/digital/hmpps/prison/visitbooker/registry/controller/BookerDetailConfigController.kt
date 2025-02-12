@@ -74,9 +74,7 @@ class BookerDetailConfigController(
   )
   fun create(
     @RequestBody @Valid createBookerDto: CreateBookerDto,
-  ): BookerDto {
-    return bookerDetailsService.create(createBookerDto.email)
-  }
+  ): BookerDto = bookerDetailsService.create(createBookerDto.email)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(CREATE_BOOKER_PRISONER_PATH)
@@ -116,9 +114,7 @@ class BookerDetailConfigController(
     @NotBlank
     bookerReference: String,
     @RequestBody @Valid createPermittedPrisonerDto: CreatePermittedPrisonerDto,
-  ): PermittedPrisonerDto {
-    return bookerDetailsService.createBookerPrisoner(bookerReference, createPermittedPrisonerDto)
-  }
+  ): PermittedPrisonerDto = bookerDetailsService.createBookerPrisoner(bookerReference, createPermittedPrisonerDto)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(CREATE_BOOKER_PRISONER_VISITOR_PATH)
@@ -161,9 +157,7 @@ class BookerDetailConfigController(
     @NotBlank
     bookerReference: String,
     @RequestBody @Valid createPermittedVisitorDto: CreatePermittedVisitorDto,
-  ): PermittedVisitorDto {
-    return bookerDetailsService.createBookerPrisonerVisitor(bookerReference, prisonerId, createPermittedVisitorDto)
-  }
+  ): PermittedVisitorDto = bookerDetailsService.createBookerPrisonerVisitor(bookerReference, prisonerId, createPermittedVisitorDto)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @DeleteMapping(CLEAR_BOOKER_CONFIG_CONTROLLER_PATH)
@@ -197,9 +191,7 @@ class BookerDetailConfigController(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
-  ): BookerDto {
-    return bookerDetailsService.clearBookerDetails(bookerReference)
-  }
+  ): BookerDto = bookerDetailsService.clearBookerDetails(bookerReference)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH)
@@ -236,9 +228,7 @@ class BookerDetailConfigController(
     @PathVariable(value = "prisonerId", required = true)
     @NotBlank
     prisonerId: String,
-  ): PermittedPrisonerDto {
-    return bookerDetailsService.activateBookerPrisoner(bookerReference, prisonerId)
-  }
+  ): PermittedPrisonerDto = bookerDetailsService.activateBookerPrisoner(bookerReference, prisonerId)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH)
@@ -278,9 +268,7 @@ class BookerDetailConfigController(
     @PathVariable(value = "visitorId", required = true)
     @NotNull
     visitorId: Long,
-  ): PermittedVisitorDto {
-    return bookerDetailsService.activateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
-  }
+  ): PermittedVisitorDto = bookerDetailsService.activateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH)
@@ -317,9 +305,7 @@ class BookerDetailConfigController(
     @PathVariable(value = "prisonerId", required = true)
     @NotBlank
     prisonerId: String,
-  ): PermittedPrisonerDto {
-    return bookerDetailsService.deactivateBookerPrisoner(bookerReference, prisonerId)
-  }
+  ): PermittedPrisonerDto = bookerDetailsService.deactivateBookerPrisoner(bookerReference, prisonerId)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH)
@@ -359,9 +345,7 @@ class BookerDetailConfigController(
     @PathVariable(value = "visitorId", required = true)
     @NotNull
     visitorId: Long,
-  ): PermittedVisitorDto {
-    return bookerDetailsService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
-  }
+  ): PermittedVisitorDto = bookerDetailsService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @GetMapping(GET_BOOKER_USING_EMAIL)
@@ -395,7 +379,5 @@ class BookerDetailConfigController(
     @PathVariable(value = "emailAddress", required = true)
     @NotBlank
     emailAddress: String,
-  ): BookerDto {
-    return bookerDetailsService.getBookerByEmail(emailAddress)
-  }
+  ): BookerDto = bookerDetailsService.getBookerByEmail(emailAddress)
 }

@@ -31,8 +31,7 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<String>>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getSupportedPrisons Failed for get request $uri")
           Mono.error(e)

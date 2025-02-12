@@ -24,24 +24,16 @@ class EntityHelper(
 ) {
 
   @Transactional
-  fun saveAuthDetail(authDetail: AuthDetail): AuthDetail {
-    return testAuthDetailRepository.saveAndFlush(authDetail)
-  }
+  fun saveAuthDetail(authDetail: AuthDetail): AuthDetail = testAuthDetailRepository.saveAndFlush(authDetail)
 
   @Transactional
-  fun saveBooker(booker: Booker): Booker {
-    return testBookerRepository.saveAndFlush(booker)
-  }
+  fun saveBooker(booker: Booker): Booker = testBookerRepository.saveAndFlush(booker)
 
   @Transactional
-  fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner {
-    return testPermittedPrisonerRepository.saveAndFlush(permittedPrisoner)
-  }
+  fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner = testPermittedPrisonerRepository.saveAndFlush(permittedPrisoner)
 
   @Transactional
-  fun createAssociatedPrisonerVisitor(permittedVisitor: PermittedVisitor): PermittedVisitor {
-    return testPermittedVisitorRepository.saveAndFlush(permittedVisitor)
-  }
+  fun createAssociatedPrisonerVisitor(permittedVisitor: PermittedVisitor): PermittedVisitor = testPermittedVisitorRepository.saveAndFlush(permittedVisitor)
 
   @Transactional
   fun deleteAll() {

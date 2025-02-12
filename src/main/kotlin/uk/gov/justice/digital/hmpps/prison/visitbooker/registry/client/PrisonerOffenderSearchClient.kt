@@ -26,8 +26,7 @@ class PrisonerOffenderSearchClient(
     LOG.trace("getPrisonerById - $prisonerId on prisoner search")
 
     return getPrisonerByIdAsMono(prisonerId)
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("Failed to get prisoner with id - $prisonerId on prisoner search")
           Mono.error(e)
@@ -39,9 +38,7 @@ class PrisonerOffenderSearchClient(
       .blockOptional(apiTimeout).orElseThrow { PrisonerForBookerNotFoundException("Prisoner with id - $prisonerId not found on prisoner search") }
   }
 
-  private fun getPrisonerByIdAsMono(prisonerId: String): Mono<PrisonerDto> {
-    return webClient.get().uri("/prisoner/$prisonerId")
-      .retrieve()
-      .bodyToMono()
-  }
+  private fun getPrisonerByIdAsMono(prisonerId: String): Mono<PrisonerDto> = webClient.get().uri("/prisoner/$prisonerId")
+    .retrieve()
+    .bodyToMono()
 }

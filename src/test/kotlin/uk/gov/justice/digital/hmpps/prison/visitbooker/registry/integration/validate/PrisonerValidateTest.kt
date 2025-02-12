@@ -222,8 +222,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerValidationErrorResponse =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerValidationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerValidationErrorResponse::class.java)
 
   fun validatePrisoner(
     webTestClient: WebTestClient,
