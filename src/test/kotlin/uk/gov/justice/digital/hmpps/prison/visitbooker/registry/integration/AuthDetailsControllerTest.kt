@@ -4,7 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
@@ -12,17 +16,23 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.AUTH_DETAILS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerReference
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.AuthDetail
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Migrate $AUTH_DETAILS_CONTROLLER_PATH")
 class AuthDetailsControllerTest : IntegrationTestBase() {
+  @MockitoSpyBean
+  lateinit var bookerRepositorySpy: BookerRepository
+
+  private val emailAddress = "test@example.com"
+  private val oneLoginSub = "one-login-sub"
+  private val phoneNumber = "0123456789"
+
   @Test
-  fun `when auth details are submitted for the first time with matching booker in db a reference is returned and data auth is saved`() {
+  fun `when auth details are submitted for the first time a booker entry is created`() {
     // Given
-    val authDetailsDto = AuthDetailDto("IamASub", "aled.evans@govt.com", "0123456789")
-    val pilotBooker = bookerRepository.saveAndFlush(Booker(email = authDetailsDto.email))
+    val authDetailsDto = AuthDetailDto(oneLoginSub, emailAddress, phoneNumber)
     // When
     val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
 
@@ -30,35 +40,72 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
     val reference = getReference(responseSpec)
     assertThat(reference).hasSizeGreaterThan(9)
-    assertThat(pilotBooker.oneLoginSub).isNull()
 
-    val updatedPilotBooker = bookerRepository.findByEmailIgnoreCase(authDetailsDto.email)
+    val updatedPilotBooker = bookerRepository.findAll().firstOrNull()
     assertThat(updatedPilotBooker).isNotNull
-    updatedPilotBooker?.let {
-      assertThat(it.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)
-    }
+    assertThat(updatedPilotBooker!!.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)
 
-    val authDetails = authDetailRepository.findByOneLoginSub(authDetailsDto.oneLoginSub)
-    assertThat(authDetails).isNotNull
-    authDetails?.let {
-      assertThat(it.id).isGreaterThan(0)
-      assertThat(it.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)
-      assertThat(it.email).isEqualTo(authDetailsDto.email)
-      assertThat(it.phoneNumber).isEqualTo(authDetailsDto.phoneNumber)
-      assertThat(it.count).isEqualTo(0)
-    }
+    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
+    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(1)).findByOneLoginSub(authDetailsDto.oneLoginSub)
+    verify(bookerRepositorySpy, times(1)).saveAndFlush(any())
   }
 
   @Test
-  fun `when auth details are submitted for the first time but the email address is in a different case even then a reference is returned and data auth is saved`() {
+  fun `when auth details already exists then a reference is returned`() {
     // Given
-    val emailAddress = "aled.evans@govt.com"
+    // already existing booker
+    val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress, oneLoginSub = oneLoginSub))
 
+    // already existing booker
+    val authDetailsDto = AuthDetailDto(oneLoginSub, emailAddress, phoneNumber)
+
+    // When
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val reference = getReference(responseSpec)
+    assertThat(reference).isEqualTo(booker.reference)
+    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
+    verify(bookerRepositorySpy, times(0)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(0)).findByOneLoginSub(authDetailsDto.oneLoginSub)
+  }
+
+  @Test
+  fun `when auth details already exists but the email address is in a different case even then a reference is returned`() {
+    // Given
     // booker details email address is all upper case
-    val pilotBooker = bookerRepository.saveAndFlush(Booker(email = emailAddress.uppercase()))
+    val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress.uppercase(), oneLoginSub = oneLoginSub))
 
     // authDetailsDto has email address in lower case
-    val authDetailsDto = AuthDetailDto("IamASub", emailAddress.lowercase(), "0123456789")
+    val authDetailsDto = AuthDetailDto(oneLoginSub, emailAddress.lowercase(), phoneNumber)
+
+    // When
+    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val reference = getReference(responseSpec)
+    assertThat(reference).isEqualTo(booker.reference)
+    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
+    verify(bookerRepositorySpy, times(0)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(0)).findByOneLoginSub(authDetailsDto.oneLoginSub)
+  }
+
+  @Test
+  fun `when booker exists with same email address but different sub re-registering will create a new entry with same email address and new sub`() {
+    // Given
+    val oldSub = "old-sub"
+    val newSub = "new-sub"
+
+    // booker exists with old Sub and same email address
+    bookerRepository.saveAndFlush(
+      Booker(email = emailAddress, oneLoginSub = oldSub),
+    )
+
+    // auth is called again with a new sub and existing email address
+    val authDetailsDto = AuthDetailDto(oneLoginSub = newSub, email = emailAddress, phoneNumber = phoneNumber)
 
     // When
     val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
@@ -67,94 +114,52 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
     val reference = getReference(responseSpec)
     assertThat(reference).hasSizeGreaterThan(9)
-    assertThat(pilotBooker.oneLoginSub).isNull()
+
+    val newBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, newSub)
+    assertThat(newBookerDetails).isNotNull
+    assertThat(reference).isEqualTo(newBookerDetails!!.reference)
+
+    val oldBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, oldSub)
+    assertThat(reference).isNotEqualTo(oldBookerDetails!!.reference)
+    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
   }
 
   @Test
-  fun `when auth details are submitted twice with different subs but email is the same an exception is thrown`() {
+  fun `when booker exists with same sub but different sub email address the email address is updated with the new sub`() {
     // Given
-    val authDetailsDto1 = AuthDetailDto("IamASub1", "aled.evans@govt.com", "0123456789")
-    bookerRepository.saveAndFlush(Booker(email = authDetailsDto1.email, oneLoginSub = authDetailsDto1.oneLoginSub))
-    val authDetailsDto2 = AuthDetailDto("IamASub2", "aled.evans@govt.com", "0123456789")
+    val oldEmailAddress = emailAddress
+    val newEmailAddress = "test1@example.com"
 
-    // When
-    callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto1)
-    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto2)
+    // booker exists with Sub and old email address
+    bookerRepository.saveAndFlush(
+      Booker(email = oldEmailAddress, oneLoginSub = oneLoginSub),
+    )
 
-    // Then
-    responseSpec.expectStatus().isBadRequest
-  }
-
-  @Test
-  fun `when auth details are submitted for the second time with matching booker in db a reference is returned and data is updated`() {
-    // Given
-    val originalEmail = "aled.evans@govt.com"
-    val authDetailsDto = AuthDetailDto("IamASub", "gwyn.evans@govt.com", "0123456789")
-    val pilotBooker = bookerRepository.saveAndFlush(Booker(email = originalEmail, oneLoginSub = authDetailsDto.oneLoginSub))
-    authDetailRepository.saveAndFlush(AuthDetail(count = 0, oneLoginSub = "IamASub", email = originalEmail, phoneNumber = "999"))
+    // auth is called again with the same sub but new email address
+    val authDetailsDto = AuthDetailDto(oneLoginSub = oneLoginSub, email = newEmailAddress)
 
     // When
     val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
+
     // Then
     responseSpec.expectStatus().isOk
     val reference = getReference(responseSpec)
-    assertThat(reference).isEqualTo(pilotBooker.reference)
+    assertThat(reference).hasSizeGreaterThan(9)
 
-    val updatedPilotBooker = bookerRepository.findByEmailIgnoreCase(originalEmail)
-    assertThat(updatedPilotBooker).isNotNull
-    updatedPilotBooker?.let {
-      assertThat(it.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)
-    }
+    val oldBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(oldEmailAddress, oneLoginSub)
+    assertThat(oldBookerDetails).isNull()
 
-    val authDetails = authDetailRepository.findByOneLoginSub(authDetailsDto.oneLoginSub)
-    assertThat(authDetails).isNotNull
-    authDetails?.let {
-      assertThat(it.id).isGreaterThan(0)
-      assertThat(it.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)
-      assertThat(it.email).isEqualTo(authDetailsDto.email)
-      assertThat(it.phoneNumber).isEqualTo(authDetailsDto.phoneNumber)
-      assertThat(it.count).isEqualTo(1)
-    }
-  }
-
-  @Test
-  fun `when auth details are submitted and booker is not matched then not found exception thrown`() {
-    // Given
-    val authDetailsDto = AuthDetailDto("IamASub", "aled.evans@govt.com", "0123456789")
-
-    // When
-    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
-
-    // Then
-    responseSpec
-      .expectStatus().isNotFound
-      .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("Booker not found")
-      .jsonPath("$.developerMessage").value(Matchers.startsWith("Booker for Email : aled.evans@govt.com not found"))
-  }
-
-  @Test
-  fun `when auth details are submitted for second time and booker is not matched on sub then not found exception thrown`() {
-    // Given
-    val authDetailsDto = AuthDetailDto("IamASub", "aled.evans@govt.com", "0123456789")
-    bookerRepository.saveAndFlush(Booker(email = authDetailsDto.email, oneLoginSub = "Othersub"))
-    authDetailRepository.saveAndFlush(AuthDetail(count = 1, oneLoginSub = authDetailsDto.oneLoginSub, email = authDetailsDto.email, phoneNumber = "999"))
-
-    // When
-    val responseSpec = callBookerAuth(orchestrationServiceRoleHttpHeaders, authDetailsDto)
-
-    // Then
-    responseSpec
-      .expectStatus().isNotFound
-      .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("Booker not found")
-      .jsonPath("$.developerMessage").value(Matchers.startsWith("Booker for sub : IamASub not found"))
+    val newBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(newEmailAddress, oneLoginSub)
+    assertThat(newBookerDetails).isNotNull
+    assertThat(reference).isEqualTo(newBookerDetails!!.reference)
+    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(1)).updateBookerEmailAddress(reference, authDetailsDto.email)
   }
 
   @Test
   fun `when auth details are submitted with in correct role an is exception thrown`() {
     // Given
-    val authDetailsDto = AuthDetailDto("IamASub", "aled.evans@govt.com", "0123456789")
+    val authDetailsDto = AuthDetailDto(oneLoginSub, emailAddress, phoneNumber)
 
     val orchestrationServiceRoleHttpHeaders = setAuthorisation(roles = listOf("ROLE_I_AM_A_HACKER"))
 

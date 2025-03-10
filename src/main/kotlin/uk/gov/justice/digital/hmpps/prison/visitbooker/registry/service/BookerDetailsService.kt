@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
 
 @Service
 class BookerDetailsService(
@@ -42,7 +41,6 @@ class BookerDetailsService(
     }
 
     val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress))
-    booker.reference = createBookerReference(booker.id)
     LOG.info("Booker created with email address - {}, returning new booker with reference {}", emailAddress, booker.reference)
     return BookerDto(booker)
   }
@@ -96,16 +94,6 @@ class BookerDetailsService(
 
     LOG.info("Visitor added to permitted visitors for booker {}", bookerReference)
     return PermittedVisitorDto(permittedVisitor)
-  }
-
-  fun createBookerReference(bookerId: Long): String {
-    LOG.info("Enter BookerDetailsService createBookerReference for bookerId {}", bookerId)
-
-    val existingReference = bookerRepository.findByBookerId(bookerId)
-    if (existingReference.isNullOrBlank()) {
-      return QuotableEncoder(minLength = 10).encode(bookerId)
-    }
-    return existingReference
   }
 
   @Transactional
