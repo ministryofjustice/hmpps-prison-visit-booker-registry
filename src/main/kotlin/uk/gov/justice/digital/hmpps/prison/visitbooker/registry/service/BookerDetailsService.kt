@@ -46,7 +46,7 @@ class BookerDetailsService(
     booker.reference = createBookerReference(booker.id)
     LOG.info("Booker created with email address - {}, returning new booker with reference {}", emailAddress, booker.reference)
 
-    bookerAuditService.auditBookerEvent(bookerReference = booker.reference, text = "Booker created (without sub), with email - ${booker.email}")
+    bookerAuditService.auditBookerCreate(bookerReference = booker.reference, email = booker.email, hasSub = false)
     return BookerDto(booker)
   }
 
@@ -72,7 +72,7 @@ class BookerDetailsService(
 
     booker.permittedPrisoners.add(permittedPrisoner)
 
-    bookerAuditService.auditBookerEvent(bookerReference = booker.reference, text = "Prisoner with prisonNumber - ${createPermittedPrisonerDto.prisonerId} added to booker")
+    bookerAuditService.auditAddPrisoner(bookerReference = booker.reference, prisonNumber = createPermittedPrisonerDto.prisonerId)
     LOG.info("Prisoner added to permitted prisoners for booker {}", bookerReference)
     return PermittedPrisonerDto(permittedPrisoner)
   }
@@ -100,7 +100,7 @@ class BookerDetailsService(
 
     LOG.info("Visitor added to permitted visitors for booker {}", bookerReference)
 
-    bookerAuditService.auditBookerEvent(bookerReference = bookerReference, text = "Visitor ID - ${createPermittedVisitorDto.visitorId} added to prisoner - ${bookerPrisoner.prisonerId}")
+    bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = bookerPrisoner.prisonerId, visitorId = createPermittedVisitorDto.visitorId)
     return PermittedVisitorDto(permittedVisitor)
   }
 
@@ -121,7 +121,7 @@ class BookerDetailsService(
     val booker = getBooker(bookerReference)
     booker.permittedPrisoners.clear()
     val bookerDto = BookerDto(bookerRepository.saveAndFlush(booker))
-    bookerAuditService.auditBookerEvent(bookerReference = bookerReference, text = "Booker details cleared")
+    bookerAuditService.auditClearBookerDetails(bookerReference = bookerReference)
     return bookerDto
   }
 
@@ -152,7 +152,7 @@ class BookerDetailsService(
   fun activateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
     LOG.info("Enter BookerDetailsService activateBookerPrisoner for booker {}", bookerReference)
     val permittedPrisonerDto = setPrisonerBooker(bookerReference, prisonerId, true)
-    bookerAuditService.auditBookerEvent(bookerReference = bookerReference, text = "Prisoner with prisonNumber - $prisonerId activated")
+    bookerAuditService.auditActivatePrisoner(bookerReference = bookerReference, prisonNumber = prisonerId)
     return permittedPrisonerDto
   }
 
@@ -160,7 +160,7 @@ class BookerDetailsService(
   fun deactivateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
     LOG.info("Enter BookerDetailsService deactivateBookerPrisoner for booker {}", bookerReference)
     val permittedPrisonerDto = setPrisonerBooker(bookerReference, prisonerId, false)
-    bookerAuditService.auditBookerEvent(bookerReference = bookerReference, text = "Prisoner with prisonNumber - $prisonerId deactivated")
+    bookerAuditService.auditDeactivatePrisoner(bookerReference = bookerReference, prisonNumber = prisonerId)
     return permittedPrisonerDto
   }
 
@@ -168,7 +168,7 @@ class BookerDetailsService(
   fun activateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
     LOG.info("Enter BookerDetailsService activateBookerPrisonerVisitor for booker {}", bookerReference)
     val permittedVisitorDto = setVisitorPrisonerBooker(bookerReference, prisonerId, visitorId, true)
-    bookerAuditService.auditBookerEvent(bookerReference = bookerReference, text = "Visitor ID - $visitorId activated for prisoner - $prisonerId")
+    bookerAuditService.auditActivateVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = visitorId)
     return permittedVisitorDto
   }
 
@@ -176,7 +176,7 @@ class BookerDetailsService(
   fun deactivateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
     LOG.info("Enter BookerDetailsService deactivateBookerPrisonerVisitor for booker {}", bookerReference)
     val permittedVisitorDto = setVisitorPrisonerBooker(bookerReference, prisonerId, visitorId, false)
-    bookerAuditService.auditBookerEvent(bookerReference = bookerReference, text = "Visitor ID - $visitorId deactivated for prisoner - $prisonerId")
+    bookerAuditService.auditDeactivateVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = visitorId)
     return permittedVisitorDto
   }
 

@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,14 +14,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.DEACTIVATED_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerAuditService
 
 @DisplayName("Deactivate booker prisoner")
 class DeactivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
   @MockitoSpyBean
-  lateinit var bookerAuditServiceSpy: BookerAuditService
+  lateinit var bookerAuditRepositorySpy: BookerAuditRepository
 
   private lateinit var booker: Booker
 
@@ -52,12 +56,16 @@ class DeactivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk
     val associatedPrisoner = getResults(returnResult.expectBody())
 
-    Assertions.assertThat(associatedPrisoner.active).isFalse()
+    assertThat(associatedPrisoner.active).isFalse()
 
     val permittedPrisoners = prisonerRepository.findByBookerId(booker.id)
-    Assertions.assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isFalse
-    Assertions.assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isTrue
-    verify(bookerAuditServiceSpy, times(1)).auditBookerEvent(booker.reference, "Prisoner with prisonNumber - ${prisoner1.prisonerId} deactivated")
+    assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isFalse
+    assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isTrue
+
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, DEACTIVATED_PRISONER, "Prisoner with prisonNumber - ${prisoner1.prisonerId} deactivated")
   }
 
   @Test

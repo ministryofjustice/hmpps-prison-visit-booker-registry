@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.BAD_REQUEST
@@ -13,9 +14,11 @@ import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_VISITOR_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerAuditService
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Create booker prisoner visitor $CREATE_BOOKER_PRISONER_VISITOR_PATH")
@@ -26,7 +29,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   private lateinit var prisoner: PermittedPrisoner
 
   @MockitoSpyBean
-  lateinit var bookerAuditServiceSpy: BookerAuditService
+  lateinit var bookerAuditRepositorySpy: BookerAuditRepository
 
   @BeforeEach
   fun setup() {
@@ -51,7 +54,11 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
     assertThat(dto).isNotNull()
     assertThat(dto.visitorId).isEqualTo(createPrisoner.visitorId)
     assertThat(dto.active).isTrue()
-    verify(bookerAuditServiceSpy, times(1)).auditBookerEvent(booker.reference, "Visitor ID - ${createPrisoner.visitorId} added to prisoner - ${prisoner.prisonerId}")
+
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createPrisoner.visitorId} added to prisoner - ${prisoner.prisonerId}")
   }
 
   @Test
