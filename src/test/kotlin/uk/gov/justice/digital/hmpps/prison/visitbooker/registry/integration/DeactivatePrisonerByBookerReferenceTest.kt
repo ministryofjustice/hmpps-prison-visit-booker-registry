@@ -4,16 +4,22 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerAuditService
 
 @DisplayName("Deactivate booker prisoner")
 class DeactivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
+  @MockitoSpyBean
+  lateinit var bookerAuditServiceSpy: BookerAuditService
 
   private lateinit var booker: Booker
 
@@ -51,6 +57,7 @@ class DeactivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
     val permittedPrisoners = prisonerRepository.findByBookerId(booker.id)
     Assertions.assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isFalse
     Assertions.assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isTrue
+    verify(bookerAuditServiceSpy, times(1)).auditBookerEvent(booker.reference, "Prisoner with prisonNumber - ${prisoner1.prisonerId} deactivated")
   }
 
   @Test

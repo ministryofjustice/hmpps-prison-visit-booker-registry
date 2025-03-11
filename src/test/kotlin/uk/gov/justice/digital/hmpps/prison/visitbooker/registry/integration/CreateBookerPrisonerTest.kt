@@ -4,20 +4,26 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerAuditService
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Create booker prisoner $CREATE_BOOKER_PRISONER_PATH")
 class CreateBookerPrisonerTest : IntegrationTestBase() {
-
   private val emailAddress = "aled@aled.com"
   private lateinit var booker: Booker
+
+  @MockitoSpyBean
+  lateinit var bookerAuditServiceSpy: BookerAuditService
 
   @BeforeEach
   fun setup() {
@@ -41,6 +47,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
     assertThat(dto.active).isTrue()
     assertThat(dto.permittedVisitors).isEmpty()
     assertThat(dto.prisonCode).isEqualTo(PRISON_CODE)
+    verify(bookerAuditServiceSpy, times(1)).auditBookerEvent(booker.reference, "Prisoner with prisonNumber - ${createPrisoner.prisonerId} added to booker")
   }
 
   @Test

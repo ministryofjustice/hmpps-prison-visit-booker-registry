@@ -3,15 +3,22 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.BAD_REQUEST
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerAuditService
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Create booker $CREATE_BOOKER_PATH")
 class CreateBookerTest : IntegrationTestBase() {
+  @MockitoSpyBean
+  lateinit var bookerAuditServiceSpy: BookerAuditService
+
   @Test
   fun `when booker does not exist then booker is created with all child objects`() {
     // Given
@@ -33,6 +40,7 @@ class CreateBookerTest : IntegrationTestBase() {
     assertThat(dto.oneLoginSub).isNull()
     assertThat(dto.email).isEqualTo(emailAddress)
     assertThat(dto.permittedPrisoners).isEmpty()
+    verify(bookerAuditServiceSpy, times(1)).auditBookerEvent(dto.reference, "Booker created (without sub), with email - $emailAddress")
   }
 
   @Test
