@@ -1,19 +1,27 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 
 @DisplayName("Activate booker prisoner")
-class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
+class ActivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
 
   private lateinit var booker: Booker
 
@@ -22,6 +30,12 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
 
   @Autowired
   private lateinit var prisonerRepository: PermittedPrisonerRepository
+
+  @MockitoSpyBean
+  lateinit var bookerAuditRepositorySpy: BookerAuditRepository
+
+  @MockitoSpyBean
+  lateinit var telemetryClientSpy: TelemetryClient
 
   @BeforeEach
   internal fun setUp() {
@@ -51,6 +65,20 @@ class ActivePrisonerByBookerReferenceTest : IntegrationTestBase() {
     val permittedPrisoners = prisonerRepository.findByBookerId(booker.id)
     assertThat(permittedPrisoners.first { prisoner1.prisonerId == it.prisonerId }.active).isTrue
     assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isFalse
+
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      ACTIVATED_PRISONER.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to associatedPrisoner.prisonerId,
+      ),
+      null,
+    )
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, ACTIVATED_PRISONER, "Prisoner with prisonNumber - ${associatedPrisoner.prisonerId} activated")
   }
 
   @Test

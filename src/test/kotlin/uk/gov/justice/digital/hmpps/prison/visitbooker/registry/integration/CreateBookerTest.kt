@@ -1,17 +1,31 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.BAD_REQUEST
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.BOOKER_CREATED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Create booker $CREATE_BOOKER_PATH")
 class CreateBookerTest : IntegrationTestBase() {
+  @MockitoSpyBean
+  lateinit var bookerAuditRepositorySpy: BookerAuditRepository
+
+  @MockitoSpyBean
+  lateinit var telemetryClientSpy: TelemetryClient
+
   @Test
   fun `when booker does not exist then booker is created with all child objects`() {
     // Given
@@ -33,6 +47,20 @@ class CreateBookerTest : IntegrationTestBase() {
     assertThat(dto.oneLoginSub).isNull()
     assertThat(dto.email).isEqualTo(emailAddress)
     assertThat(dto.permittedPrisoners).isEmpty()
+
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BOOKER_CREATED.telemetryEventName,
+      mapOf(
+        "bookerReference" to dto.reference,
+        "email" to emailAddress,
+      ),
+      null,
+    )
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], dto.reference, BOOKER_CREATED, "Booker created (without sub) with email - $emailAddress")
   }
 
   @Test
