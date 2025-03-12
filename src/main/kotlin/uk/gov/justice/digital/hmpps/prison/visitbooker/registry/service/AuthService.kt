@@ -57,7 +57,7 @@ class AuthService(
   }
 
   private fun createBooker(createBookerAuthDetail: AuthDetailDto): Booker {
-    LOG.info("Adding new booker for email address {}", createBookerAuthDetail.email)
+    LOG.info("Adding new booker for email {}", createBookerAuthDetail.email)
     val booker = try {
       bookerRepository.saveAndFlush(
         Booker(
@@ -78,10 +78,10 @@ class AuthService(
     booker: Booker,
     newRegisteredEmailAddress: String,
   ) {
-    LOG.info("Updating booker email address from : {} to : {}", booker.email, newRegisteredEmailAddress)
+    LOG.info("Updating booker email from : {} to : {}", booker.email, newRegisteredEmailAddress)
     bookerRepository.updateBookerEmailAddress(booker.reference, newRegisteredEmailAddress)
     LOG.info(
-      "Successfully updated booker email address from : {} to : {}",
+      "Successfully updated booker email from : {} to : {}",
       booker.email,
       newRegisteredEmailAddress,
     )
