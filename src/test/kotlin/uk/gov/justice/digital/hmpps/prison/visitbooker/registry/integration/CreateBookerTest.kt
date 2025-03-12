@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -21,6 +22,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 class CreateBookerTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
+
+  @MockitoSpyBean
+  lateinit var telemetryClientSpy: TelemetryClient
 
   @Test
   fun `when booker does not exist then booker is created with all child objects`() {
@@ -45,6 +49,15 @@ class CreateBookerTest : IntegrationTestBase() {
     assertThat(dto.permittedPrisoners).isEmpty()
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BOOKER_CREATED.telemetryEventName,
+      mapOf(
+        "bookerReference" to dto.reference,
+        "email" to emailAddress,
+      ),
+      null,
+    )
+
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     assertAuditEvent(auditEvents[0], dto.reference, BOOKER_CREATED, "Booker created (without sub) with email - $emailAddress")
