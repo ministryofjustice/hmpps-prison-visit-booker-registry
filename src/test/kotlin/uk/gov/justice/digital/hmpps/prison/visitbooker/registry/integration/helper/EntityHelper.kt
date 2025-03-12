@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
@@ -21,6 +22,8 @@ class EntityHelper(
   val testPermittedPrisonerRepository: PermittedPrisonerRepository,
 
   val testPermittedVisitorRepository: PermittedVisitorRepository,
+
+  val testBookerAuditRepository: BookerAuditRepository,
 ) {
 
   @Transactional
@@ -48,5 +51,8 @@ class EntityHelper(
 
     testAuthDetailRepository.deleteAll()
     testAuthDetailRepository.flush()
+
+    testBookerAuditRepository.deleteAll()
+    testBookerAuditRepository.flush()
   }
 }

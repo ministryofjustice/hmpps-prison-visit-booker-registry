@@ -4,18 +4,28 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_VISITOR
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 
 @DisplayName("Activate booker prisoner visitor")
-class ActiveVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
+class ActivateVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
+
+  @MockitoSpyBean
+  lateinit var bookerAuditRepositorySpy: BookerAuditRepository
 
   private lateinit var booker: Booker
 
@@ -69,6 +79,12 @@ class ActiveVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
       val permittedVisitors = permittedVisitorRepository.findByPermittedPrisonerId(prisoner.id)
       assertThat(permittedVisitors.first { visitor1.id == it.id }.active).isTrue
       assertThat(permittedVisitors.first { visitor2.id == it.id }.active).isFalse
+
+      verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+
+      val auditEvents = bookerAuditRepository.findAll()
+      assertThat(auditEvents).hasSize(1)
+      assertAuditEvent(auditEvents[0], booker.reference, ACTIVATED_VISITOR, "Visitor ID - ${visitor1.visitorId} activated for prisoner - ${prisoner.prisonerId}")
     }
   }
 

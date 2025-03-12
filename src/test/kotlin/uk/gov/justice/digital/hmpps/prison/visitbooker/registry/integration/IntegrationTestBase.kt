@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -28,15 +29,18 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.VisitSchedulerMockServer
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
@@ -84,6 +88,9 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var permittedPrisonerRepository: PermittedPrisonerRepository
+
+  @Autowired
+  protected lateinit var bookerAuditRepository: BookerAuditRepository
 
   protected lateinit var orchestrationServiceRoleHttpHeaders: (HttpHeaders) -> Unit
   protected lateinit var bookerConfigServiceRoleHttpHeaders: (HttpHeaders) -> Unit
@@ -207,4 +214,10 @@ abstract class IntegrationTestBase {
   protected fun getPermittedPrisonerDto(responseSpec: ResponseSpec): PermittedPrisonerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedPrisonerDto::class.java)
 
   protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
+
+  protected fun assertAuditEvent(auditEvent: BookerAudit, bookerReference: String, auditType: BookerAuditType, text: String) {
+    assertThat(auditEvent.bookerReference).isEqualTo(bookerReference)
+    assertThat(auditEvent.auditType).isEqualTo(auditType)
+    assertThat(auditEvent.text).isEqualTo(text)
+  }
 }
