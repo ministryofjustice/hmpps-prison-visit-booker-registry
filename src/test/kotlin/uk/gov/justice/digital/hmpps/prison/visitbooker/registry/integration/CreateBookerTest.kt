@@ -78,7 +78,7 @@ class CreateBookerTest : IntegrationTestBase() {
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
 
     // Then
-    assertError(responseSpec, "Booker already exists", "The given email address - $emailAddress already exists", BAD_REQUEST)
+    assertError(responseSpec, "Booker already exists", "The given email - $emailAddress already exists", BAD_REQUEST)
   }
 
   @Test

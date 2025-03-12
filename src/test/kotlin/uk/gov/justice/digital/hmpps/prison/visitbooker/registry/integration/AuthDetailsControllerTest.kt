@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.DisplayName
@@ -16,7 +17,11 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.AUTH_DETAILS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerReference
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.BOOKER_CREATED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 
 @Transactional(propagation = SUPPORTS)
@@ -24,6 +29,12 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 class AuthDetailsControllerTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var bookerRepositorySpy: BookerRepository
+
+  @MockitoSpyBean
+  lateinit var bookerAuditRepositorySpy: BookerAuditRepository
+
+  @MockitoSpyBean
+  lateinit var telemetryClientSpy: TelemetryClient
 
   private val emailAddress = "test@example.com"
   private val oneLoginSub = "one-login-sub"
@@ -49,6 +60,18 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(1)).findByOneLoginSub(authDetailsDto.oneLoginSub)
     verify(bookerRepositorySpy, times(1)).saveAndFlush(any())
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BOOKER_CREATED.telemetryEventName,
+      mapOf(
+        "bookerReference" to updatedPilotBooker.reference,
+        "email" to emailAddress,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], updatedPilotBooker.reference, BOOKER_CREATED, "Booker created with email - $emailAddress")
   }
 
   @Test
@@ -70,6 +93,11 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
     verify(bookerRepositorySpy, times(0)).findByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(0)).findByOneLoginSub(authDetailsDto.oneLoginSub)
+
+    verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
   }
 
   @Test
@@ -91,6 +119,10 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
     verify(bookerRepositorySpy, times(0)).findByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(0)).findByOneLoginSub(authDetailsDto.oneLoginSub)
+    verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
   }
 
   @Test
@@ -122,6 +154,18 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val oldBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, oldSub)
     assertThat(reference).isNotEqualTo(oldBookerDetails!!.reference)
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BOOKER_CREATED.telemetryEventName,
+      mapOf(
+        "bookerReference" to reference,
+        "email" to authDetailsDto.email,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], reference, BOOKER_CREATED, "Booker created with email - ${authDetailsDto.email}")
   }
 
   @Test
@@ -154,6 +198,18 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     assertThat(reference).isEqualTo(newBookerDetails!!.reference)
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(1)).updateBookerEmailAddress(reference, authDetailsDto.email)
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      UPDATE_BOOKER_EMAIL.telemetryEventName,
+      mapOf(
+        "bookerReference" to reference,
+        "old_email" to emailAddress,
+        "new_email" to authDetailsDto.email,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], reference, UPDATE_BOOKER_EMAIL, "Booker email updated from $oldEmailAddress to $newEmailAddress for booker reference - $reference")
   }
 
   @Test

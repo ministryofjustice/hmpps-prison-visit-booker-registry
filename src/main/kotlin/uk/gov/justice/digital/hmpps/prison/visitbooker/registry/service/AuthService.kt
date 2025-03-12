@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 @Service
 class AuthService(
   private val bookerRepository: BookerRepository,
+  private val bookerAuditService: BookerAuditService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -68,6 +69,7 @@ class AuthService(
     } catch (e: Exception) {
       throw CreateBookerException("Unable to create booker for email ${createBookerAuthDetail.email}")
     }
+    bookerAuditService.auditBookerCreate(bookerReference = booker.reference, email = booker.email, hasSub = true)
 
     LOG.info("Booker with email ${createBookerAuthDetail.email} successfully created")
 
@@ -78,12 +80,9 @@ class AuthService(
     booker: Booker,
     newRegisteredEmailAddress: String,
   ) {
-    LOG.info("Updating booker email from : {} to : {}", booker.email, newRegisteredEmailAddress)
+    LOG.info("Updating booker email from : {} to : {} for booker reference {}", booker.email, newRegisteredEmailAddress, booker.reference)
     bookerRepository.updateBookerEmailAddress(booker.reference, newRegisteredEmailAddress)
-    LOG.info(
-      "Successfully updated booker email from : {} to : {}",
-      booker.email,
-      newRegisteredEmailAddress,
-    )
+    bookerAuditService.auditUpdateBookerEmailAddress(bookerReference = booker.reference, oldEmail = booker.email, newEmail = newRegisteredEmailAddress)
+    LOG.info("Successfully updated booker email from : {} to : {}", booker.email, newRegisteredEmailAddress)
   }
 }
