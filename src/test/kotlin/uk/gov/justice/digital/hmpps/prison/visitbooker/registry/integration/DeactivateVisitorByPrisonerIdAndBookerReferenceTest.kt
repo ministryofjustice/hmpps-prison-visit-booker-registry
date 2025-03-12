@@ -85,7 +85,7 @@ class DeactivateVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase(
     }
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
-      DEACTIVATED_VISITOR.telemetryType,
+      DEACTIVATED_VISITOR.telemetryEventName,
       mapOf(
         "bookerReference" to booker.reference,
         "prisonerId" to prisoner.prisonerId,

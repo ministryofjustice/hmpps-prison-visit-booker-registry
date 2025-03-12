@@ -57,7 +57,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
-      PRISONER_ADDED.telemetryType,
+      PRISONER_ADDED.telemetryEventName,
       mapOf(
         "bookerReference" to booker.reference,
         "prisonerId" to createPrisoner.prisonerId,

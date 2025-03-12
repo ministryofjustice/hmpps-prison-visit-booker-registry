@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums
 
-enum class BookerAuditType(val telemetryType: String) {
+enum class BookerAuditType(val telemetryEventName: String) {
   BOOKER_CREATED("booker_created"),
   PRISONER_ADDED("prisoner_added"),
   VISITOR_ADDED_TO_PRISONER("visitor_added"),

@@ -50,7 +50,7 @@ class CreateBookerTest : IntegrationTestBase() {
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
-      BOOKER_CREATED.telemetryType,
+      BOOKER_CREATED.telemetryEventName,
       mapOf(
         "bookerReference" to dto.reference,
         "email" to emailAddress,
