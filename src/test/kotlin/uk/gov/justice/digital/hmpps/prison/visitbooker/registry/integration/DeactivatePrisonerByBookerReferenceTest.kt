@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -23,6 +24,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 class DeactivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
+
+  @MockitoSpyBean
+  lateinit var telemetryClientSpy: TelemetryClient
 
   private lateinit var booker: Booker
 
@@ -62,6 +66,15 @@ class DeactivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
     assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isTrue
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      DEACTIVATED_PRISONER.telemetryType,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to prisoner1.prisonerId,
+      ),
+      null,
+    )
+
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     assertAuditEvent(auditEvents[0], booker.reference, DEACTIVATED_PRISONER, "Prisoner with prisonNumber - ${prisoner1.prisonerId} deactivated")

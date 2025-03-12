@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -33,6 +34,9 @@ class ActivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
 
+  @MockitoSpyBean
+  lateinit var telemetryClientSpy: TelemetryClient
+
   @BeforeEach
   internal fun setUp() {
     booker = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
@@ -63,6 +67,14 @@ class ActivatePrisonerByBookerReferenceTest : IntegrationTestBase() {
     assertThat(permittedPrisoners.first { prisoner2.prisonerId == it.prisonerId }.active).isFalse
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      ACTIVATED_PRISONER.telemetryType,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to associatedPrisoner.prisonerId,
+      ),
+      null,
+    )
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
