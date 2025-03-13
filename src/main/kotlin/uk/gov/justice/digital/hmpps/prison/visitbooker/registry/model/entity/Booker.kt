@@ -8,9 +8,11 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
+import jakarta.persistence.PostPersist
 import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
 import java.time.LocalDateTime
 
 @Entity
@@ -31,6 +33,14 @@ class Booker(
 ) {
   @Column
   var reference: String = ""
+    private set
+
+  @PostPersist
+  fun createReference() {
+    if (reference.isBlank()) {
+      reference = QuotableEncoder(minLength = 10).encode(id)
+    }
+  }
 
   @CreationTimestamp
   @Column
