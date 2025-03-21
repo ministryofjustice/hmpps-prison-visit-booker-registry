@@ -1,8 +1,8 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "7.1.4"
-  kotlin("plugin.spring") version "2.1.10"
-  kotlin("plugin.jpa") version "2.1.10"
-  id("org.jetbrains.kotlin.plugin.noarg") version "2.1.10"
+  kotlin("plugin.spring") version "2.1.20"
+  kotlin("plugin.jpa") version "2.1.20"
+  id("org.jetbrains.kotlin.plugin.noarg") version "2.1.20"
   idea
 }
 
@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.2")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
