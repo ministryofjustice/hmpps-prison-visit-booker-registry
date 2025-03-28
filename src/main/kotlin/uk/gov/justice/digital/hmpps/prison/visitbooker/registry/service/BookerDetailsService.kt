@@ -8,11 +8,13 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerForBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
@@ -20,14 +22,16 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
 
 @Service
 class BookerDetailsService(
   private val bookerAuditService: BookerAuditService,
+  private val prisonerValidationService: PrisonerValidationService,
   private val bookerRepository: BookerRepository,
   private val prisonerRepository: PermittedPrisonerRepository,
   private val visitorRepository: PermittedVisitorRepository,
+
 ) {
 
   private companion object {
@@ -186,7 +190,24 @@ class BookerDetailsService(
     return BookerDto(findBookerByEmail(emailAddress))
   }
 
-  fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner = prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerForBookerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
+  @Transactional
+  fun registerPrisoner(bookerReference: String, registerPrisonerRequestDto: RegisterPrisonerRequestDto) {
+    LOG.info("Register booker called with for booker -  {} with request details - {} ", bookerReference, registerPrisonerRequestDto)
+
+    val booker = BookerDto(getBooker(bookerReference))
+    try {
+      prisonerValidationService.validatePrisoner(booker, registerPrisonerRequestDto)
+    } catch (e: RegisterPrisonerValidationException) {
+      LOG.info("Validation failed for register prisoner with booker reference -  {} and request details - {}", bookerReference, registerPrisonerRequestDto)
+      throw e
+    }
+
+    // register prisoner against booker
+    val createPermittedPrisoner = CreatePermittedPrisonerDto(registerPrisonerRequestDto)
+    createBookerPrisoner(bookerReference, createPermittedPrisoner)
+  }
+
+  fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner = prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
 
   private fun getBooker(bookerReference: String): Booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
 

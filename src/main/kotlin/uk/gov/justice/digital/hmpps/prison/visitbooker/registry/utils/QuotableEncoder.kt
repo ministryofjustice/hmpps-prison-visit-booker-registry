@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util
+package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils
 
 import kotlin.random.Random
 
