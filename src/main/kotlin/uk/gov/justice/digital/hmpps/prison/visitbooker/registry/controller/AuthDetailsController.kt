@@ -34,12 +34,17 @@ class AuthDetailsController(
   @PutMapping(AUTH_DETAILS_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
-    summary = "Authenticate one login details against pre populated bookers",
-    description = "Authenticate one login details against pre populated bookers and return BookerReference object to be used for all other api calls for booker information",
+    summary = "Adds a booker entry for a user authorised on GOV.UK one login if it does not exist and / or returns the booker reference for the booker.",
+    description = "Creates a booker to allow access to public visits  if it does not exist and / or returns the booker reference for the given auth details.",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "One login details matched with pre populated booker",
+        description = "Booker successfully added and / or booker reference returned.",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "An error occurred whilst adding the booker.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
       ApiResponse(
         responseCode = "401",
@@ -53,5 +58,5 @@ class AuthDetailsController(
       ),
     ],
   )
-  fun bookerAuthorisation(@RequestBody @Valid authDetailDto: AuthDetailDto): BookerReference = BookerReference(authService.bookerAuthorisation(authDetailDto))
+  fun bookerAuthorisation(@RequestBody @Valid authDetailDto: AuthDetailDto): BookerReference = BookerReference(authService.authoriseBooker(authDetailDto))
 }
