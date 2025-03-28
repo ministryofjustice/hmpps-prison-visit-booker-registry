@@ -236,7 +236,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
           status = HttpStatus.UNPROCESSABLE_ENTITY,
           errorCode = null,
           userMessage = "Prisoner registration validation failed",
-          developerMessage = e.message,
+          developerMessage = "Prisoner registration validation failed with the following errors - ${e.errors.joinToString()}",
           moreInfo = null,
         ),
       )

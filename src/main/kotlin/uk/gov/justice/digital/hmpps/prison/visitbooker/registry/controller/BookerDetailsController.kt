@@ -200,5 +200,5 @@ class BookerDetailsController(
     bookerReference: String,
     @RequestBody
     registerPrisonerRequestDto: RegisterPrisonerRequestDto,
-  ): PermittedPrisonerDto = bookerDetailsService.registerPrisoner(bookerReference, registerPrisonerRequestDto)
+  ) = bookerDetailsService.registerPrisoner(bookerReference, registerPrisonerRequestDto)
 }

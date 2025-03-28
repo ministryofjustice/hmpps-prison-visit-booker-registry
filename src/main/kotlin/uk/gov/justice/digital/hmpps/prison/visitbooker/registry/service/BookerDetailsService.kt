@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
-import kotlin.jvm.Throws
 
 @Service
 class BookerDetailsService(
@@ -192,8 +191,7 @@ class BookerDetailsService(
   }
 
   @Transactional
-  @Throws(RegisterPrisonerValidationException::class)
-  fun registerPrisoner(bookerReference: String, registerPrisonerRequestDto: RegisterPrisonerRequestDto): PermittedPrisonerDto {
+  fun registerPrisoner(bookerReference: String, registerPrisonerRequestDto: RegisterPrisonerRequestDto) {
     LOG.info("Register booker called with for booker -  {} with request details - {} ", bookerReference, registerPrisonerRequestDto)
 
     val booker = BookerDto(getBooker(bookerReference))
@@ -204,9 +202,9 @@ class BookerDetailsService(
       throw e
     }
 
-    // validation passed so create booker
+    // register prisoner against booker
     val createPermittedPrisoner = CreatePermittedPrisonerDto(registerPrisonerRequestDto)
-    return createBookerPrisoner(bookerReference, createPermittedPrisoner)
+    createBookerPrisoner(bookerReference, createPermittedPrisoner)
   }
 
   fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner = prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")

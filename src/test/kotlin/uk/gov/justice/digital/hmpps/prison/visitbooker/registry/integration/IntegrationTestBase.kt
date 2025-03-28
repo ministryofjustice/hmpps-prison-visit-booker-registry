@@ -129,7 +129,7 @@ abstract class IntegrationTestBase {
     booker.reference = QuotableEncoder(minLength = 10).encode(booker.id)
     return entityHelper.saveBooker(booker)
   }
-  fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true, prisonCode = PRISON_CODE))
+  fun createPrisoner(booker: Booker, prisonerId: String, active: Boolean = true): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = active, prisonCode = PRISON_CODE))
 
   fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId, active = true))
 

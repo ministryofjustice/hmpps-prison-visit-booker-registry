@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerOffenderSearchClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_ADDED
@@ -29,6 +30,9 @@ class RegisterPrisonerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
+
+  @MockitoSpyBean
+  lateinit var prisonerOffenderSearchClientSpy: PrisonerOffenderSearchClient
 
   @MockitoSpyBean
   lateinit var telemetryClientSpy: TelemetryClient
@@ -64,22 +68,16 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       dateOfBirth = dateOfBirth,
     )
 
-    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.SC_NOT_FOUND)
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
 
     // When
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
     responseSpec.expectStatus().isCreated
-    val dto = getPermittedPrisonerDto(responseSpec)
-
-    assertThat(dto).isNotNull()
-    assertThat(dto.prisonerId).isEqualTo(registerPrisoner.prisonerId)
-    assertThat(dto.active).isTrue()
-    assertThat(dto.permittedVisitors).isEmpty()
-    assertThat(dto.prisonCode).isEqualTo(PRISON_CODE)
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(telemetryClientSpy, times(1)).trackEvent(
       PRISONER_ADDED.telemetryEventName,
       mapOf(
@@ -94,7 +92,125 @@ class RegisterPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisoner already exists an exception is thrown`() {
+  fun `when register prisoner sent with different case and with spaces it still matches the prisoner is successfully registered against the booker`() {
+    val registerPrisoner = RegisterPrisonerRequestDto(
+      prisonerId = "1233",
+      prisonCode = prisonCode,
+      prisonerFirstName = "    $firstName    ".uppercase(),
+      prisonerLastName = "    $lastName    ".uppercase(),
+      prisonerDateOfBirth = dateOfBirth,
+    )
+
+    val prisonerOffenderDetails = createPrisonerDto(
+      prisonerNumber = prisonerId,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+    )
+
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
+
+    // When
+    val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
+
+    // Then
+    responseSpec.expectStatus().isCreated
+
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      PRISONER_ADDED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to registerPrisoner.prisonerId,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_ADDED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} added to booker")
+  }
+
+  @Test
+  fun `when register prisoner does not match the prisoner is not registered against the booker and fails with a validation error`() {
+    val registerPrisoner = RegisterPrisonerRequestDto(
+      prisonerId = "1233",
+      prisonCode = prisonCode,
+      prisonerFirstName = "different-firstname",
+      prisonerLastName = lastName,
+      prisonerDateOfBirth = dateOfBirth,
+    )
+
+    val prisonerOffenderDetails = createPrisonerDto(
+      prisonerNumber = prisonerId,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+    )
+
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
+
+    // When
+    val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
+
+    // Then
+    assertError(
+      responseSpec,
+      "Prisoner registration validation failed",
+      "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT",
+      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+    )
+
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
+  }
+
+  @Test
+  fun `when register prisoner does not match and fails with multiple errors the prisoner is not registered against the booker and fails with a validation error`() {
+    val registerPrisoner = RegisterPrisonerRequestDto(
+      prisonerId = "1233",
+      prisonCode = prisonCode,
+      prisonerFirstName = "different-firstname",
+      prisonerLastName = "different-lastname",
+      prisonerDateOfBirth = dateOfBirth.plusYears(1),
+    )
+
+    val prisonerOffenderDetails = createPrisonerDto(
+      prisonerNumber = prisonerId,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+    )
+
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
+
+    // When
+    val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
+
+    // Then
+    assertError(
+      responseSpec,
+      "Prisoner registration validation failed",
+      "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT, LAST_NAME_INCORRECT, DOB_INCORRECT",
+      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+    )
+
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
+  }
+
+  @Test
+  fun `when prisoner already exists the prisoner is not registered against the booker and fails with a validation error`() {
     // Given
     val registerPrisoner = RegisterPrisonerRequestDto(
       prisonerId = "1233",
@@ -112,10 +228,43 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    assertError(
+      responseSpec,
+      "Prisoner registration validation failed",
+      "Prisoner registration validation failed with the following errors - PRISONER_ALREADY_EXISTS_FOR_BOOKER",
+      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+    )
 
-    // TODO
-    // assertError(responseSpec, "Booker prisoner already exists", "BookerPrisoner for ${booker.reference} already exists", BAD_REQUEST)
+    verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
+  }
+
+  @Test
+  fun `when booker already has an active prisoner the prisoner is not registered against the booker and fails with a validation error`() {
+    // Given
+    val registerPrisoner = RegisterPrisonerRequestDto(
+      prisonerId = "1233",
+      prisonCode = prisonCode,
+      prisonerFirstName = firstName,
+      prisonerLastName = lastName,
+      prisonerDateOfBirth = dateOfBirth,
+    )
+
+    // an active prisoner already exists for booker
+    val prisoner = createPrisoner(booker, "AB123456", active = true)
+    booker.permittedPrisoners.add(prisoner)
+    bookerRepository.saveAndFlush(booker)
+    // When
+    val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
+
+    // Then
+    assertError(
+      responseSpec,
+      "Prisoner registration validation failed",
+      "Prisoner registration validation failed with the following errors - BOOKER_ALREADY_HAS_A_PRISONER",
+      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+    )
+
+    verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -135,7 +284,12 @@ class RegisterPrisonerTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isEqualTo(HttpStatus.SC_NOT_FOUND)
-    assertError(responseSpec, "Booker not found", "Booker for reference : $bookerReference not found", NOT_FOUND)
+    assertError(
+      responseSpec,
+      userMessage = "Booker not found",
+      developerMessage = "Booker for reference : $bookerReference not found",
+      NOT_FOUND,
+    )
   }
 
   @Test
