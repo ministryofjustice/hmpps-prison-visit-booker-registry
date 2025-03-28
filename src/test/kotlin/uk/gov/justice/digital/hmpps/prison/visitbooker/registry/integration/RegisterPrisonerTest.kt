@@ -268,6 +268,56 @@ class RegisterPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when prisoner not found on prisoner search the prisoner is not registered against the booker and fails with a validation error`() {
+    // Given
+    val registerPrisoner = RegisterPrisonerRequestDto(
+      prisonerId = "1233",
+      prisonCode = prisonCode,
+      prisonerFirstName = firstName,
+      prisonerLastName = lastName,
+      prisonerDateOfBirth = dateOfBirth,
+    )
+
+    // prisoner not found on prisoner-search
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.SC_NOT_FOUND)
+
+    // When
+    val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
+
+    // Then
+    assertError(
+      responseSpec,
+      "Prisoner registration validation failed",
+      "Prisoner registration validation failed with the following errors - PRISONER_NOT_FOUND",
+      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+    )
+
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+  }
+
+  @Test
+  fun `when prisoner search throws INTERNAL_SERVER_ERROR the prisoner is not registered against the booker and fails with a validation error`() {
+    // Given
+    val registerPrisoner = RegisterPrisonerRequestDto(
+      prisonerId = "1233",
+      prisonCode = prisonCode,
+      prisonerFirstName = firstName,
+      prisonerLastName = lastName,
+      prisonerDateOfBirth = dateOfBirth,
+    )
+
+    // prisoner not found on prisoner-search
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.SC_INTERNAL_SERVER_ERROR)
+
+    // When
+    val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
+
+    // Then
+    responseSpec.expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+  }
+
+  @Test
   fun `when booker does not exist then exception is thrown`() {
     // Given
     val registerPrisoner = RegisterPrisonerRequestDto(
