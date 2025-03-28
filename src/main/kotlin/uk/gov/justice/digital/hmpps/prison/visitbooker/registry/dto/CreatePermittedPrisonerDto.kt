@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Create permitted prisoner with permitted visitors associated with the booker.")
 data class CreatePermittedPrisonerDto(
-
   @JsonProperty("prisonerId")
   @Schema(description = "prisoner Id", example = "A1234AA", required = true)
   @field:NotBlank
@@ -22,5 +21,10 @@ data class CreatePermittedPrisonerDto(
   @Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
   @field:NotNull
   val active: Boolean,
-
-)
+) {
+  constructor(registerPrisonerRequestDto: RegisterPrisonerRequestDto) : this(
+    prisonerId = registerPrisonerRequestDto.prisonerId,
+    prisonCode = registerPrisonerRequestDto.prisonCode,
+    active = true,
+  )
+}

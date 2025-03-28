@@ -17,8 +17,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerForBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
 import java.util.*
 
@@ -114,8 +115,8 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
       )
   }
 
-  @ExceptionHandler(PrisonerForBookerNotFoundException::class)
-  fun handleBookerPrisonerNotFoundException(e: PrisonerForBookerNotFoundException): ResponseEntity<ErrorResponse?>? {
+  @ExceptionHandler(PrisonerNotFoundException::class)
+  fun handleBookerPrisonerNotFoundException(e: PrisonerNotFoundException): ResponseEntity<ErrorResponse?>? {
     LOG.debug("Permitted prisoner not found for booker exception caught: {}", e.message)
     return ResponseEntity
       .status(NOT_FOUND)
@@ -224,6 +225,22 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         ),
       )
   }
+
+  @ExceptionHandler(RegisterPrisonerValidationException::class)
+  fun handleRegisterPrisonerValidationException(e: RegisterPrisonerValidationException): ResponseEntity<ErrorResponse?>? {
+    LOG.error("Validation exception", e)
+    return ResponseEntity
+      .status(HttpStatus.UNPROCESSABLE_ENTITY)
+      .body(
+        ErrorResponse(
+          status = HttpStatus.UNPROCESSABLE_ENTITY,
+          errorCode = null,
+          userMessage = "Prisoner registration validation failed",
+          developerMessage = e.message,
+          moreInfo = null,
+        ),
+      )
+  }
 }
 
 open class ErrorResponse(
@@ -242,10 +259,6 @@ open class ErrorResponse(
   ) :
     this(status.value(), errorCode, userMessage, developerMessage, moreInfo)
 }
-
-data class ValidationErrorResponse(
-  val validationErrors: List<String>,
-) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY)
 
 data class BookerPrisonerValidationErrorResponse(
   val validationError: String,
