@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.CreateBookerException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerForBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
@@ -66,6 +67,20 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         ErrorResponse(
           status = BAD_REQUEST,
           userMessage = "Booker already exists",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(CreateBookerException::class)
+  fun handleCreateBookerException(e: CreateBookerException): ResponseEntity<ErrorResponse?>? {
+    LOG.debug("Handle create booker exception caught: {}", e.message)
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "Booker email already exists",
           developerMessage = e.message,
         ),
       )
