@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Regist
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.DOB_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.FIRST_NAME_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.LAST_NAME_INCORRECT
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_ALREADY_EXISTS_FOR_BOOKER
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_NOT_FOUND
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
@@ -307,14 +307,14 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     assertError(
       responseSpec,
       "Prisoner registration validation failed",
-      "Prisoner registration validation failed with the following errors - PRISONER_ALREADY_EXISTS_FOR_BOOKER",
+      "Prisoner registration validation failed with the following errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER",
       org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - PRISONER_ALREADY_EXISTS_FOR_BOOKER")
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER")
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -325,7 +325,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "failureReasons" to PRISONER_ALREADY_EXISTS_FOR_BOOKER.telemetryEventName,
+        "failureReasons" to PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER.telemetryEventName,
       ),
       null,
     )

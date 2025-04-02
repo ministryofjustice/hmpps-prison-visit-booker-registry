@@ -16,7 +16,7 @@ class RegisterPrisonerValidator {
     if (registeredPrisoners.isNotEmpty()) {
       // check if the prisoner is already registered - active / inactive
       if (isPrisonerAlreadyAdded(registeredPrisoners, prisonerIdToRegister)) {
-        errors.add(RegisterPrisonerValidationError.PRISONER_ALREADY_EXISTS_FOR_BOOKER)
+        errors.add(RegisterPrisonerValidationError.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER)
       } else {
         // check if there are already any active prisoners for the booker
         // TODO - to be removed when we allow multiple prisoners.
