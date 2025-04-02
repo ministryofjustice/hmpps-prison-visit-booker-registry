@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
@@ -31,9 +32,7 @@ class BookerDetailsService(
   private val bookerRepository: BookerRepository,
   private val prisonerRepository: PermittedPrisonerRepository,
   private val visitorRepository: PermittedVisitorRepository,
-
 ) {
-
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
   }
@@ -193,12 +192,13 @@ class BookerDetailsService(
   @Transactional
   fun registerPrisoner(bookerReference: String, registerPrisonerRequestDto: RegisterPrisonerRequestDto) {
     LOG.info("Register booker called with for booker -  {} with request details - {} ", bookerReference, registerPrisonerRequestDto)
-
     val booker = BookerDto(getBooker(bookerReference))
     try {
       prisonerValidationService.validatePrisoner(booker, registerPrisonerRequestDto)
+      auditPrisonerSearch(bookerReference, registerPrisonerRequestDto, true)
     } catch (e: RegisterPrisonerValidationException) {
-      LOG.info("Validation failed for register prisoner with booker reference -  {} and request details - {}", bookerReference, registerPrisonerRequestDto)
+      LOG.info("Validation failed for register prisoner with booker reference -  {} and request details - {} with error(s) [{}]", bookerReference, registerPrisonerRequestDto, e.errors)
+      auditPrisonerSearch(bookerReference, registerPrisonerRequestDto, false, e.errors)
       throw e
     }
 
@@ -208,6 +208,25 @@ class BookerDetailsService(
   }
 
   fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner = prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
+
+  @Transactional
+  fun auditPrisonerSearch(
+    bookerReference: String,
+    registerPrisonerRequestDto: RegisterPrisonerRequestDto,
+    success: Boolean,
+    validationFailures: List<RegisterPrisonerValidationError>? = null,
+  ) {
+    bookerAuditService.auditPrisonerSearchDetails(
+      bookerReference = bookerReference,
+      prisonerNumber = registerPrisonerRequestDto.prisonerId,
+      firstName = registerPrisonerRequestDto.prisonerFirstName,
+      lastName = registerPrisonerRequestDto.prisonerLastName,
+      dob = registerPrisonerRequestDto.prisonerDateOfBirth,
+      prisonCode = registerPrisonerRequestDto.prisonCode,
+      success = success,
+      failures = validationFailures,
+    )
+  }
 
   private fun getBooker(bookerReference: String): Booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
 
