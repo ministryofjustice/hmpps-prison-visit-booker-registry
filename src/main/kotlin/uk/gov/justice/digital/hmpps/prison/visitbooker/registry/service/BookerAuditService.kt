@@ -39,7 +39,7 @@ class BookerAuditService(
         const val DOB = "dobEntered"
         const val PRISON_CODE = "prisonCodeEntered"
         const val SUCCESS = "success"
-        const val ERRORS = "validationErrors"
+        const val ERRORS = "failureReasons"
       }
     }
   }
@@ -179,7 +179,7 @@ class BookerAuditService(
     )
 
     failures?.let {
-      properties.put(PrisonerSearchPropertyNames.ERRORS, failures.joinToString())
+      properties.put(PrisonerSearchPropertyNames.ERRORS, failures.joinToString { it.telemetryEventName })
     }
 
     sendTelemetryClientEvent(auditType, properties.toMap())

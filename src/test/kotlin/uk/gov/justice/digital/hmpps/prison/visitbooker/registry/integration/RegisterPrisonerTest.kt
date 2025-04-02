@@ -223,7 +223,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "validationErrors" to FIRST_NAME_INCORRECT.toString(),
+        "failureReasons" to FIRST_NAME_INCORRECT.telemetryEventName,
       ),
       null,
     )
@@ -279,7 +279,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "validationErrors" to "$FIRST_NAME_INCORRECT, $LAST_NAME_INCORRECT, $DOB_INCORRECT",
+        "failureReasons" to "${FIRST_NAME_INCORRECT.telemetryEventName}, ${LAST_NAME_INCORRECT.telemetryEventName}, ${DOB_INCORRECT.telemetryEventName}",
       ),
       null,
     )
@@ -325,7 +325,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "validationErrors" to PRISONER_ALREADY_EXISTS_FOR_BOOKER.toString(),
+        "failureReasons" to PRISONER_ALREADY_EXISTS_FOR_BOOKER.telemetryEventName,
       ),
       null,
     )
@@ -371,7 +371,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "validationErrors" to BOOKER_ALREADY_HAS_A_PRISONER.toString(),
+        "failureReasons" to BOOKER_ALREADY_HAS_A_PRISONER.telemetryEventName,
       ),
       null,
     )
@@ -416,7 +416,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "validationErrors" to PRISONER_NOT_FOUND.toString(),
+        "failureReasons" to PRISONER_NOT_FOUND.telemetryEventName,
       ),
       null,
     )
