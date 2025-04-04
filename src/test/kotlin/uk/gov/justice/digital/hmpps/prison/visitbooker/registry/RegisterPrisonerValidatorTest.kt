@@ -85,6 +85,52 @@ class RegisterPrisonerValidatorTest {
   }
 
   @Test
+  fun `when first name is entered as accented characters while NOMIS has english equivalent validation passes and an empty error list is returned`() {
+    val prisonerDto = PrisonerDto(
+      prisonerNumber = prisonerNumber,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = "aaaeiiiiggnnsssuuy".uppercase(),
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+    )
+
+    val registerPrisonerRequestDto = RegisterPrisonerRequestDto(
+      prisonerId = prisonerNumber,
+      prisonerFirstName = "āăąēîïĩíĝġńñšŝśûůŷ",
+      prisonerLastName = lastName,
+      prisonerDateOfBirth = dateOfBirth,
+      prisonCode = prisonCode,
+    )
+
+    Assertions.assertThat(registerPrisonerValidator.validateAgainstPrisonerSearch(registerPrisonerRequestDto, prisonerDto)).isEmpty()
+  }
+
+  @Test
+  fun `when first name is entered with special characters while NOMIS has english equivalent validation passes and an empty error list is returned`() {
+    val prisonerDto = PrisonerDto(
+      prisonerNumber = prisonerNumber,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = "Jo@@$@£hnn'y",
+
+      // entered with an apostrophe
+      lastName = "O'Brien",
+      dateOfBirth = dateOfBirth,
+    )
+
+    val registerPrisonerRequestDto = RegisterPrisonerRequestDto(
+      prisonerId = prisonerNumber,
+      prisonerFirstName = "J'o'hn''ny",
+      prisonerLastName = "OBrie'n",
+      prisonerDateOfBirth = dateOfBirth,
+      prisonCode = prisonCode,
+    )
+
+    Assertions.assertThat(registerPrisonerValidator.validateAgainstPrisonerSearch(registerPrisonerRequestDto, prisonerDto)).isEmpty()
+  }
+
+  @Test
   fun `when details on register request and prisoner search do not match validation fails and an error list is returned`() {
     val prisonerDto = PrisonerDto(
       prisonerNumber = prisonerNumber,
