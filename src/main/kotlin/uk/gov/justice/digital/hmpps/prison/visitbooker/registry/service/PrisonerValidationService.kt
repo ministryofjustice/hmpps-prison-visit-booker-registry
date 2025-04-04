@@ -1,26 +1,34 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_RELEASED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_SUPPORTED_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.RegisterPrisonerValidator
 
 @Service
 class PrisonerValidationService(
+  @Lazy
   private val bookerDetailsService: BookerDetailsService,
   private val prisonerSearchService: PrisonerSearchService,
   private val visitSchedulerService: VisitSchedulerService,
+  private val registerPrisonerValidator: RegisterPrisonerValidator,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun validatePrisoner(bookerReference: String, prisonerId: String) {
+  fun validatePrisonerBeforeBooking(bookerReference: String, prisonerId: String) {
     LOG.info("Validate booking by booker - {} for prisoner - {}", bookerReference, prisonerId)
 
     val permittedPrisoner = bookerDetailsService.getPermittedPrisoner(bookerReference, prisonerId).let { permittedPrisoner ->
@@ -62,4 +70,34 @@ class PrisonerValidationService(
   } ?: false
 
   private fun hasPrisonerMovedToSupportedPrison(prisonerSearchPrisoner: PrisonerDto): Boolean = visitSchedulerService.getSupportedPublicPrisons().contains(prisonerSearchPrisoner.prisonId)
+
+  private fun getPrisoner(prisonerId: String): PrisonerDto? {
+    val prisoner = try {
+      prisonerSearchService.getPrisoner(prisonerId)
+    } catch (e: PrisonerNotFoundException) {
+      LOG.info("Prisoner with id  $prisonerId not found on prisoner-search")
+      null
+    }
+
+    return prisoner
+  }
+
+  @Throws(PrisonerValidationException::class)
+  fun validatePrisoner(booker: BookerDto, registerPrisonerRequestDto: RegisterPrisonerRequestDto) {
+    val existingRegisteredPrisoners = booker.permittedPrisoners
+
+    // first validate against existing registered prisoners
+    val errors = registerPrisonerValidator.validateAgainstRegisteredPrisoners(registerPrisonerRequestDto, existingRegisteredPrisoners).toMutableList()
+
+    // if no errors check data against prisoner search
+    if (errors.isEmpty()) {
+      val prisoner = getPrisoner(registerPrisonerRequestDto.prisonerId)
+      errors.addAll(registerPrisonerValidator.validateAgainstPrisonerSearch(registerPrisonerRequestDto, prisoner))
+    }
+
+    // if there were validation errors throw an exception
+    if (errors.isNotEmpty()) {
+      throw RegisterPrisonerValidationException(errors)
+    }
+  }
 }

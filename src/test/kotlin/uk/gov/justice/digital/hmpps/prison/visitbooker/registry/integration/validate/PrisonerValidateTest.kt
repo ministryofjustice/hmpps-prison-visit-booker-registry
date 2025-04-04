@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.VALID
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_RELEASED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_SUPPORTED_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_TRANSFERRED_UNSUPPORTED_PRISON
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.PermittedPrisonerTestObject
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
@@ -55,7 +54,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val prisonerId = prisoner.prisonerId
 
     // prisoner is in the same prison as when registered
-    val prisoner1OffenderDetails = PrisonerDto(prisonerNumber = prisonerId, prisonId = prisoner.prisonCode, inOutStatus = null)
+    val prisoner1OffenderDetails = createPrisonerDto(prisonerNumber = prisonerId, prisonId = prisoner.prisonCode, inOutStatus = null)
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisoner1OffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
@@ -68,7 +67,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
   fun `when prisoner is in different prison than when registered and inOutStatus as OUT validation fails with PRISONER_RELEASED as error code`() {
     // When
     val prisonerId = prisoner.prisonerId
-    val prisoner1OffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "OUT", inOutStatus = "OUT")
+    val prisoner1OffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "OUT", inOutStatus = "OUT")
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisoner1OffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
@@ -86,7 +85,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val prisonerId = prisoner.prisonerId
 
     // new prison is a supported prison
-    val prisoner1OffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = null)
+    val prisoner1OffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = null)
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisoner1OffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
@@ -105,7 +104,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val prisonerId = prisoner.prisonerId
 
     // new prison is a supported prison
-    val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = "IN")
+    val prisonerOffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "CFI", inOutStatus = "IN")
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
@@ -124,7 +123,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val prisonerId = prisoner.prisonerId
 
     // new prison is an unsupported prison
-    val prisoner1OffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = null)
+    val prisoner1OffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = null)
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisoner1OffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
@@ -143,7 +142,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val prisonerId = prisoner.prisonerId
 
     // new prison is a supported prison
-    val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
+    val prisonerOffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
@@ -191,7 +190,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
   fun `when call to visit scheduler returns NOT_FOUND then NOT_FOUND status is returned`() {
     // When
     val prisonerId = prisoner.prisonerId
-    val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
+    val prisonerOffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.SC_NOT_FOUND)
     visitSchedulerMockServer.stubGetSupportedPublicPrisons(null)
 
@@ -208,7 +207,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
   fun `when call to visit scheduler returns INTERNAL_SERVER_ERROR then INTERNAL_SERVER_ERROR status is returned`() {
     // When
     val prisonerId = prisoner.prisonerId
-    val prisonerOffenderDetails = PrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
+    val prisonerOffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.SC_NOT_FOUND)
     visitSchedulerMockServer.stubGetSupportedPublicPrisons(null, HttpStatus.SC_INTERNAL_SERVER_ERROR)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)

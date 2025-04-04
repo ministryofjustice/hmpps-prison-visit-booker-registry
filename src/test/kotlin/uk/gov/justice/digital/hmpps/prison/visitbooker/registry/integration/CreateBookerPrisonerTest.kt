@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_ADDED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_REGISTERED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
@@ -57,7 +57,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
-      PRISONER_ADDED.telemetryEventName,
+      PRISONER_REGISTERED.telemetryEventName,
       mapOf(
         "bookerReference" to booker.reference,
         "prisonerId" to createPrisoner.prisonerId,
@@ -66,7 +66,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_ADDED, "Prisoner with prisonNumber - ${createPrisoner.prisonerId} added to booker")
+    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${createPrisoner.prisonerId} registered against booker")
   }
 
   @Test

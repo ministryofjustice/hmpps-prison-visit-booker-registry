@@ -23,13 +23,16 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CLEAR
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.CREATE_BOOKER_PRISONER_VISITOR_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
@@ -43,7 +46,8 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
+import java.time.LocalDate
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -125,7 +129,7 @@ abstract class IntegrationTestBase {
     booker.reference = QuotableEncoder(minLength = 10).encode(booker.id)
     return entityHelper.saveBooker(booker)
   }
-  fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = true, prisonCode = PRISON_CODE))
+  fun createPrisoner(booker: Booker, prisonerId: String, active: Boolean = true): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = active, prisonCode = PRISON_CODE))
 
   fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId, active = true))
 
@@ -179,6 +183,18 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  protected fun callRegisterPrisoner(
+    authHttpHeaders: (HttpHeaders) -> Unit,
+    registerPrisonerRequestDto: RegisterPrisonerRequestDto,
+    bookerReference: String,
+  ): ResponseSpec {
+    val uri = REGISTER_PRISONER.replace("{bookerReference}", bookerReference)
+    return webTestClient.put().uri(uri)
+      .headers(authHttpHeaders)
+      .body(BodyInserters.fromValue(registerPrisonerRequestDto))
+      .exchange()
+  }
+
   protected fun callCreateBookerPrisonerVisitor(
     authHttpHeaders: (HttpHeaders) -> Unit,
     createPermittedVisitorDto: CreatePermittedVisitorDto,
@@ -220,4 +236,20 @@ abstract class IntegrationTestBase {
     assertThat(auditEvent.auditType).isEqualTo(auditType)
     assertThat(auditEvent.text).isEqualTo(text)
   }
+
+  protected fun createPrisonerDto(
+    prisonerNumber: String,
+    prisonId: String = "HEI",
+    inOutStatus: String?,
+    firstName: String = "John",
+    lastName: String = "Smith",
+    dateOfBirth: LocalDate = LocalDate.of(1901, 1, 1),
+  ): PrisonerDto = PrisonerDto(
+    prisonerNumber = prisonerNumber,
+    prisonId = prisonId,
+    inOutStatus = inOutStatus,
+    firstName = firstName,
+    lastName = lastName,
+    dateOfBirth = dateOfBirth,
+  )
 }

@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerForBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.ClientUtils.Companion.isNotFoundError
 import java.time.Duration
 
@@ -32,10 +32,10 @@ class PrisonerOffenderSearchClient(
           Mono.error(e)
         } else {
           LOG.error("Prisoner with id - $prisonerId not found.")
-          Mono.error { PrisonerForBookerNotFoundException("Prisoner with id - $prisonerId not found on prisoner search") }
+          Mono.error { PrisonerNotFoundException("Prisoner with id - $prisonerId not found on prisoner search") }
         }
       }
-      .blockOptional(apiTimeout).orElseThrow { PrisonerForBookerNotFoundException("Prisoner with id - $prisonerId not found on prisoner search") }
+      .blockOptional(apiTimeout).orElseThrow { PrisonerNotFoundException("Prisoner with id - $prisonerId not found on prisoner search") }
   }
 
   private fun getPrisonerByIdAsMono(prisonerId: String): Mono<PrisonerDto> = webClient.get().uri("/prisoner/$prisonerId")
