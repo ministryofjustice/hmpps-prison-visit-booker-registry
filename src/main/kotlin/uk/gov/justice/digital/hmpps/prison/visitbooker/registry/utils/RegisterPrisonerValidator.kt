@@ -80,8 +80,6 @@ class RegisterPrisonerValidator {
       sanitiseText(prisonerSearchName)
     }
 
-    println("toRegisterName: $toRegisterName")
-    println("prisonApiName: $prisonApiName")
     return toRegisterName.equals(prisonApiName, ignoreCase = true)
   }
 
