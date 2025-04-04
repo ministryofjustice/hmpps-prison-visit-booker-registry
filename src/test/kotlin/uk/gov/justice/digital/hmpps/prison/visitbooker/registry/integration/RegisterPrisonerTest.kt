@@ -174,6 +174,64 @@ class RegisterPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when register prisoner sent with special characters it still matches the prisoner is successfully registered against the booker`() {
+    val registerPrisoner = RegisterPrisonerRequestDto(
+      prisonerId = "1233",
+      prisonCode = prisonCode,
+      prisonerFirstName = "T%%&EST",
+      prisonerLastName = "U£$@£SER",
+      prisonerDateOfBirth = dateOfBirth,
+    )
+
+    val prisonerOffenderDetails = createPrisonerDto(
+      prisonerNumber = prisonerId,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+    )
+
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
+
+    // When
+    val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
+
+    // Then
+    responseSpec.expectStatus().isCreated
+
+    verify(bookerAuditRepositorySpy, times(2)).saveAndFlush(any<BookerAudit>())
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      REGISTER_PRISONER_SEARCH.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to registerPrisoner.prisonerId,
+        "firstNameEntered" to registerPrisoner.prisonerFirstName,
+        "lastNameEntered" to registerPrisoner.prisonerLastName,
+        "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
+        "prisonCodeEntered" to registerPrisoner.prisonCode,
+        "success" to true.toString(),
+      ),
+      null,
+    )
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      PRISONER_REGISTERED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to registerPrisoner.prisonerId,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(2)
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
+  }
+
+  @Test
   fun `when register prisoner does not match the prisoner is not registered against the booker and fails with a validation error`() {
     val registerPrisoner = RegisterPrisonerRequestDto(
       prisonerId = prisonerId,
