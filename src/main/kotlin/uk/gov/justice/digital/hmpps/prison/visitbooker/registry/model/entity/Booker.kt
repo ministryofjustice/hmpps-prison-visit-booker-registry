@@ -12,7 +12,7 @@ import jakarta.persistence.PostPersist
 import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.util.QuotableEncoder
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
 import java.time.LocalDateTime
 
 @Entity

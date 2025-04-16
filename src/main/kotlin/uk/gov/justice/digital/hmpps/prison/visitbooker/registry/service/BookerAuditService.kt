@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_VISITOR
@@ -9,11 +11,14 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.CLEAR_BOOKER_DETAILS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.DEACTIVATED_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.DEACTIVATED_VISITOR
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_ADDED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_REGISTERED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.REGISTER_PRISONER_SEARCH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
+import java.time.LocalDate
 
 @Service
 class BookerAuditService(
@@ -26,6 +31,18 @@ class BookerAuditService(
     private const val EMAIL_PROPERTY_NAME = "email"
     private const val PRISON_NUMBER_PROPERTY_NAME = "prisonerId"
     private const val VISITOR_ID_PROPERTY_NAME = "visitorId"
+
+    private interface PrisonerSearchPropertyNames {
+      companion object {
+        const val PRISON_NUMBER = "prisonerId"
+        const val FIRST_NAME = "firstNameEntered"
+        const val LAST_NAME = "lastNameEntered"
+        const val DOB = "dobEntered"
+        const val PRISON_CODE = "prisonCodeEntered"
+        const val SUCCESS = "success"
+        const val ERRORS = "failureReasons"
+      }
+    }
   }
 
   fun auditBookerCreate(bookerReference: String, email: String, hasSub: Boolean) {
@@ -43,8 +60,8 @@ class BookerAuditService(
   }
 
   fun auditAddPrisoner(bookerReference: String, prisonNumber: String) {
-    val auditType = PRISONER_ADDED
-    val text = "Prisoner with prisonNumber - $prisonNumber added to booker"
+    val auditType = PRISONER_REGISTERED
+    val text = "Prisoner with prisonNumber - $prisonNumber registered against booker"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
@@ -147,6 +164,40 @@ class BookerAuditService(
       "new_email" to newEmail,
     )
     sendTelemetryClientEvent(auditType, properties)
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  fun auditPrisonerSearchDetails(
+    bookerReference: String,
+    prisonerNumber: String,
+    firstName: String,
+    lastName: String,
+    dob: LocalDate,
+    prisonCode: String,
+    success: Boolean,
+    failures: List<RegisterPrisonerValidationError>?,
+  ) {
+    val auditType = REGISTER_PRISONER_SEARCH
+    val successOrFailureText = if (success) "was successful" else "failed with errors - ${failures?.joinToString { it.toString() }}"
+    val text = "Prisoner search for prisonNumber - $prisonerNumber, firstName: $firstName, lastName: $lastName, DOB: $dob, prisonCode: $prisonCode $successOrFailureText"
+    auditBookerEvent(bookerReference, auditType, text)
+
+    // send event to telemetry client
+    val properties = mutableMapOf(
+      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+      PrisonerSearchPropertyNames.PRISON_NUMBER to prisonerNumber,
+      PrisonerSearchPropertyNames.FIRST_NAME to firstName,
+      PrisonerSearchPropertyNames.LAST_NAME to lastName,
+      PrisonerSearchPropertyNames.DOB to dob.toString(),
+      PrisonerSearchPropertyNames.PRISON_CODE to prisonCode,
+      PrisonerSearchPropertyNames.SUCCESS to success.toString(),
+    )
+
+    failures?.let {
+      properties.put(PrisonerSearchPropertyNames.ERRORS, failures.joinToString { it.telemetryEventName })
+    }
+
+    sendTelemetryClientEvent(auditType, properties.toMap())
   }
 
   private fun auditBookerEvent(bookerReference: String, auditType: BookerAuditType, text: String) {
