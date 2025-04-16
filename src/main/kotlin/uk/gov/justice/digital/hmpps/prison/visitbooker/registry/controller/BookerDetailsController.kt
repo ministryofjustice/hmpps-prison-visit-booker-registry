@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
@@ -17,6 +19,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.BookerPri
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerValidationService
 
@@ -24,6 +27,7 @@ const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReferen
 const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
+const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
 
 @RestController
 class BookerDetailsController(
@@ -147,7 +151,7 @@ class BookerDetailsController(
       ),
     ],
   )
-  fun validatePrisoner(
+  fun validatePrisonerBeforeBooking(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
@@ -159,6 +163,42 @@ class BookerDetailsController(
     @NotBlank
     prisonerId: String,
   ) {
-    prisonerValidationService.validatePrisoner(bookerReference, prisonerId)
+    prisonerValidationService.validatePrisonerBeforeBooking(bookerReference, prisonerId)
   }
+
+  @PreAuthorize("hasAnyRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
+  @PutMapping(REGISTER_PRISONER)
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(
+    summary = "Validates a prisoner's details against prisoner search and adds the prisoner against the prisoner if valid",
+    description = "Validates a prisoner's details against prisoner search and adds the prisoner against the prisoner if valid",
+    responses = [
+      ApiResponse(
+        responseCode = "201",
+        description = "Prisoner added against booker for booking visits.",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to register a prisoner against a booker",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "422",
+        description = "Register prisoner validation failed",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun registerPrisoner(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @RequestBody
+    registerPrisonerRequestDto: RegisterPrisonerRequestDto,
+  ) = bookerDetailsService.registerPrisoner(bookerReference, registerPrisonerRequestDto)
 }
