@@ -1,0 +1,1 @@
+ALTER TABLE booker_audit DROP CONSTRAINT booker_audit_booker_reference_key
