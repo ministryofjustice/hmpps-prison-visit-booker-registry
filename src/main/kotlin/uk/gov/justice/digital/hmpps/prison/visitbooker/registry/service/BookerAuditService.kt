@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.DEACTIVATED_VISITOR
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_REGISTERED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.REGISTER_PRISONER_SEARCH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
@@ -147,6 +148,20 @@ class BookerAuditService(
     // send event to telemetry client
     val properties = mapOf(
       BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+    )
+    sendTelemetryClientEvent(auditType, properties)
+  }
+
+  fun auditUpdateBookerEmailAddress(bookerReference: String, oldEmail: String, newEmail: String) {
+    val auditType = UPDATE_BOOKER_EMAIL
+    val text = "Booker email updated from $oldEmail to $newEmail for booker reference - $bookerReference"
+    auditBookerEvent(bookerReference, auditType, text)
+
+    // send event to telemetry client
+    val properties = mapOf(
+      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+      "old_email" to oldEmail,
+      "new_email" to newEmail,
     )
     sendTelemetryClientEvent(auditType, properties)
   }

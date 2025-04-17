@@ -4,54 +4,85 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.AuthDetail
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.CreateBookerException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 
 @Service
 class AuthService(
-  private val authDetailRepository: AuthDetailRepository,
   private val bookerRepository: BookerRepository,
-  private val bookerDetailsService: BookerDetailsService,
+  private val bookerAuditService: BookerAuditService,
 ) {
-
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
   }
 
   @Transactional
-  fun bookerAuthorisation(createBookerAuthDetailDto: AuthDetailDto): String {
-    LOG.info("Enter AuthService bookerAuthorisation")
+  fun authoriseBooker(createBookerAuthDetail: AuthDetailDto): String {
+    // find booker by email address and sub
+    var booker = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(createBookerAuthDetail.email, createBookerAuthDetail.oneLoginSub)
 
-    val authDetail = saveOrGet(createBookerAuthDetailDto)
-    return match(authDetail).reference
+    if (booker == null) {
+      // if not found check if the booker exists with the same email address but different sub
+      booker = createBookerPostChecks(createBookerAuthDetail)
+    }
+
+    return booker?.reference ?: createBooker(createBookerAuthDetail).reference
   }
 
-  private fun match(authDetail: AuthDetail): Booker {
-    var booker: Booker
-    if (authDetail.count == 0) {
-      booker = bookerRepository.findByEmailIgnoreCase(authDetail.email) ?: throw BookerNotFoundException("Booker for Email : ${authDetail.email} not found")
-      booker.oneLoginSub = authDetail.oneLoginSub
-      // Create reference and then save
-      if (booker.reference.isNullOrBlank()) {
-        LOG.info("Generating booker reference")
-        booker.reference = bookerDetailsService.createBookerReference(booker.id)
+  private fun createBookerPostChecks(createBookerAuthDetail: AuthDetailDto): Booker? {
+    var booker = bookerRepository.findByEmailIgnoreCase(createBookerAuthDetail.email)
+    // if not found check if the booker for the same sub but different email address exists
+    if (booker == null) {
+      booker = bookerRepository.findByOneLoginSub(createBookerAuthDetail.oneLoginSub)?.also {
+        processBookerWithMatchingSubButDifferentEmailAddress(createBookerAuthDetail, it)
       }
-      booker = bookerRepository.saveAndFlush(booker)
     } else {
-      booker = bookerRepository.findByOneLoginSub(authDetail.oneLoginSub) ?: throw BookerNotFoundException("Booker for sub : ${authDetail.oneLoginSub} not found")
+      processBookerWithMatchingEmailAddressButDifferentSub(createBookerAuthDetail, booker).also {
+        booker = it
+      }
     }
+
     return booker
   }
 
-  private fun saveOrGet(createBookerAuthDetailDto: AuthDetailDto): AuthDetail = authDetailRepository.findByOneLoginSub(createBookerAuthDetailDto.oneLoginSub)?.let {
-    it.email = createBookerAuthDetailDto.email
-    it.phoneNumber = createBookerAuthDetailDto.phoneNumber
-    it.count++
-    it
-  } ?: run {
-    authDetailRepository.saveAndFlush(AuthDetail(createBookerAuthDetailDto))
+  private fun processBookerWithMatchingEmailAddressButDifferentSub(createBookerAuthDetail: AuthDetailDto, booker: Booker): Booker {
+    // TODO - set the existing booker to inactive?
+    return createBooker(createBookerAuthDetail)
+  }
+
+  private fun processBookerWithMatchingSubButDifferentEmailAddress(createBookerAuthDetail: AuthDetailDto, booker: Booker) {
+    // if found with a sub - update the email address on the booker entry and return the updated entry
+    // TODO - would be ideal to add some audit logging for the booker here
+    updateBookerEmailAddress(booker, createBookerAuthDetail.email)
+  }
+
+  private fun createBooker(createBookerAuthDetail: AuthDetailDto): Booker {
+    LOG.info("Adding new booker for email {}", createBookerAuthDetail.email)
+    val booker = try {
+      bookerRepository.saveAndFlush(
+        Booker(
+          oneLoginSub = createBookerAuthDetail.oneLoginSub,
+          email = createBookerAuthDetail.email,
+        ),
+      )
+    } catch (e: Exception) {
+      throw CreateBookerException("Unable to create booker for email ${createBookerAuthDetail.email}")
+    }
+    bookerAuditService.auditBookerCreate(bookerReference = booker.reference, email = booker.email, hasSub = true)
+
+    LOG.info("Booker with email ${createBookerAuthDetail.email} successfully created")
+
+    return booker
+  }
+
+  private fun updateBookerEmailAddress(
+    booker: Booker,
+    newRegisteredEmailAddress: String,
+  ) {
+    LOG.info("Updating booker email from : {} to : {} for booker reference {}", booker.email, newRegisteredEmailAddress, booker.reference)
+    bookerRepository.updateBookerEmailAddress(booker.reference, newRegisteredEmailAddress)
+    bookerAuditService.auditUpdateBookerEmailAddress(bookerReference = booker.reference, oldEmail = booker.email, newEmail = newRegisteredEmailAddress)
+    LOG.info("Successfully updated booker email from : {} to : {}", booker.email, newRegisteredEmailAddress)
   }
 }

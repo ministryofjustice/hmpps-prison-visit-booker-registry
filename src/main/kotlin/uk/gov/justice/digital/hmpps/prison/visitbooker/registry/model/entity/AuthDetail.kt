@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
 import java.time.LocalDateTime
 
+@Deprecated("no longer needed, to be removed")
 @Entity
 @Table(name = "auth_detail")
 class AuthDetail(

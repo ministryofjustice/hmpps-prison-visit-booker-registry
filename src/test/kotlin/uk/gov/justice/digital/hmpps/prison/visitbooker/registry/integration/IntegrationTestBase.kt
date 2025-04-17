@@ -42,11 +42,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.AuthDetailRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
 import java.time.LocalDate
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -83,9 +81,6 @@ abstract class IntegrationTestBase {
 
   @Autowired
   lateinit var entityHelper: EntityHelper
-
-  @Autowired
-  protected lateinit var authDetailRepository: AuthDetailRepository
 
   @Autowired
   protected lateinit var bookerRepository: BookerRepository
@@ -126,7 +121,6 @@ abstract class IntegrationTestBase {
 
   fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
     val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
-    booker.reference = QuotableEncoder(minLength = 10).encode(booker.id)
     return entityHelper.saveBooker(booker)
   }
   fun createPrisoner(booker: Booker, prisonerId: String, active: Boolean = true): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = active, prisonCode = PRISON_CODE))

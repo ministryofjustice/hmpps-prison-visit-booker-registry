@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
 
 @Service
 class BookerDetailsService(
@@ -41,13 +40,12 @@ class BookerDetailsService(
   fun create(emailAddress: String): BookerDto {
     LOG.info("Enter BookerDetailsService create")
     bookerRepository.findByEmailIgnoreCase(emailAddress)?.let {
-      LOG.error("Found existing user for given email address - {}", emailAddress)
-      throw BookerAlreadyExistsException("The given email address - $emailAddress already exists")
+      LOG.error("Found existing user for given email - {}", emailAddress)
+      throw BookerAlreadyExistsException("The given email - $emailAddress already exists")
     }
 
     val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress))
-    booker.reference = createBookerReference(booker.id)
-    LOG.info("Booker created with email address - {}, returning new booker with reference {}", emailAddress, booker.reference)
+    LOG.info("Booker created with email - {}, returning new booker with reference {}", emailAddress, booker.reference)
 
     bookerAuditService.auditBookerCreate(bookerReference = booker.reference, email = booker.email, hasSub = false)
     return BookerDto(booker)
@@ -105,16 +103,6 @@ class BookerDetailsService(
 
     bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = bookerPrisoner.prisonerId, visitorId = createPermittedVisitorDto.visitorId)
     return PermittedVisitorDto(permittedVisitor)
-  }
-
-  fun createBookerReference(bookerId: Long): String {
-    LOG.info("Enter BookerDetailsService createBookerReference for bookerId {}", bookerId)
-
-    val existingReference = bookerRepository.findByBookerId(bookerId)
-    if (existingReference.isNullOrBlank()) {
-      return QuotableEncoder(minLength = 10).encode(bookerId)
-    }
-    return existingReference
   }
 
   @Transactional
