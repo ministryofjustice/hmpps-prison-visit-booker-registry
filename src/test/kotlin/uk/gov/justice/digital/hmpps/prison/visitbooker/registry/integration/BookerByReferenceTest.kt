@@ -8,13 +8,13 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.GET_BOOKER_USING_EMAIL
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.GET_BOOKER_USING_REFERENCE
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 
 @Transactional(propagation = SUPPORTS)
-@DisplayName("Get booker by email")
-class BookerByEmailTest : IntegrationTestBase() {
+@DisplayName("Get booker by reference")
+class BookerByReferenceTest : IntegrationTestBase() {
 
   private lateinit var booker1: Booker
   private lateinit var booker2: Booker
@@ -43,9 +43,9 @@ class BookerByEmailTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `get booker by email`() {
+  fun `get booker by reference`() {
     // When
-    val responseSpec = getBookerByEmail(webTestClient, booker1.email, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = getBookerByReference(webTestClient, booker1.reference, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -57,32 +57,32 @@ class BookerByEmailTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when invalid email then NOT_FOUND status is returned`() {
+  fun `when invalid reference then NOT_FOUND status is returned`() {
     // When
-    val responseSpec = getBookerByEmail(webTestClient, "invalid-email", bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = getBookerByReference(webTestClient, "invalid-reference", bookerConfigServiceRoleHttpHeaders)
     responseSpec.expectStatus().isNotFound
     responseSpec
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("Booker not found")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Booker for email : invalid-email not found")
+      .isEqualTo("Booker for reference : invalid-reference not found")
   }
 
   @Test
   fun `access forbidden when no role`() {
     // When
-    val responseSpec = getBookerByEmail(webTestClient, booker1.reference, setAuthorisation(roles = listOf()))
+    val responseSpec = getBookerByReference(webTestClient, booker1.reference, setAuthorisation(roles = listOf()))
     responseSpec.expectStatus().isForbidden
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerDto = objectMapper.readValue(returnResult.returnResult().responseBody, BookerDto::class.java)
 
-  fun getBookerByEmail(
+  fun getBookerByReference(
     webTestClient: WebTestClient,
-    emailAddress: String,
+    bookerReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    val url = GET_BOOKER_USING_EMAIL.replace("{emailAddress}", emailAddress)
+    val url = GET_BOOKER_USING_REFERENCE.replace("{bookerReference}", bookerReference)
     return webTestClient.get().uri(url)
       .headers(authHttpHeaders)
       .exchange()

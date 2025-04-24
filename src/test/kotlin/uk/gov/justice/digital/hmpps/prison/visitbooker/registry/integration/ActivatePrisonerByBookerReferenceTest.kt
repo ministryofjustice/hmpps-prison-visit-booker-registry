@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
