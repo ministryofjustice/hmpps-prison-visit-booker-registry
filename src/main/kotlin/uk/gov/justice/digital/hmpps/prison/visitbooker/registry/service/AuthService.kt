@@ -29,6 +29,7 @@ class AuthService(
     return booker.reference
   }
 
+  // TODO: Should we log to application insights if either of the IF statement come true?
   private fun findByDetailedBookerSearch(createBookerAuthDetail: AuthDetailDto): Booker {
     val bookerViaOneLogin = bookerRepository.findByOneLoginSub(createBookerAuthDetail.oneLoginSub)
     if (bookerViaOneLogin != null) {
