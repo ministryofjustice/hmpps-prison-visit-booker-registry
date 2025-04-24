@@ -19,11 +19,11 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CLEAR_BOOKER_CONFIG_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
