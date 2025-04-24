@@ -57,7 +57,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     assertThat(updatedPilotBooker!!.oneLoginSub).isEqualTo(authDetailsDto.oneLoginSub)
 
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
-    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(1)).findAllByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(1)).findByOneLoginSub(authDetailsDto.oneLoginSub)
     verify(bookerRepositorySpy, times(1)).saveAndFlush(any())
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
@@ -91,7 +91,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val reference = getReference(responseSpec)
     assertThat(reference).isEqualTo(booker.reference)
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
-    verify(bookerRepositorySpy, times(0)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(0)).findAllByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(0)).findByOneLoginSub(authDetailsDto.oneLoginSub)
 
     verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
@@ -117,7 +117,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val reference = getReference(responseSpec)
     assertThat(reference).isEqualTo(booker.reference)
     verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, authDetailsDto.oneLoginSub)
-    verify(bookerRepositorySpy, times(0)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(0)).findAllByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(0)).findByOneLoginSub(authDetailsDto.oneLoginSub)
     verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
@@ -153,7 +153,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
 
     val oldBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(authDetailsDto.email, oldSub)
     assertThat(reference).isNotEqualTo(oldBookerDetails!!.reference)
-    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
+    verify(bookerRepositorySpy, times(1)).findAllByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
       BOOKER_CREATED.telemetryEventName,
@@ -169,7 +169,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker exists with same sub but different sub email address the email address is updated with the new sub`() {
+  fun `when booker exists with same sub but different email address the email address is updated with the new sub`() {
     // Given
     val oldEmailAddress = emailAddress
     val newEmailAddress = "test1@example.com"
@@ -196,7 +196,6 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val newBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(newEmailAddress, oneLoginSub)
     assertThat(newBookerDetails).isNotNull
     assertThat(reference).isEqualTo(newBookerDetails!!.reference)
-    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(1)).updateBookerEmailAddress(reference, authDetailsDto.email)
     verify(telemetryClientSpy, times(1)).trackEvent(
       UPDATE_BOOKER_EMAIL.telemetryEventName,

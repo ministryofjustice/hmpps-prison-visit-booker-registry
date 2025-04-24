@@ -414,5 +414,5 @@ class BookerDetailConfigController(
     @PathVariable(value = "emailAddress", required = true)
     @NotBlank
     emailAddress: String,
-  ): BookerDto = bookerDetailsService.getBookerByEmail(emailAddress)
+  ): List<BookerDto> = bookerDetailsService.getBookerByEmail(emailAddress)
 }

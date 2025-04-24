@@ -104,6 +104,7 @@ abstract class IntegrationTestBase {
 
   @BeforeEach
   fun resetStubs() {
+    entityHelper.deleteAll()
     prisonOffenderSearchMockServer.resetAll()
     visitSchedulerMockServer.resetAll()
   }
