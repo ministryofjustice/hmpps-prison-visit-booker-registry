@@ -173,13 +173,11 @@ class BookerDetailsService(
 
   @Transactional(readOnly = true)
   fun getBookerByEmail(emailAddress: String): BookerDto {
-    LOG.info("Enter BookerDetailsService getBookerByEmail")
     return BookerDto(findBookerByEmail(emailAddress))
   }
 
   @Transactional(readOnly = true)
   fun getBookerByReference(bookerReference: String): BookerDto {
-    LOG.info("Enter BookerDetailsService getBookerByReference")
     return BookerDto(getBooker(bookerReference))
   }
 
