@@ -172,14 +172,10 @@ class BookerDetailsService(
   }
 
   @Transactional(readOnly = true)
-  fun getBookerByEmail(emailAddress: String): BookerDto {
-    return BookerDto(findBookerByEmail(emailAddress))
-  }
+  fun getBookerByEmail(emailAddress: String): BookerDto = BookerDto(findBookerByEmail(emailAddress))
 
   @Transactional(readOnly = true)
-  fun getBookerByReference(bookerReference: String): BookerDto {
-    return BookerDto(getBooker(bookerReference))
-  }
+  fun getBookerByReference(bookerReference: String): BookerDto = BookerDto(getBooker(bookerReference))
 
   @Transactional
   fun registerPrisoner(bookerReference: String, registerPrisonerRequestDto: RegisterPrisonerRequestDto) {
