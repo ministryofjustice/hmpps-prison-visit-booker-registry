@@ -38,7 +38,7 @@ class CreateBookerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isCreated
 
-    val createdEntity = bookerRepository.findByEmailIgnoreCase(emailAddress)!!.first()
+    val createdEntity = bookerRepository.findAllByEmailIgnoreCase(emailAddress)!!.first()
     assertThat(createdEntity).isNotNull
 
     val dto = getBookerDto(responseSpec)

@@ -39,7 +39,7 @@ class AuthService(
       return bookerViaOneLogin
     }
 
-    val bookerViaEmail = bookerRepository.findByEmailIgnoreCase(createBookerAuthDetail.email)?.any() ?: false
+    val bookerViaEmail = bookerRepository.findAllByEmailIgnoreCase(createBookerAuthDetail.email)?.any() ?: false
     if (bookerViaEmail) {
       LOG.warn("Found existing booker(s) via email search ${createBookerAuthDetail.email} but with different one login subs. Creating new booker for email ${createBookerAuthDetail.email}")
     }

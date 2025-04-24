@@ -38,7 +38,7 @@ class BookerDetailsService(
   @Transactional
   fun create(emailAddress: String): BookerDto {
     LOG.info("Enter BookerDetailsService create")
-    bookerRepository.findByEmailIgnoreCase(emailAddress)?.let {
+    bookerRepository.findAllByEmailIgnoreCase(emailAddress)?.let {
       LOG.warn("Found existing user for given email - {}", emailAddress)
     }
 
@@ -217,7 +217,7 @@ class BookerDetailsService(
   private fun getBooker(bookerReference: String): Booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
 
   private fun findBookersByEmail(emailAddress: String): List<Booker> {
-    val foundBookers = bookerRepository.findByEmailIgnoreCase(emailAddress)
+    val foundBookers = bookerRepository.findAllByEmailIgnoreCase(emailAddress)
     if (foundBookers.isNullOrEmpty()) {
       throw BookerNotFoundException("Booker(s) for email : $emailAddress not found")
     }
