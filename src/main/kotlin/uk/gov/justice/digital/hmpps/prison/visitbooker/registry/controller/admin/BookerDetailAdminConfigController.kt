@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller
+package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -37,6 +37,7 @@ const val DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_C
 const val ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/activate"
 const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/deactivate"
 
+const val GET_BOOKER_USING_REFERENCE: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
 const val GET_BOOKER_USING_EMAIL: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/email/{emailAddress}"
 
 @RestController
@@ -192,6 +193,40 @@ class BookerDetailConfigController(
     @NotBlank
     bookerReference: String,
   ): BookerDto = bookerDetailsService.clearBookerDetails(bookerReference)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @GetMapping(GET_BOOKER_USING_REFERENCE)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Get bookers details using reference",
+    description = "gets bookers details",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Booker details found and returned",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Booker not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+    ],
+  )
+  fun getBookerDetailsUsingReference(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+  ): BookerDto = bookerDetailsService.getBookerByReference(bookerReference)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH)

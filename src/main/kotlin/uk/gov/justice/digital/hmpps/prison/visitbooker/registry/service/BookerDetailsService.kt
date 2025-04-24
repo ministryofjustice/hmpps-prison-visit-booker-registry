@@ -177,6 +177,12 @@ class BookerDetailsService(
     return BookerDto(findBookerByEmail(emailAddress))
   }
 
+  @Transactional(readOnly = true)
+  fun getBookerByReference(bookerReference: String): BookerDto {
+    LOG.info("Enter BookerDetailsService getBookerByReference")
+    return BookerDto(getBooker(bookerReference))
+  }
+
   @Transactional
   fun registerPrisoner(bookerReference: String, registerPrisonerRequestDto: RegisterPrisonerRequestDto) {
     LOG.info("Register booker called with for booker -  {} with request details - {} ", bookerReference, registerPrisonerRequestDto)
