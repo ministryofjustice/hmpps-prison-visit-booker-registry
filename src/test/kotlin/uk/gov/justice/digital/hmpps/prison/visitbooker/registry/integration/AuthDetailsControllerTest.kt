@@ -169,7 +169,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker exists with same sub but different sub email address the email address is updated with the new sub`() {
+  fun `when booker exists with same sub but different email address the email address is updated with the new sub`() {
     // Given
     val oldEmailAddress = emailAddress
     val newEmailAddress = "test1@example.com"
@@ -196,7 +196,6 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     val newBookerDetails = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(newEmailAddress, oneLoginSub)
     assertThat(newBookerDetails).isNotNull
     assertThat(reference).isEqualTo(newBookerDetails!!.reference)
-    verify(bookerRepositorySpy, times(1)).findByEmailIgnoreCase(authDetailsDto.email)
     verify(bookerRepositorySpy, times(1)).updateBookerEmailAddress(reference, authDetailsDto.email)
     verify(telemetryClientSpy, times(1)).trackEvent(
       UPDATE_BOOKER_EMAIL.telemetryEventName,

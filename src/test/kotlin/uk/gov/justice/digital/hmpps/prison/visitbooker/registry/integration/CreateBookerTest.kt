@@ -38,12 +38,12 @@ class CreateBookerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isCreated
 
-    val createdEntity = bookerRepository.findByEmailIgnoreCase(emailAddress)
+    val createdEntity = bookerRepository.findByEmailIgnoreCase(emailAddress)!!.first()
     assertThat(createdEntity).isNotNull
 
     val dto = getBookerDto(responseSpec)
     assertThat(dto.reference).hasSizeGreaterThan(9)
-    assertThat(dto.reference).isEqualTo(createdEntity!!.reference)
+    assertThat(dto.reference).isEqualTo(createdEntity.reference)
     assertThat(dto.oneLoginSub).isNull()
     assertThat(dto.email).isEqualTo(emailAddress)
     assertThat(dto.permittedPrisoners).isEmpty()
@@ -64,7 +64,7 @@ class CreateBookerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker does exist then exception is thrown`() {
+  fun `when email exists in our system, it still allows registration and generates new booker with new sub`() {
     // Given
     val emailAddress = "aled@aled.com"
 
@@ -78,7 +78,7 @@ class CreateBookerTest : IntegrationTestBase() {
     val responseSpec = callCreateBooker(bookerConfigServiceRoleHttpHeaders, createBookerDto)
 
     // Then
-    assertError(responseSpec, "Booker already exists", "The given email - $emailAddress already exists", BAD_REQUEST)
+    responseSpec.expectStatus().isCreated
   }
 
   @Test

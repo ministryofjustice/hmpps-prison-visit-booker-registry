@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.fasterxml.jackson.core.type.TypeReference
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -49,7 +50,7 @@ class BookerByEmailTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val booker = getResults(returnResult)
+    val booker = getResults(returnResult).first()
     assertThat(booker.permittedPrisoners).hasSize(3)
     assertThat(booker.permittedPrisoners[0].prisonerId).isEqualTo(prisoner1.prisonerId)
     assertThat(booker.permittedPrisoners[1].prisonerId).isEqualTo(prisoner2.prisonerId)
@@ -65,7 +66,7 @@ class BookerByEmailTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("Booker not found")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Booker for email : invalid-email not found")
+      .isEqualTo("Booker(s) for email : invalid-email not found")
   }
 
   @Test
@@ -75,7 +76,7 @@ class BookerByEmailTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerDto = objectMapper.readValue(returnResult.returnResult().responseBody, BookerDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<BookerDto>>() {})
 
   fun getBookerByEmail(
     webTestClient: WebTestClient,

@@ -21,40 +21,29 @@ class AuthService(
   fun authoriseBooker(createBookerAuthDetail: AuthDetailDto): String {
     // find booker by email address and sub
     var booker = bookerRepository.findByEmailIgnoreCaseAndOneLoginSub(createBookerAuthDetail.email, createBookerAuthDetail.oneLoginSub)
-
     if (booker == null) {
-      // if not found check if the booker exists with the same email address but different sub
-      booker = createBookerPostChecks(createBookerAuthDetail)
+      // if not found check if the booker exists with the different combinations of email and one login sub
+      booker = findByDetailedBookerSearch(createBookerAuthDetail)
     }
 
-    return booker?.reference ?: createBooker(createBookerAuthDetail).reference
+    return booker.reference
   }
 
-  private fun createBookerPostChecks(createBookerAuthDetail: AuthDetailDto): Booker? {
-    var booker = bookerRepository.findByEmailIgnoreCase(createBookerAuthDetail.email)
-    // if not found check if the booker for the same sub but different email address exists
-    if (booker == null) {
-      booker = bookerRepository.findByOneLoginSub(createBookerAuthDetail.oneLoginSub)?.also {
-        processBookerWithMatchingSubButDifferentEmailAddress(createBookerAuthDetail, it)
-      }
-    } else {
-      processBookerWithMatchingEmailAddressButDifferentSub(createBookerAuthDetail, booker).also {
-        booker = it
-      }
+  private fun findByDetailedBookerSearch(createBookerAuthDetail: AuthDetailDto): Booker {
+    val bookerViaOneLogin = bookerRepository.findByOneLoginSub(createBookerAuthDetail.oneLoginSub)
+    if (bookerViaOneLogin != null) {
+      LOG.info("Found booker ${bookerViaOneLogin.reference} via one login sub but with different email. Updating email")
+      updateBookerEmailAddress(bookerViaOneLogin, createBookerAuthDetail.email)
+
+      return bookerViaOneLogin
     }
 
-    return booker
-  }
+    val bookerViaEmail = bookerRepository.findByEmailIgnoreCase(createBookerAuthDetail.email)?.any() ?: false
+    if (bookerViaEmail) {
+      LOG.warn("Found existing booker(s) via email search ${createBookerAuthDetail.email} but with different one login subs. Creating new booker for email ${createBookerAuthDetail.email}")
+    }
 
-  private fun processBookerWithMatchingEmailAddressButDifferentSub(createBookerAuthDetail: AuthDetailDto, booker: Booker): Booker {
-    // TODO - set the existing booker to inactive?
     return createBooker(createBookerAuthDetail)
-  }
-
-  private fun processBookerWithMatchingSubButDifferentEmailAddress(createBookerAuthDetail: AuthDetailDto, booker: Booker) {
-    // if found with a sub - update the email address on the booker entry and return the updated entry
-    // TODO - would be ideal to add some audit logging for the booker here
-    updateBookerEmailAddress(booker, createBookerAuthDetail.email)
   }
 
   private fun createBooker(createBookerAuthDetail: AuthDetailDto): Booker {

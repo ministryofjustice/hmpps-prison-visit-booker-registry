@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPri
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
@@ -40,8 +39,7 @@ class BookerDetailsService(
   fun create(emailAddress: String): BookerDto {
     LOG.info("Enter BookerDetailsService create")
     bookerRepository.findByEmailIgnoreCase(emailAddress)?.let {
-      LOG.error("Found existing user for given email - {}", emailAddress)
-      throw BookerAlreadyExistsException("The given email - $emailAddress already exists")
+      LOG.warn("Found existing user for given email - {}", emailAddress)
     }
 
     val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress))
@@ -172,7 +170,7 @@ class BookerDetailsService(
   }
 
   @Transactional(readOnly = true)
-  fun getBookerByEmail(emailAddress: String): BookerDto = BookerDto(findBookerByEmail(emailAddress))
+  fun getBookerByEmail(emailAddress: String): List<BookerDto> = findBookersByEmail(emailAddress).map { BookerDto(it) }.toList()
 
   @Transactional(readOnly = true)
   fun getBookerByReference(bookerReference: String): BookerDto = BookerDto(getBooker(bookerReference))
@@ -218,7 +216,14 @@ class BookerDetailsService(
 
   private fun getBooker(bookerReference: String): Booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
 
-  private fun findBookerByEmail(emailAddress: String): Booker = bookerRepository.findByEmailIgnoreCase(emailAddress) ?: throw BookerNotFoundException("Booker for email : $emailAddress not found")
+  private fun findBookersByEmail(emailAddress: String): List<Booker> {
+    val foundBookers = bookerRepository.findByEmailIgnoreCase(emailAddress)
+    if (foundBookers.isNullOrEmpty()) {
+      throw BookerNotFoundException("Booker(s) for email : $emailAddress not found")
+    }
+
+    return foundBookers
+  }
 
   private fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor = visitorRepository.findVisitorBy(bookerReference, prisonerId, visitorId) ?: throw VisitorForPrisonerBookerNotFoundException("Visitor for prisoner booker $bookerReference/$prisonerId/$visitorId not found")
 
