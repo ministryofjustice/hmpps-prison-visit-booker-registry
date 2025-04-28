@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.0.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.1.0"
   kotlin("plugin.spring") version "2.1.20"
   kotlin("plugin.jpa") version "2.1.20"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.1.20"
@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.3")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -55,7 +55,7 @@ dependencies {
   testImplementation("org.testcontainers:postgresql:1.21.0")
   testImplementation("org.testcontainers:localstack:1.21.0")
   testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.782")
-  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")
+  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
 }
 
 java {
