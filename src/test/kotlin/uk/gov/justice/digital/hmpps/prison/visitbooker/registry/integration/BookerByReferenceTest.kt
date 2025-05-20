@@ -50,6 +50,7 @@ class BookerByReferenceTest : IntegrationTestBase() {
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val booker = getResults(returnResult)
+    assertThat(booker.createdTimestamp).isNotNull()
     assertThat(booker.permittedPrisoners).hasSize(3)
     assertThat(booker.permittedPrisoners[0].prisonerId).isEqualTo(prisoner1.prisonerId)
     assertThat(booker.permittedPrisoners[1].prisonerId).isEqualTo(prisoner2.prisonerId)
