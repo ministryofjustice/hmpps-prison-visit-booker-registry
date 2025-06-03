@@ -54,7 +54,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.testcontainers:postgresql:1.21.1")
   testImplementation("org.testcontainers:localstack:1.21.1")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.783")
+  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.784")
   testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
 }
 
