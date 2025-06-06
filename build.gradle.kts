@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.5")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.6")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -54,7 +54,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.testcontainers:postgresql:1.21.1")
   testImplementation("org.testcontainers:localstack:1.21.1")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.784")
+  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.785")
   testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
 }
 
