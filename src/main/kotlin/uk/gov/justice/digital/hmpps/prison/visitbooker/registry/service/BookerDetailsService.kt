@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
@@ -157,6 +158,9 @@ class BookerDetailsService(
 
   @Transactional(readOnly = true)
   fun getBookerByEmail(emailAddress: String): List<BookerDto> = findBookersByEmail(emailAddress).map { BookerDto(it) }.toList()
+
+  @Transactional(readOnly = true)
+  fun searchForBooker(searchCriteria: SearchBookerDto): List<BookerDto> = findBookersByEmail(searchCriteria.email).map { BookerDto(it) }.toList()
 
   @Transactional(readOnly = true)
   fun getBookerByReference(bookerReference: String): BookerDto = BookerDto(getBooker(bookerReference))
