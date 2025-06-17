@@ -36,20 +36,6 @@ class BookerDetailsService(
   }
 
   @Transactional
-  fun create(emailAddress: String): BookerDto {
-    LOG.info("Enter BookerDetailsService create")
-    bookerRepository.findAllByEmailIgnoreCase(emailAddress)?.let {
-      LOG.warn("Found existing user for given email - {}", emailAddress)
-    }
-
-    val booker = bookerRepository.saveAndFlush(Booker(email = emailAddress))
-    LOG.info("Booker created with email - {}, returning new booker with reference {}", emailAddress, booker.reference)
-
-    bookerAuditService.auditBookerCreate(bookerReference = booker.reference, email = booker.email, hasSub = false)
-    return BookerDto(booker)
-  }
-
-  @Transactional
   fun createBookerPrisoner(bookerReference: String, createPermittedPrisonerDto: CreatePermittedPrisonerDto): PermittedPrisonerDto {
     LOG.info("Enter BookerDetailsService createBookerPrisoner for booker {}", bookerReference)
 

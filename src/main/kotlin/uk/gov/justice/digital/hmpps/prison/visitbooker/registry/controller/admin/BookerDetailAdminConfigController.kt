@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
@@ -27,7 +26,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVis
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH: String = "/public/booker/config"
-const val CREATE_BOOKER_PATH: String = PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH
 const val CREATE_BOOKER_PRISONER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner"
 const val CREATE_BOOKER_PRISONER_VISITOR_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor"
 
@@ -44,39 +42,6 @@ const val GET_BOOKER_USING_EMAIL: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PAT
 class BookerDetailConfigController(
   val bookerDetailsService: BookerDetailsService,
 ) {
-
-  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
-  @PutMapping(CREATE_BOOKER_PATH)
-  @ResponseStatus(HttpStatus.CREATED)
-  @Operation(
-    summary = "Create bookers details",
-    description = "Create bookers details",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Have created booker correctly",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Incorrect request to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
-      ),
-    ],
-  )
-  fun create(
-    @RequestBody @Valid createBookerDto: CreateBookerDto,
-  ): BookerDto = bookerDetailsService.create(createBookerDto.email)
-
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(CREATE_BOOKER_PRISONER_PATH)
   @ResponseStatus(HttpStatus.CREATED)

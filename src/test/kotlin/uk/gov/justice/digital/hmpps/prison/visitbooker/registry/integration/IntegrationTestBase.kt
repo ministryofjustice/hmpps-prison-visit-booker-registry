@@ -21,11 +21,9 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CLEAR_BOOKER_CONFIG_CONTROLLER_PATH
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
@@ -157,14 +155,6 @@ abstract class IntegrationTestBase {
   }
 
   fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner, permittedVisitor: PermittedVisitor): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(permittedVisitor)
-
-  protected fun callCreateBooker(
-    authHttpHeaders: (HttpHeaders) -> Unit,
-    createBookerDto: CreateBookerDto,
-  ): ResponseSpec = webTestClient.put().uri(CREATE_BOOKER_PATH)
-    .headers(authHttpHeaders)
-    .body(BodyInserters.fromValue(createBookerDto))
-    .exchange()
 
   protected fun callCreateBookerPrisoner(
     authHttpHeaders: (HttpHeaders) -> Unit,
