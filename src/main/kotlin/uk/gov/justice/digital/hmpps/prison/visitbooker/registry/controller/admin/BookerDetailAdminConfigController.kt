@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH: String = "/public/booker/config"
@@ -37,6 +39,7 @@ const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_
 
 const val GET_BOOKER_USING_REFERENCE: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
 const val GET_BOOKER_USING_EMAIL: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/email/{emailAddress}"
+const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/search"
 
 @RestController
 class BookerDetailConfigController(
@@ -347,6 +350,7 @@ class BookerDetailConfigController(
     visitorId: Long,
   ): PermittedVisitorDto = bookerDetailsService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
 
+  @Deprecated("replaced with searchForBooker", ReplaceWith("BookerDetailAdminConfigController.searchForBooker"))
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @GetMapping(GET_BOOKER_USING_EMAIL)
   @ResponseStatus(HttpStatus.OK)
@@ -380,4 +384,40 @@ class BookerDetailConfigController(
     @NotBlank
     emailAddress: String,
   ): List<BookerDto> = bookerDetailsService.getBookerByEmail(emailAddress)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @PostMapping(SEARCH_FOR_BOOKER)
+  @Operation(
+    summary = "Search for a booker using specific criteria",
+    description = "Search for a booker using specific criteria, returns list (list of 1 entry if only 1 booker is found)",
+    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = [
+        Content(
+          mediaType = "application/json",
+          schema = Schema(implementation = SearchBookerDto::class),
+        ),
+      ],
+    ),
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Booker found via search",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to search for booker",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun searchForBooker(
+    @RequestBody
+    @Valid
+    searchBookerDto: SearchBookerDto,
+  ): List<BookerDto> = bookerDetailsService.searchForBooker(searchBookerDto)
 }
