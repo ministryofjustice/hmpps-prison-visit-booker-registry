@@ -157,9 +157,6 @@ class BookerDetailsService(
   }
 
   @Transactional(readOnly = true)
-  fun getBookerByEmail(emailAddress: String): List<BookerDto> = findBookersByEmail(emailAddress).map { BookerDto(it) }.toList()
-
-  @Transactional(readOnly = true)
   fun searchForBooker(searchCriteria: SearchBookerDto): List<BookerDto> = findBookersByEmail(searchCriteria.email).map { BookerDto(it) }.toList()
 
   @Transactional(readOnly = true)

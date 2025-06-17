@@ -38,7 +38,6 @@ const val ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BO
 const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/deactivate"
 
 const val GET_BOOKER_USING_REFERENCE: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
-const val GET_BOOKER_USING_EMAIL: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/email/{emailAddress}"
 const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/search"
 
 @RestController
@@ -349,41 +348,6 @@ class BookerDetailConfigController(
     @NotNull
     visitorId: Long,
   ): PermittedVisitorDto = bookerDetailsService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
-
-  @Deprecated("replaced with searchForBooker", ReplaceWith("BookerDetailAdminConfigController.searchForBooker"))
-  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
-  @GetMapping(GET_BOOKER_USING_EMAIL)
-  @ResponseStatus(HttpStatus.OK)
-  @Operation(
-    summary = "get booker by email",
-    description = "get booker by email",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "has got booker by email",
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "booker not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
-      ),
-    ],
-  )
-  fun getBookerByEmail(
-    @PathVariable(value = "emailAddress", required = true)
-    @NotBlank
-    emailAddress: String,
-  ): List<BookerDto> = bookerDetailsService.getBookerByEmail(emailAddress)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PostMapping(SEARCH_FOR_BOOKER)
