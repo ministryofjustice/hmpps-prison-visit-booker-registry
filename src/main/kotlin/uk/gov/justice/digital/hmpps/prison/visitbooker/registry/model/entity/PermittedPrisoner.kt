@@ -34,7 +34,7 @@ class PermittedPrisoner(
   val prisonerId: String,
 
   @Column(name = "prison_code", nullable = false)
-  val prisonCode: String,
+  var prisonCode: String,
 
   @Column(name = "active", nullable = false)
   var active: Boolean,

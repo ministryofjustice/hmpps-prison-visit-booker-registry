@@ -36,6 +36,7 @@ const val ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CON
 const val DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/deactivate"
 const val ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/activate"
 const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/deactivate"
+const val UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/prison/{prisonId}"
 
 const val GET_BOOKER_USING_REFERENCE: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
 const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/search"
@@ -384,4 +385,53 @@ class BookerDetailConfigController(
     @Valid
     searchBookerDto: SearchBookerDto,
   ): List<BookerDto> = bookerDetailsService.searchForBooker(searchBookerDto)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @PutMapping(UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Update the prisoner's prison code for a booker",
+    description = "Update the prisoner's prison code for a booker",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Prisoner's prison code updated successfully for booker",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Validation failure, incorrect request to update prisoner's prison code for booker",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "booker not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+    ],
+  )
+  fun updateBookerPrisonerPrison(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+    @PathVariable(value = "prisonId", required = true)
+    @NotNull
+    prisonId: String,
+  ): PermittedPrisonerDto = bookerDetailsService.updateBookerPrisonerPrison(
+    bookerReference = bookerReference,
+    prisonerId = prisonerId,
+    newPrisonCode = prisonId,
+  )
 }

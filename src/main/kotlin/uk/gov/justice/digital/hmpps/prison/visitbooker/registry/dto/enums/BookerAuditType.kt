@@ -11,4 +11,5 @@ enum class BookerAuditType(val telemetryEventName: String) {
   CLEAR_BOOKER_DETAILS("booker_details_cleared"),
   UPDATE_BOOKER_EMAIL("booker_email_updated"),
   REGISTER_PRISONER_SEARCH("prisoner_search"),
+  UPDATE_PRISONER_PRISON("prisoner_update_prison"),
 }
