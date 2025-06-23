@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorRespons
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdatePrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonersPrisonDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH: String = "/public/booker/config"
@@ -391,16 +391,16 @@ class BookerDetailConfigController(
   @PutMapping(UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
-    summary = "Update the prisoner's prison code for a booker",
-    description = "Update the prisoner's prison code for a booker",
+    summary = "Update a registered prisoner's prison code",
+    description = "Update a registered prisoner's prison code",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Prisoner's prison code updated successfully for booker",
+        description = "Registered prisoner's prison code wasupdated successfully",
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Validation failure, incorrect request to update prisoner's prison code for booker",
+        description = "Validation failure, incorrect request to update registered prisoner's prison code",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
       ApiResponse(
@@ -415,7 +415,7 @@ class BookerDetailConfigController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "booker not found",
+        description = "booker / prisoner not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
     ],
@@ -429,10 +429,10 @@ class BookerDetailConfigController(
     prisonerId: String,
     @RequestBody
     @Valid
-    updatePrisonersPrisonDto: UpdatePrisonersPrisonDto,
+    updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto,
   ): PermittedPrisonerDto = bookerDetailsService.updateBookerPrisonerPrison(
     bookerReference = bookerReference,
     prisonerId = prisonerId,
-    newPrisonCode = updatePrisonersPrisonDto.prisonCode,
+    newPrisonCode = updateRegisteredPrisonersPrisonDto.prisonCode,
   )
 }

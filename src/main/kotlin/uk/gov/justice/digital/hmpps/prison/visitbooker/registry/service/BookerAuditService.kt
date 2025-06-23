@@ -169,7 +169,7 @@ class BookerAuditService(
   }
 
   fun auditUpdateBookerPrisonerPrisonCode(bookerReference: String, prisonNumber: String, oldPrisonCode: String, newPrisonCode: String) {
-    val auditType = BookerAuditType.UPDATE_PRISONER_PRISON
+    val auditType = BookerAuditType.UPDATE_REGISTERED_PRISONER_PRISON
     val text = "Prisoner with prisonNumber - $prisonNumber had prison code updated from $oldPrisonCode to $newPrisonCode for booker reference - $bookerReference"
     auditBookerEvent(bookerReference, auditType, text)
 
