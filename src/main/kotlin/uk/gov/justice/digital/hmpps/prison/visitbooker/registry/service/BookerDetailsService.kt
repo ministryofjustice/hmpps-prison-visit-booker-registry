@@ -209,7 +209,7 @@ class BookerDetailsService(
 
     val booker = getBooker(bookerReference)
 
-    // if validation passes, update DB
+    // if validation passes, update prisoner's prison
     validateUpdateBookerPrisonerPrison(booker, prisonerId, newPrisonCode)
 
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
