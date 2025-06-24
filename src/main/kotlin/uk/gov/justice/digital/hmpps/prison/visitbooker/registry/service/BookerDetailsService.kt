@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.UpdatePrisonerPrisonValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 class BookerDetailsService(
   private val bookerAuditService: BookerAuditService,
   private val prisonerValidationService: PrisonerValidationService,
+  private val prisonerSearchService: PrisonerSearchService,
   private val bookerRepository: BookerRepository,
   private val prisonerRepository: PermittedPrisonerRepository,
   private val visitorRepository: PermittedVisitorRepository,
@@ -201,6 +203,24 @@ class BookerDetailsService(
     )
   }
 
+  @Transactional
+  fun updateBookerPrisonerPrison(bookerReference: String, prisonerId: String, newPrisonCode: String): PermittedPrisonerDto {
+    LOG.info("Enter updateBookerPrisonerPrison for booker {} to update prisoner {}'s prison code to {}", bookerReference, prisonerId, newPrisonCode)
+
+    val booker = getBooker(bookerReference)
+
+    // if validation passes, update prisoner's prison
+    validateUpdateBookerPrisonerPrison(booker, prisonerId, newPrisonCode)
+
+    val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
+    val oldPrisonCode = prisoner.prisonCode
+    prisoner.prisonCode = newPrisonCode
+
+    bookerAuditService.auditUpdateBookerPrisonerPrisonCode(bookerReference = booker.reference, prisonNumber = prisonerId, oldPrisonCode = oldPrisonCode, newPrisonCode = newPrisonCode)
+    LOG.info("Prisoner - {}'s prison code updated from {} to {} for booker {}", prisonerId, prisoner.prisonerId, newPrisonCode, bookerReference)
+    return PermittedPrisonerDto(prisoner)
+  }
+
   private fun getBooker(bookerReference: String): Booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
 
   private fun findBookersByEmail(emailAddress: String): List<Booker> {
@@ -233,5 +253,25 @@ class BookerDetailsService(
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
     prisoner.active = active
     return PermittedPrisonerDto(prisoner)
+  }
+
+  @Throws
+  private fun validateUpdateBookerPrisonerPrison(booker: Booker, prisonerId: String, newPrisonCode: String) {
+    var errorMessage: String
+    // if prisoner not found for booker throw an exception
+    if (booker.permittedPrisoners.none { prisonerId == it.prisonerId }) {
+      errorMessage = "Prisoner $prisonerId has not been added for booker ${booker.reference}"
+      LOG.error(errorMessage)
+      throw UpdatePrisonerPrisonValidationException(errorMessage)
+    }
+
+    // if prisoner is not in the prison supplied - throw an exception
+    val prisonerDetails = prisonerSearchService.getPrisoner(prisonerId)
+
+    if (prisonerDetails.prisonId != newPrisonCode) {
+      errorMessage = "Prisoner - $prisonerId is in ${prisonerDetails.prisonId} - so cannot be updated to $newPrisonCode"
+      LOG.error(errorMessage)
+      throw UpdatePrisonerPrisonValidationException(errorMessage)
+    }
   }
 }

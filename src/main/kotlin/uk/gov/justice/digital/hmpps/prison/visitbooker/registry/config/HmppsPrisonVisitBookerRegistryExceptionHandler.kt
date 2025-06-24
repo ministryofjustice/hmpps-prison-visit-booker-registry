@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Create
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.UpdatePrisonerPrisonValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
 import java.util.*
 
@@ -252,6 +253,22 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
           errorCode = null,
           userMessage = "Prisoner registration validation failed",
           developerMessage = "Prisoner registration validation failed with the following errors - ${e.errors.joinToString()}",
+          moreInfo = null,
+        ),
+      )
+  }
+
+  @ExceptionHandler(UpdatePrisonerPrisonValidationException::class)
+  fun handleUpdatePrisonerPrisonValidationException(e: UpdatePrisonerPrisonValidationException): ResponseEntity<ErrorResponse?>? {
+    LOG.error("Updating a prisoner's prison code failed", e)
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          errorCode = null,
+          userMessage = "Updating a prisoner's prison failed",
+          developerMessage = "Updating a prisoner's prison failed with the following error - ${e.message}",
           moreInfo = null,
         ),
       )
