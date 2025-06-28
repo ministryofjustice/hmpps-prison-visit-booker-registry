@@ -28,7 +28,7 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.16.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.17.0")
 
   implementation("org.springframework.data:spring-data-commons:3.5.1")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.9")
@@ -52,8 +52,8 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.12.6")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:postgresql:1.21.2")
-  testImplementation("org.testcontainers:localstack:1.21.2")
+  testImplementation("org.testcontainers:postgresql:1.21.3")
+  testImplementation("org.testcontainers:localstack:1.21.3")
   testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.787")
   testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.1")
 }
