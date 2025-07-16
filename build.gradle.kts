@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.1"
   kotlin("plugin.spring") version "2.2.0"
   kotlin("plugin.jpa") version "2.2.0"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.2.0"
@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.7")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.8")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -28,7 +28,7 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.16.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.17.1")
 
   implementation("org.springframework.data:spring-data-commons:3.5.1")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.9")
@@ -44,7 +44,7 @@ dependencies {
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.30")
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.31")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
@@ -52,9 +52,9 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.12.6")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:postgresql:1.21.2")
-  testImplementation("org.testcontainers:localstack:1.21.2")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.787")
+  testImplementation("org.testcontainers:postgresql:1.21.3")
+  testImplementation("org.testcontainers:localstack:1.21.3")
+  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.788")
   testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.1")
 }
 
