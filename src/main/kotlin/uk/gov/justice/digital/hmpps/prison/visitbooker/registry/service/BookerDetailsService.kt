@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
@@ -180,6 +181,13 @@ class BookerDetailsService(
     // register prisoner against booker
     val createPermittedPrisoner = CreatePermittedPrisonerDto(registerPrisonerRequestDto)
     createBookerPrisoner(bookerReference, createPermittedPrisoner)
+  }
+
+  @Transactional(readOnly = true)
+  fun getBookerAudit(bookerReference: String): List<BookerAuditDto> {
+    LOG.info("Get booker audit called for booker - {}", bookerReference)
+    val booker = getBooker(bookerReference)
+    return bookerAuditService.getBookerAudit(bookerReference = booker.reference).map { BookerAuditDto(it) }
   }
 
   fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner = prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")

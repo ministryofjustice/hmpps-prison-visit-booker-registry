@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
@@ -28,6 +29,7 @@ const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitte
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
 const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
+const val GET_BOOKER_AUDIT: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/audit"
 
 @RestController
 class BookerDetailsController(
@@ -201,4 +203,37 @@ class BookerDetailsController(
     @RequestBody
     registerPrisonerRequestDto: RegisterPrisonerRequestDto,
   ) = bookerDetailsService.registerPrisoner(bookerReference, registerPrisonerRequestDto)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(GET_BOOKER_AUDIT)
+  @Operation(
+    summary = "Get a booker's audit information",
+    description = "Get a booker's audit information",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a booker's audit information",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get booker's audit information",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get booker's audit information",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getBookerAudit(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+  ): List<BookerAuditDto> = bookerDetailsService.getBookerAudit(bookerReference)
 }

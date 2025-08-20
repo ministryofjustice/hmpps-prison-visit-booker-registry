@@ -217,6 +217,11 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties.toMap())
   }
 
+  fun getBookerAudit(bookerReference: String): List<BookerAudit> {
+    LOG.debug("Getting booker audit entries for $bookerReference")
+    return bookerAuditRepository.findByBookerReference(bookerReference)
+  }
+
   private fun auditBookerEvent(bookerReference: String, auditType: BookerAuditType, text: String) {
     LOG.debug("Auditing audit booker event for $bookerReference")
     bookerAuditRepository.saveAndFlush(

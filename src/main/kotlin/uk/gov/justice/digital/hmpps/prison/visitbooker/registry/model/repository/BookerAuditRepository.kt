@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 
 @Repository
-interface BookerAuditRepository : JpaRepository<BookerAudit, Long>
+interface BookerAuditRepository : JpaRepository<BookerAudit, Long> {
+  fun findByBookerReference(bookerReference: String): List<BookerAudit>
+}
