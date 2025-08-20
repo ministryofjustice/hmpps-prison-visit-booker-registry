@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.hel
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
@@ -29,6 +30,9 @@ class EntityHelper(
 
   @Transactional
   fun createAssociatedPrisonerVisitor(permittedVisitor: PermittedVisitor): PermittedVisitor = testPermittedVisitorRepository.saveAndFlush(permittedVisitor)
+
+  @Transactional
+  fun createBookerAudit(bookerAudit: BookerAudit): BookerAudit = testBookerAuditRepository.saveAndFlush(bookerAudit)
 
   @Transactional
   fun deleteAll() {

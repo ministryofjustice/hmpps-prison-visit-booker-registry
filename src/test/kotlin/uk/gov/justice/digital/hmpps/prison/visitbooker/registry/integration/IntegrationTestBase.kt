@@ -156,6 +156,10 @@ abstract class IntegrationTestBase {
 
   fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner, permittedVisitor: PermittedVisitor): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(permittedVisitor)
 
+  fun createBookerAudit(bookerReference: String, auditType: BookerAuditType, text: String): BookerAudit = entityHelper.createBookerAudit(
+    BookerAudit(bookerReference = bookerReference, auditType = auditType, text = text),
+  )
+
   protected fun callCreateBookerPrisoner(
     authHttpHeaders: (HttpHeaders) -> Unit,
     createPermittedPrisonerDto: CreatePermittedPrisonerDto,
