@@ -31,9 +31,9 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.19.0")
 
   implementation("org.springframework.data:spring-data-commons:3.5.3")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.9")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
-  implementation("org.springdoc:springdoc-openapi-starter-common:2.8.9")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.10")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10")
+  implementation("org.springdoc:springdoc-openapi-starter-common:2.8.10")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.freemarker:freemarker:2.3.34")
@@ -50,7 +50,7 @@ dependencies {
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("io.jsonwebtoken:jjwt:0.12.7")
+  testImplementation("io.jsonwebtoken:jjwt:0.13.0")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.testcontainers:postgresql:1.21.3")
   testImplementation("org.testcontainers:localstack:1.21.3")
