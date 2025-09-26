@@ -36,11 +36,12 @@ jobs:
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/gradle_localstack_postgres_verify.yml@v2 # WORKFLOW_VERSION
     secrets: inherit
     with:
-      localstack-tag: "3"
+      localstack-tag: "4"
       postgres-tag: "17"
       postgres-db: prison_visit_booker_registry
       postgres-username: prison_visit_booker_registry
       postgres-password: prison_visit_booker_registry
+      localstack-services: sqs,sns
   build:
     name: Build docker image from hmpps-github-actions
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
