@@ -10,7 +10,7 @@ spring:
     allow-bean-definition-overriding: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/prison_visit_booker_registry
+    url: jdbc:postgresql://localhost:5444/prison_visit_booker_registry
     username: prison_visit_booker_registry
     password: prison_visit_booker_registry
     hikari:
