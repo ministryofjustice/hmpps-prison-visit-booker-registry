@@ -1,6 +1,9 @@
 # HMPPS Prison Visit Booker Registry
 
-[![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-prison-visit-booker-registry/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/ministryofjustice/hmpps-prison-visit-booker-registry)
+[![repo standards badge](https://img.shields.io/badge/endpoint.svg?&style=flat&logo=github&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fhmpps-prison-visit-booker-registry)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-report/hmpps-prison-visit-booker-registry "Link to report")
+[![Docker Repository on ghcr](https://img.shields.io/badge/ghcr.io-repository-2496ED.svg?logo=docker)](https://ghcr.io/ministryofjustice/hmpps-prison-visit-booker-registry)
+[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://hmpps-prison-visit-booker-registry-dev.prison.service.justice.gov.uk/swagger-ui/index.html)
+[![GitHub Actions Pipeline](https://github.com/ministryofjustice/hmpps-prison-visit-booker-registry/actions/workflows/pipeline.yml/badge.svg)](https://github.com/ministryofjustice/hmpps-prison-visit-booker-registry/actions/workflows/pipeline.yml)
 
 This is a Spring Boot application, written in Kotlin, providing API services for prison visit booker. Used by [Visits UI](https://github.com/ministryofjustice/book-a-prison-visit-staff-ui).
 

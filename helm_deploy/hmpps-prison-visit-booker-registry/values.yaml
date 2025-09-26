@@ -6,7 +6,7 @@ generic-service:
   replicaCount: 2
 
   image:
-    repository: quay.io/hmpps/hmpps-prison-visit-booker-registry
+    repository: ghcr.io/ministryofjustice/hmpps-prison-visit-booker-registry
     tag: app_version # override at deployment time
     port: 8080
 
@@ -31,7 +31,6 @@ generic-service:
     application-insights:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
     hmpps-prison-visit-booker-registry:
-      APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
     prison-visit-booker-registry-rds:
