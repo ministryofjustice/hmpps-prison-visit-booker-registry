@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   prison-visit-booker-registry-db:
-    image: postgres:17.4
+    image: postgres:17.6
     networks:
       - hmpps
     container_name: prison_visit_booker_registry-db
