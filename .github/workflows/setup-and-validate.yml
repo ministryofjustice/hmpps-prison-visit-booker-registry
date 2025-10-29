@@ -32,7 +32,7 @@ jobs:
           - 4566:4566
           - 4571:4571
       postgres:
-        image: postgres:17.6
+        image: postgres:18.0
         env:
           POSTGRES_USER: prison_visit_booker_registry
           POSTGRES_PASSWORD: prison_visit_booker_registry
