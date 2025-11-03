@@ -120,6 +120,16 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when invalid reference then NOT_FOUND status is returned`() {
+    // Given
+    // When
+    val responseSpec = unlinkVisitorByPrisonerIsAndBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", visitorId = 123, bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+  }
+
+  @Test
   fun `access forbidden when no role`() {
     // Given
     // When

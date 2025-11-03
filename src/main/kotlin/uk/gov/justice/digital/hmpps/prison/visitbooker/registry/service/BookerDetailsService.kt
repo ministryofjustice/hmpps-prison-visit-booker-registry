@@ -163,7 +163,11 @@ class BookerDetailsService(
   fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long) {
     LOG.info("Enter BookerDetailsService unlinkBookerPrisonerVisitor for booker $bookerReference, unlink visitor $visitorId")
 
-    visitorRepository.deleteVisitorBy(bookerReference, prisonerId, visitorId)
+    val result = visitorRepository.deleteVisitorBy(bookerReference, prisonerId, visitorId)
+    if (result != 1) {
+      LOG.error("Failed to unlink visitor for booker $bookerReference, prisoner $prisonerId, visitor $visitorId")
+      throw VisitorForPrisonerBookerNotFoundException("Failed to unlink visitor for booker $bookerReference, prisoner $prisonerId, visitor $visitorId")
+    }
     bookerAuditService.auditUnlinkVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = visitorId)
   }
 
