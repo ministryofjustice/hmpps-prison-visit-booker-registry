@@ -8,7 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.GET_BOOKER_USING_REFERENCE
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.BOOKER_ENDPOINT_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 
@@ -83,7 +83,7 @@ class BookerByReferenceTest : IntegrationTestBase() {
     bookerReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    val url = GET_BOOKER_USING_REFERENCE.replace("{bookerReference}", bookerReference)
+    val url = BOOKER_ENDPOINT_PATH.replace("{bookerReference}", bookerReference)
     return webTestClient.get().uri(url)
       .headers(authHttpHeaders)
       .exchange()

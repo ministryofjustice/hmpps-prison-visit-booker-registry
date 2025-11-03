@@ -20,7 +20,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CLEAR_BOOKER_CONFIG_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.BOOKER_ENDPOINT_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
@@ -210,7 +210,7 @@ abstract class IntegrationTestBase {
   protected fun callClearBookerDetails(
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
-  ): ResponseSpec = webTestClient.delete().uri(CLEAR_BOOKER_CONFIG_CONTROLLER_PATH.replace("{bookerReference}", bookerReference))
+  ): ResponseSpec = webTestClient.delete().uri(BOOKER_ENDPOINT_PATH.replace("{bookerReference}", bookerReference))
     .headers(authHttpHeaders)
     .exchange()
 
