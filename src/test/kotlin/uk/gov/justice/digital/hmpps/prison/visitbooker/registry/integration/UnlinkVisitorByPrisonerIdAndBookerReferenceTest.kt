@@ -95,7 +95,7 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     // Given
 
     // When
-    val responseSpec = unlinkVisitorByPrisonerIsAndBookerReference(webTestClient, booker.reference, prisoner.prisonerId, visitor1.visitorId, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisoner.prisonerId, visitor1.visitorId, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -123,7 +123,7 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // Given
     // When
-    val responseSpec = unlinkVisitorByPrisonerIsAndBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", visitorId = 123, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", visitorId = 123, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -133,12 +133,12 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   fun `access forbidden when no role`() {
     // Given
     // When
-    val responseSpec = unlinkVisitorByPrisonerIsAndBookerReference(webTestClient, booker.reference, prisonerId = prisoner.prisonerId, visitorId = 12, setAuthorisation(roles = listOf()))
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisonerId = prisoner.prisonerId, visitorId = 12, setAuthorisation(roles = listOf()))
     // Then
     responseSpec.expectStatus().isForbidden
   }
 
-  fun unlinkVisitorByPrisonerIsAndBookerReference(
+  fun unlinkVisitorByPrisonerIdAndBookerReference(
     webTestClient: WebTestClient,
     bookerReference: String,
     prisonerId: String,
