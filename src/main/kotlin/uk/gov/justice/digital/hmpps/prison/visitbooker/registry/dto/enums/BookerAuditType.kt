@@ -8,6 +8,7 @@ enum class BookerAuditType(val telemetryEventName: String) {
   DEACTIVATED_PRISONER("prisoner_deactivated"),
   ACTIVATED_VISITOR("visitor_activated"),
   DEACTIVATED_VISITOR("visitor_deactivated"),
+  UNLINK_VISITOR("visitor_unlinked"),
   CLEAR_BOOKER_DETAILS("booker_details_cleared"),
   UPDATE_BOOKER_EMAIL("booker_email_updated"),
   REGISTER_PRISONER_SEARCH("prisoner_search"),

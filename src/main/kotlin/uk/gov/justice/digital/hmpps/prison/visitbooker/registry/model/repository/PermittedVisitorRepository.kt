@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -20,4 +21,20 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
     nativeQuery = true,
   )
   fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor?
+
+  @Modifying
+  @Transactional
+  @Query(
+    """
+  DELETE FROM permitted_visitor pv
+  USING permitted_prisoner pp
+  JOIN booker b ON b.id = pp.booker_id
+  WHERE pv.permitted_prisoner_id = pp.id
+    AND b.reference = :bookerReference
+    AND pp.prisoner_id = :prisonerId
+    AND pv.visitor_id = :visitorId
+  """,
+    nativeQuery = true,
+  )
+  fun deleteVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): Int
 }

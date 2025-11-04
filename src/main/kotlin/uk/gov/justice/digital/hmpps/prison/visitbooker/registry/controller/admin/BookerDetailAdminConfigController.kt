@@ -28,19 +28,25 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBooker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonersPrisonDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
+// Base Endpoint
 const val PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH: String = "/public/booker/config"
-const val CREATE_BOOKER_PRISONER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner"
-const val CREATE_BOOKER_PRISONER_VISITOR_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor"
 
-const val CLEAR_BOOKER_CONFIG_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
-const val ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/activate"
-const val DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/deactivate"
-const val ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/activate"
-const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/deactivate"
-const val UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}/prisoner/{prisonerId}/prison"
-
-const val GET_BOOKER_USING_REFERENCE: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
+// Booker Endpoints
+const val BOOKER_ENDPOINT_PATH: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/{bookerReference}"
 const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/search"
+
+// Prisoner Endpoints
+const val CREATE_BOOKER_PRISONER_PATH = "$BOOKER_ENDPOINT_PATH/prisoner"
+const val PRISONER_ENDPOINT_PATH: String = "$BOOKER_ENDPOINT_PATH/prisoner/{prisonerId}"
+const val ACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PRISONER_ENDPOINT_PATH/activate"
+const val DEACTIVATE_BOOKER_PRISONER_CONTROLLER_PATH: String = "$PRISONER_ENDPOINT_PATH/deactivate"
+const val UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH: String = "$PRISONER_ENDPOINT_PATH/prison"
+
+// Visitor Endpoints
+const val CREATE_BOOKER_PRISONER_VISITOR_PATH: String = "$PRISONER_ENDPOINT_PATH/visitor"
+const val VISITOR_ENDPOINT_PATH: String = "$PRISONER_ENDPOINT_PATH/visitor/{visitorId}"
+const val ACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$VISITOR_ENDPOINT_PATH/activate"
+const val DEACTIVATE_BOOKER_PRISONER_VISITOR_CONTROLLER_PATH: String = "$VISITOR_ENDPOINT_PATH/deactivate"
 
 @RestController
 class BookerDetailConfigController(
@@ -130,7 +136,7 @@ class BookerDetailConfigController(
   ): PermittedVisitorDto = bookerDetailsService.createBookerPrisonerVisitor(bookerReference, prisonerId, createPermittedVisitorDto)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
-  @DeleteMapping(CLEAR_BOOKER_CONFIG_CONTROLLER_PATH)
+  @DeleteMapping(BOOKER_ENDPOINT_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Clear bookers details",
@@ -164,7 +170,7 @@ class BookerDetailConfigController(
   ): BookerDto = bookerDetailsService.clearBookerDetails(bookerReference)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
-  @GetMapping(GET_BOOKER_USING_REFERENCE)
+  @GetMapping(BOOKER_ENDPOINT_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Get bookers details using reference",
@@ -350,6 +356,46 @@ class BookerDetailConfigController(
     @NotNull
     visitorId: Long,
   ): PermittedVisitorDto = bookerDetailsService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @DeleteMapping(VISITOR_ENDPOINT_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "unlink booker prisoner visitor",
+    description = "unlink booker prisoner visitor",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successfully unlinked booker prisoner visitor",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "visitor not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+      ),
+    ],
+  )
+  fun unlinkBookerPrisonerVisitor(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+    @PathVariable(value = "visitorId", required = true)
+    @NotNull
+    visitorId: Long,
+  ) = bookerDetailsService.unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PostMapping(SEARCH_FOR_BOOKER)
