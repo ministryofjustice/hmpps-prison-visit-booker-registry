@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
@@ -76,7 +75,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visitor already exist an exception is thrown`() {
+  fun `when visitor already exist, they're not re-added and 200 is returned`() {
     // Given
     val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, active = true)
 
@@ -87,7 +86,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
     val responseSpec = callCreateBookerPrisonerVisitor(bookerConfigServiceRoleHttpHeaders, createVisitor, booker.reference, prisonerId = prisoner.prisonerId)
 
     // Then
-    assertError(responseSpec, "Booker prisoner visitor already exists", "BookerPrisonerVisitor for ${booker.reference}/${prisoner.prisonerId} already exists", BAD_REQUEST)
+    responseSpec.expectStatus().is2xxSuccessful
   }
 
   @Test

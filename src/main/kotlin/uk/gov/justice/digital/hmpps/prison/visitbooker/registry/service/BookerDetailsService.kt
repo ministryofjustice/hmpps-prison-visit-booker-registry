@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBooker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.UpdatePrisonerPrisonValidationException
@@ -73,8 +72,11 @@ class BookerDetailsService(
     val bookerPrisoner = getPermittedPrisoner(bookerReference, prisonerId)
 
     if (bookerPrisoner.permittedVisitors.any { createPermittedVisitorDto.visitorId == it.visitorId }) {
-      LOG.error("Visitor already exists for booker {}", bookerReference)
-      throw BookerPrisonerVisitorAlreadyExistsException("BookerPrisonerVisitor for $bookerReference/$prisonerId already exists")
+      LOG.warn("Visitor  ${createPermittedVisitorDto.visitorId} already exists for booker $bookerReference prisoner $prisonerId")
+      return PermittedVisitorDto(
+        visitorId = createPermittedVisitorDto.visitorId,
+        active = bookerPrisoner.permittedVisitors.first { it.visitorId == createPermittedVisitorDto.visitorId }.active,
+      )
     }
 
     val permittedVisitor = visitorRepository.saveAndFlush(
