@@ -40,8 +40,6 @@ class BookerDetailsService(
 
     bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = createPermittedVisitorDto.visitorId)
 
-    // TODO: SNS Publish visitor-approved / visitor-linked domain event
-
     return permittedVisitor
   }
 
