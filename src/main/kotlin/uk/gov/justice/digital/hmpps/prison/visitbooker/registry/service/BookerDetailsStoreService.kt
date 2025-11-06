@@ -132,7 +132,7 @@ class BookerDetailsStoreService(
 
   @Transactional
   fun deactivateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
-    LOG.info("Enter BookerDetailsService deactivateBookerPrisoner for booker $bookerReference")
+    LOG.info("Enter BookerDetailsStoreService deactivateBookerPrisoner for booker $bookerReference")
     val permittedPrisonerDto = setPrisonerBooker(bookerReference, prisonerId, false)
     return permittedPrisonerDto
   }
