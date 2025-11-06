@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
@@ -228,6 +229,11 @@ class BookerDetailsController(
         responseCode = "403",
         description = "Incorrect permissions to get booker's audit information",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The booker does not exist or has no audit history",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
       ),
     ],
   )
