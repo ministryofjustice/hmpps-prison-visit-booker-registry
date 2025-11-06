@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
@@ -103,12 +102,10 @@ class BookerDetailsService(
     bookerAuditService.auditUnlinkVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = visitorId)
   }
 
-  @Transactional
   fun registerPrisoner(bookerReference: String, registerPrisonerRequestDto: RegisterPrisonerRequestDto) {
-    LOG.info("Register booker called with for booker -  {} with request details - {} ", bookerReference, registerPrisonerRequestDto)
-    val booker = BookerDto(bookerDetailsStoreService.getBooker(bookerReference))
+    LOG.info("Register booker called with for booker $bookerReference with request details - $registerPrisonerRequestDto")
     try {
-      prisonerValidationService.validatePrisoner(booker, registerPrisonerRequestDto)
+      prisonerValidationService.validatePrisoner(bookerReference, registerPrisonerRequestDto)
       auditPrisonerSearch(bookerReference, registerPrisonerRequestDto, true)
     } catch (e: RegisterPrisonerValidationException) {
       LOG.info("Validation failed for register prisoner with booker reference -  {} and request details - {} with error(s) [{}]", bookerReference, registerPrisonerRequestDto, e.errors)
@@ -135,7 +132,6 @@ class BookerDetailsService(
     return prisoner
   }
 
-  @Transactional(readOnly = true)
   fun getBookerAudit(bookerReference: String): List<BookerAuditDto> {
     LOG.info("Get booker audit called for booker - $bookerReference")
     return bookerAuditService.getBookerAudit(bookerReference = bookerReference).map { BookerAuditDto(it) }

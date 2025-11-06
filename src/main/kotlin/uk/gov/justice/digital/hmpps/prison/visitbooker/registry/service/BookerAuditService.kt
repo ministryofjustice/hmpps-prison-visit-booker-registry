@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import java.time.LocalDate
@@ -228,9 +229,15 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties.toMap())
   }
 
+  @Transactional(readOnly = true)
   fun getBookerAudit(bookerReference: String): List<BookerAudit> {
     LOG.debug("Getting booker audit entries for $bookerReference")
-    return bookerAuditRepository.findByBookerReference(bookerReference)
+    val audits = bookerAuditRepository.findByBookerReference(bookerReference)
+    if (audits.isEmpty()) {
+     throw BookerNotFoundException("No audits found for booker, either booker doesn't exist or has no audits")
+    }
+
+    return audits
   }
 
   private fun auditBookerEvent(bookerReference: String, auditType: BookerAuditType, text: String) {
