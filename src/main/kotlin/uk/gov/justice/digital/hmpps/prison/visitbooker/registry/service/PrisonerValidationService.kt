@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
@@ -18,8 +17,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.RegisterPr
 
 @Service
 class PrisonerValidationService(
-  @Lazy
-  private val bookerDetailsService: BookerDetailsService,
+  private val bookerDetailsStoreService: BookerDetailsStoreService,
   private val prisonerSearchService: PrisonerSearchService,
   private val visitSchedulerService: VisitSchedulerService,
   private val registerPrisonerValidator: RegisterPrisonerValidator,
@@ -31,7 +29,7 @@ class PrisonerValidationService(
   fun validatePrisonerBeforeBooking(bookerReference: String, prisonerId: String) {
     LOG.info("Validate booking by booker - {} for prisoner - {}", bookerReference, prisonerId)
 
-    val permittedPrisoner = bookerDetailsService.getPermittedPrisoner(bookerReference, prisonerId).let { permittedPrisoner ->
+    val permittedPrisoner = bookerDetailsStoreService.getPermittedPrisoner(bookerReference, prisonerId).let { permittedPrisoner ->
       PermittedPrisonerDto(
         prisonerId = permittedPrisoner.prisonerId,
         active = permittedPrisoner.active,
