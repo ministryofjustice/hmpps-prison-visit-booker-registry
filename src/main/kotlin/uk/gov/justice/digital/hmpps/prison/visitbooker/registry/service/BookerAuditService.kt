@@ -234,7 +234,7 @@ class BookerAuditService(
     LOG.debug("Getting booker audit entries for $bookerReference")
     val audits = bookerAuditRepository.findByBookerReference(bookerReference)
     if (audits.isEmpty()) {
-     throw BookerNotFoundException("No audits found for booker, either booker doesn't exist or has no audits")
+      throw BookerNotFoundException("No audits found for booker, either booker doesn't exist or has no audits")
     }
 
     return audits
