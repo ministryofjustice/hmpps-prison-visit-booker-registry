@@ -12,6 +12,7 @@ generic-service:
     HMPPS_AUTH_URL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
     PRISONER_SEARCH_URL: https://prisoner-search-dev.prison.service.justice.gov.uk
     VISIT-SCHEDULER_API_URL: https://visit-scheduler-dev.prison.service.justice.gov.uk
+    FEATURE_EVENTS_SNS_ENABLED: false # A lot of DPS services don't have staging. Disabling. Dev is enabled.
 
   scheduledDowntime:
     enabled: true

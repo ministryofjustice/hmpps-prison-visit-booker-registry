@@ -25,8 +25,19 @@ spring:
         jwt:
           public-key-location: classpath:local-public-key.pub
 
+hmpps:
+  sqs:
+    enabled: true
+    provider: localstack
+    topics:
+      domainevents:
+        arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
 hmpps.auth.url: http://localhost:8090/auth
 prisoner.search.url: http://localhost:8091
 visit-scheduler.api.url:  http://localhost:8092
 
+feature:
+  events:
+    sns:
+      enabled: true
