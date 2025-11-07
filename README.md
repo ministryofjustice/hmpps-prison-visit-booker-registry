@@ -24,7 +24,7 @@ Run:
 ## Running
 
 The prison-visit-booker-registry uses the deployed dev environment to connect to most of the required services,
-with the exception of prison-visit-booker-registry-db.
+with the exception of prison-visit-booker-registry-db and localstack (for AWS SNS/SQS services locally).
 
 To run the prison-visit-booker-registry, first start the required local services using docker-compose.
 ```
@@ -45,6 +45,7 @@ Ports
 |---------------------------------|------|
 | prison-visit-booker-registry    | 8083 |
 | prison-visit-booker-registry-db | 5444 |
+| localstack                      | 4566 |
 
 
 ### Auth token retrieval
