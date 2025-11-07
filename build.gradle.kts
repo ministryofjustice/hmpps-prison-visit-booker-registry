@@ -32,9 +32,9 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.21.0")
 
   implementation("org.springframework.data:spring-data-commons:3.5.5")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.13")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
-  implementation("org.springdoc:springdoc-openapi-starter-common:2.8.13")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.14")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14")
+  implementation("org.springdoc:springdoc-openapi-starter-common:2.8.14")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.freemarker:freemarker:2.3.34")
@@ -56,7 +56,7 @@ dependencies {
   testImplementation("org.testcontainers:postgresql:1.21.3")
   testImplementation("org.testcontainers:localstack:1.21.3")
   testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.793")
-  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0")
+  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
 }
 
 java {
