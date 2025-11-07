@@ -56,7 +56,7 @@ class GetBookerAuditTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("Booker not found")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Booker for reference : invalid-reference not found")
+      .isEqualTo("No audits found for booker, either booker doesn't exist or has no audits")
   }
 
   @Test

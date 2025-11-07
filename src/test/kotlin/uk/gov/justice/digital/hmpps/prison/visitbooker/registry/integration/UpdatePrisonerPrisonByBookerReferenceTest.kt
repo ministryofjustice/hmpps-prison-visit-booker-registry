@@ -50,7 +50,6 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     // Given
     val newPrisonCode = "MDI"
     val prisonerId = prisoner1.prisonerId
-    val oldPrisonCode = prisoner1.prisonCode
     val registeredPrisoner = PrisonerDto(
       prisonerNumber = prisoner1.prisonerId,
       prisonId = newPrisonCode,
@@ -79,7 +78,6 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
       mapOf(
         "bookerReference" to booker.reference,
         "prisonerId" to prisoner1.prisonerId,
-        "oldPrisonCode" to oldPrisonCode,
         "newPrisonCode" to newPrisonCode,
       ),
       null,
@@ -87,7 +85,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UPDATE_REGISTERED_PRISONER_PRISON, text = "Prisoner with prisonNumber - $prisonerId had prison code updated from ${prisoner1.prisonCode} to $newPrisonCode for booker reference - ${booker.reference}")
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UPDATE_REGISTERED_PRISONER_PRISON, text = "Prisoner with prisonNumber - $prisonerId had prison code updated to $newPrisonCode for booker reference - ${booker.reference}")
   }
 
   @Test
