@@ -41,7 +41,9 @@ class BookerDetailsService(
 
     bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = createPermittedVisitorDto.visitorId)
 
-    snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, createPermittedVisitorDto.visitorId.toString())
+    if (createPermittedVisitorDto.sendNotificationFlag == true) {
+      snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, createPermittedVisitorDto.visitorId.toString())
+    }
 
     return permittedVisitor
   }
