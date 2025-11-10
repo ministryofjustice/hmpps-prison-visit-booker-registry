@@ -13,5 +13,17 @@ services:
       - POSTGRES_USER=prison_visit_booker_registry
       - POSTGRES_DB=prison_visit_booker_registry
 
+  localstack:
+    image: localstack/localstack:4
+    networks:
+      - hmpps
+    container_name: localstack-hmpps-prison-visit-booker-registry-events
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=eu-west-2
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
 networks:
   hmpps:

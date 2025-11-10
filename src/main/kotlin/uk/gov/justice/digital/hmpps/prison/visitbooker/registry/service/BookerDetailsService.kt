@@ -18,6 +18,7 @@ class BookerDetailsService(
   private val bookerAuditService: BookerAuditService,
   private val prisonerValidationService: PrisonerValidationService,
   private val bookerDetailsStoreService: BookerDetailsStoreService,
+  private val snsService: SnsService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -39,6 +40,10 @@ class BookerDetailsService(
     val permittedVisitor = bookerDetailsStoreService.storeBookerPrisonerVisitor(bookerReference, prisonerId, createPermittedVisitorDto)
 
     bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = createPermittedVisitorDto.visitorId)
+
+    if (createPermittedVisitorDto.sendNotificationFlag == true) {
+      snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, createPermittedVisitorDto.visitorId.toString())
+    }
 
     return permittedVisitor
   }
