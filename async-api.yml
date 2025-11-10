@@ -1,0 +1,42 @@
+asyncapi: 3.0.0
+info:
+  title: Visit Booker Registry
+  description: Publishes events relating to visit bookers (for the public visit service)
+  version: 1.0.0
+
+servers:
+  development:
+    host: hmpps-domain-events-dev.live-1.cloud-platform.service.justice.gov.uk
+    protocol: sqs
+    description: Development environment
+  preproduction:
+    host: hmpps-domain-events-preprod.live-1.cloud-platform.service.justice.gov.uk
+    protocol: sqs
+    description: Pre-production environment
+  production:
+    host: hmpps-domain-events-prod.live-1.cloud-platform.service.justice.gov.uk
+    protocol: sqs
+    description: Production environment
+
+components:
+  messages:
+    prison-visit-booker.visitor-approved:
+      $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/prison-visit-booker/prison-visit-booker-visitor-approved.yaml
+
+channels:
+  hmpps-domain-events:
+    description: HMPPS domain events SNS topic
+    bindings:
+      sns:
+        name: domainevents
+    messages:
+      prison-visit-booker.visitor-approved:
+        $ref: '#/components/messages/prison-visit-booker.visitor-approved'
+
+operations:
+  publish-event:
+    action: send
+    channel:
+      $ref: '#/channels/hmpps-domain-events'
+    messages:
+      - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-approved'
