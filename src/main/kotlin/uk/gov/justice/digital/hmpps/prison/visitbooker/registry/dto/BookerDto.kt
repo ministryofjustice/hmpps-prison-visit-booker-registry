@@ -10,27 +10,27 @@ import java.time.LocalDateTime
 @Schema(description = "Booker of visits.")
 data class BookerDto(
 
-  @JsonProperty("reference")
-  @Schema(name = "reference", description = "This is the booker reference and should be used to acquire booker information", required = true)
+  @param:JsonProperty("reference")
+  @param:Schema(name = "reference", description = "This is the booker reference and should be used to acquire booker information", required = true)
   @field:NotBlank
   val reference: String,
 
-  @JsonProperty("oneLoginSub")
-  @Schema(name = "oneLoginSub", description = "auth reference/sub", required = true)
+  @param:JsonProperty("oneLoginSub")
+  @param:Schema(name = "oneLoginSub", description = "auth reference/sub", required = true)
   val oneLoginSub: String?,
 
-  @JsonProperty("email")
-  @Schema(name = "email", description = "auth email", required = true)
+  @param:JsonProperty("email")
+  @param:Schema(name = "email", description = "auth email", required = true)
   @field:NotBlank
   val email: String,
 
-  @JsonProperty("permittedPrisoners")
-  @Schema(description = "Permitted prisoners list", required = true)
+  @param:JsonProperty("permittedPrisoners")
+  @param:Schema(description = "Permitted prisoners list", required = true)
   @field:Valid
   val permittedPrisoners: List<PermittedPrisonerDto>,
 
-  @JsonProperty("createdTimestamp")
-  @Schema(name = "createdTimestamp", description = "The time of booker account creation", required = true)
+  @param:JsonProperty("createdTimestamp")
+  @param:Schema(name = "createdTimestamp", description = "The time of booker account creation", required = true)
   @field:NotBlank
   val createdTimestamp: LocalDateTime,
 ) {

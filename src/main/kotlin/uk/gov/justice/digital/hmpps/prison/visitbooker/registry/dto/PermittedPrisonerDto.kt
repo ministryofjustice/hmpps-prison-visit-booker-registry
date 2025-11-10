@@ -9,23 +9,23 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 
 @Schema(description = "Permitted prisoner associated with the booker.")
 data class PermittedPrisonerDto(
-  @JsonProperty("prisonerId")
-  @Schema(description = "prisoner Id", example = "A1234AA", required = true)
+  @param:JsonProperty("prisonerId")
+  @param:Schema(description = "prisoner Id", example = "A1234AA", required = true)
   @field:NotBlank
   val prisonerId: String,
 
-  @JsonProperty("active")
-  @Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
+  @param:JsonProperty("active")
+  @param:Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
   @field:NotNull
   val active: Boolean,
 
-  @JsonProperty("prisonCode")
-  @Schema(description = "prison code", example = "MDI", required = true)
+  @param:JsonProperty("prisonCode")
+  @param:Schema(description = "prison code", example = "MDI", required = true)
   @field:NotNull
   val prisonCode: String,
 
-  @JsonProperty("permittedVisitors")
-  @Schema(description = "Permitted visitors", required = true)
+  @param:JsonProperty("permittedVisitors")
+  @param:Schema(description = "Permitted visitors", required = true)
   @field:Valid
   val permittedVisitors: List<PermittedVisitorDto>,
 ) {

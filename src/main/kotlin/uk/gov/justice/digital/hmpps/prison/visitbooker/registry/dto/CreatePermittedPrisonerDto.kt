@@ -7,18 +7,18 @@ import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Create permitted prisoner with permitted visitors associated with the booker.")
 data class CreatePermittedPrisonerDto(
-  @JsonProperty("prisonerId")
-  @Schema(description = "prisoner Id", example = "A1234AA", required = true)
+  @param:JsonProperty("prisonerId")
+  @param:Schema(description = "prisoner Id", example = "A1234AA", required = true)
   @field:NotBlank
   val prisonerId: String,
 
-  @JsonProperty("prisonCode")
-  @Schema(description = "prison code", example = "MDI", required = true)
+  @param:JsonProperty("prisonCode")
+  @param:Schema(description = "prison code", example = "MDI", required = true)
   @field:NotBlank
   val prisonCode: String,
 
-  @JsonProperty("active")
-  @Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
+  @param:JsonProperty("active")
+  @param:Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
   @field:NotNull
   val active: Boolean,
 ) {
