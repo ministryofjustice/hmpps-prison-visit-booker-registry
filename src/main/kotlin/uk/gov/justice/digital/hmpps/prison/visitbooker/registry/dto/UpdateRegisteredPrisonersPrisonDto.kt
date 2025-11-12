@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Update a prisoner's prison code.")
 data class UpdateRegisteredPrisonersPrisonDto(
-  @JsonProperty("prisonId")
+  @param:JsonProperty("prisonId")
   @field:NotBlank
-  @Schema(description = "Prison Id", example = "MDI", required = true)
+  @param:Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
 )

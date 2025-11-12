@@ -7,14 +7,14 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 
 @Schema(description = "Permitted visitor associated with the permitted prisoner.")
 data class PermittedVisitorDto(
-  @JsonProperty("visitorId")
-  @Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
-  @NotNull
+  @param:JsonProperty("visitorId")
+  @param:Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
+  @field:NotNull
   val visitorId: Long,
 
-  @JsonProperty("active")
-  @Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
-  @NotNull
+  @param:JsonProperty("active")
+  @param:Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
+  @field:NotNull
   val active: Boolean,
 ) {
   constructor(permittedVisitor: PermittedVisitor) : this(
