@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 @Service
 class VisitorRequestsService(
   val visitorRequestsRepository: VisitorRequestsRepository,
-  val telemetryClientService: TelemetryClientService,
   val bookerAuditService: BookerAuditService,
 ) {
   private companion object {
