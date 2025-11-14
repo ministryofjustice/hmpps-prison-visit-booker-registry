@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorTo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
-const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/prisoners/{prisonerId}/visitors/request"
+const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
 
 @RestController
 class VisitorRequestsController(
