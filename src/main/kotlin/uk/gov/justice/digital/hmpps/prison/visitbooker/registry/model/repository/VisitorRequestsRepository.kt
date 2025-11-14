@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repositor
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequests
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 
 @Repository
-interface VisitorRequestsRepository : JpaRepository<VisitorRequests, Long>
+interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long>

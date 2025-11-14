@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "visitor_requests")
-data class VisitorRequests(
+data class VisitorRequest(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID")

@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequests
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
 @Transactional
@@ -25,7 +25,7 @@ class VisitorRequestsService(
     bookerAuditService.auditVisitorRequest(bookerReference, prisonerId)
 
     visitorRequestsRepository.save(
-      VisitorRequests(
+      VisitorRequest(
         bookerReference = bookerReference,
         prisonerId = prisonerId,
         firstName = visitorRequest.firstName,

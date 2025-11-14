@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PUBLI
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequests
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import java.time.LocalDate
 
@@ -98,7 +98,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       .exchange()
   }
 
-  private fun assertVisitorRequest(visitorRequestEntity: VisitorRequests, bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerRequestDto) {
+  private fun assertVisitorRequest(visitorRequestEntity: VisitorRequest, bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerRequestDto) {
     assertThat(visitorRequestEntity.bookerReference).isEqualTo(bookerReference)
     assertThat(visitorRequestEntity.prisonerId).isEqualTo(prisonerId)
     assertThat(visitorRequestEntity.firstName).isEqualTo(visitorRequest.firstName)
