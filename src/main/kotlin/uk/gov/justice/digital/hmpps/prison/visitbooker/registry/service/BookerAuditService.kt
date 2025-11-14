@@ -128,6 +128,19 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
+  fun auditVisitorRequest(bookerReference: String, prisonNumber: String) {
+    val auditType = BookerAuditType.VISITOR_REQUEST_SUBMITTED
+    val text = "Booker $bookerReference, submitted request to add visitor to prisoner $prisonNumber"
+    auditBookerEvent(bookerReference, auditType, text)
+
+    // send event to telemetry client
+    val properties = mapOf(
+      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
+    )
+    sendTelemetryClientEvent(auditType, properties)
+  }
+
   fun auditDeactivateVisitor(bookerReference: String, visitorId: Long, prisonNumber: String) {
     val auditType = DEACTIVATED_VISITOR
     val text = "Visitor ID - $visitorId deactivated for prisoner - $prisonNumber"
