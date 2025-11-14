@@ -10,17 +10,16 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
 @Component
 @Transactional
 class EntityHelper(
   val testBookerRepository: BookerRepository,
-
   val testPermittedPrisonerRepository: PermittedPrisonerRepository,
-
   val testPermittedVisitorRepository: PermittedVisitorRepository,
-
   val testBookerAuditRepository: BookerAuditRepository,
+  val visitorRequestsRepository: VisitorRequestsRepository,
 ) {
   @Transactional
   fun saveBooker(booker: Booker): Booker = testBookerRepository.saveAndFlush(booker)
@@ -47,5 +46,8 @@ class EntityHelper(
 
     testBookerAuditRepository.deleteAll()
     testBookerAuditRepository.flush()
+
+    visitorRequestsRepository.deleteAll()
+    visitorRequestsRepository.flush()
   }
 }
