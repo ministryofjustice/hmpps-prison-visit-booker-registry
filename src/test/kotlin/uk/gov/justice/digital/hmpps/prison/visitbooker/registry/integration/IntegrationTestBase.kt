@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGIS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.BOOKER_ENDPOINT_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
@@ -30,6 +31,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPri
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
@@ -40,6 +42,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
@@ -123,6 +126,17 @@ abstract class IntegrationTestBase {
     return entityHelper.saveBooker(booker)
   }
   fun createPrisoner(booker: Booker, prisonerId: String, active: Boolean = true): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = active, prisonCode = PRISON_CODE))
+
+  fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus): VisitorRequest = entityHelper.createVisitorRequest(
+    VisitorRequest(
+      bookerReference = bookerReference,
+      prisonerId = prisonerId,
+      firstName = addVisitorToBookerPrisonerRequestDto.firstName,
+      lastName = addVisitorToBookerPrisonerRequestDto.lastName,
+      dateOfBirth = addVisitorToBookerPrisonerRequestDto.dateOfBirth,
+      status = status,
+    ),
+  )
 
   fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId, active = true))
 

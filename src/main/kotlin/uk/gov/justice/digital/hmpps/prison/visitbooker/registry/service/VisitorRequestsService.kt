@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestValidationError
@@ -13,9 +14,10 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 @Transactional
 @Service
 class VisitorRequestsService(
-  val visitorRequestsRepository: VisitorRequestsRepository,
-  val bookerDetailsService: BookerDetailsService,
-  val bookerAuditService: BookerAuditService,
+  private val visitorRequestsRepository: VisitorRequestsRepository,
+  private val bookerDetailsService: BookerDetailsService,
+  private val bookerAuditService: BookerAuditService,
+  @param:Value("\${visitor-requests.request-limit}") private val maximumRequestsLimit: Int,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -47,6 +49,11 @@ class VisitorRequestsService(
     if (!(booker.permittedPrisoners.any { it.prisonerId == prisonerId })) {
       LOG.error("Booker with reference $bookerReference does not have a permitted prisoner with id $prisonerId")
       throw VisitorRequestValidationException(VisitorRequestValidationError.PRISONER_NOT_FOUND_FOR_BOOKER)
+    }
+
+    if (visitorRequestsRepository.countAllActiveRequestsByBookerReference(bookerReference) >= maximumRequestsLimit) {
+      LOG.error("Booker with reference $bookerReference has maximum amount of requests in progress allowed")
+      throw VisitorRequestValidationException(VisitorRequestValidationError.MAX_IN_PROGRESS_REQUESTS_REACHED)
     }
 
     LOG.info("Successfully validated visitor request - For booker $bookerReference, prisoner $prisonerId")

@@ -95,3 +95,6 @@ feature:
   events:
     sns:
       enabled: true
+
+visitor-requests:
+  request-limit: 6
