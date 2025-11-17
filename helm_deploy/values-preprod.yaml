@@ -12,6 +12,7 @@ generic-service:
     HMPPS_AUTH_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
     PRISONER_SEARCH_URL: https://prisoner-search-preprod.prison.service.justice.gov.uk
     VISIT-SCHEDULER_API_URL: https://visit-scheduler-preprod.prison.service.justice.gov.uk
+    PRISONER-CONTACT_REGISTRY_URL: https://prisoner-contact-registry-preprod.prison.service.justice.gov.uk
     FEATURE_EVENTS_SNS_ENABLED: true
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
