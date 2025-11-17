@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
@@ -32,7 +31,7 @@ class VisitorRequestsController(
       content = [
         Content(
           mediaType = "application/json",
-          schema = Schema(implementation = AddVisitorToBookerRequestDto::class),
+          schema = Schema(implementation = AddVisitorToBookerPrisonerRequestDto::class),
         ),
       ],
     ),
@@ -60,7 +59,7 @@ class VisitorRequestsController(
     prisonerId: String,
     @RequestBody
     @Valid
-    visitorRequestDto: AddVisitorToBookerRequestDto,
+    visitorRequestDto: AddVisitorToBookerPrisonerRequestDto,
   ): ResponseEntity<String> {
     visitorRequestsService.submitVisitorRequest(bookerReference, prisonerId, visitorRequestDto)
     return ResponseEntity.status(HttpStatus.CREATED.value()).build()

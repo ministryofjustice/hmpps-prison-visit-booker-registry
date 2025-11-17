@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
@@ -35,7 +35,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Given
     val bookerReference = "abc-def-ghi"
     val prisonerId = "AA123456"
-    val visitorRequestDto = AddVisitorToBookerRequestDto(
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
@@ -69,7 +69,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Given
     val bookerReference = "abc-def-ghi"
     val prisonerId = "AA123456"
-    val visitorRequestDto = AddVisitorToBookerRequestDto(
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
@@ -86,7 +86,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
     prisonerId: String,
-    addVisitorToBookerRequestDto: AddVisitorToBookerRequestDto,
+    addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto,
   ): ResponseSpec {
     val uri = PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH
       .replace("{bookerReference}", bookerReference)
@@ -94,11 +94,11 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     return webTestClient.post().uri(uri)
       .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(addVisitorToBookerRequestDto))
+      .body(BodyInserters.fromValue(addVisitorToBookerPrisonerRequestDto))
       .exchange()
   }
 
-  private fun assertVisitorRequest(visitorRequestEntity: VisitorRequest, bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerRequestDto) {
+  private fun assertVisitorRequest(visitorRequestEntity: VisitorRequest, bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto) {
     assertThat(visitorRequestEntity.bookerReference).isEqualTo(bookerReference)
     assertThat(visitorRequestEntity.prisonerId).isEqualTo(prisonerId)
     assertThat(visitorRequestEntity.firstName).isEqualTo(visitorRequest.firstName)
