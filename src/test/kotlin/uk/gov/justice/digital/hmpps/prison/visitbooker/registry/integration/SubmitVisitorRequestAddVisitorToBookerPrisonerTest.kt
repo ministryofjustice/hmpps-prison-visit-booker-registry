@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
@@ -62,6 +63,32 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(1)
     assertVisitorRequest(visitorRequests[0], bookerReference, prisonerId, visitorRequestDto)
+  }
+
+  @Test
+  fun `when visitor request comes in, but prisoner doesn't exist for booker, then validation response is returned`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisonerId = "AA123456"
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().is4xxClientError
+
+    verifyNoInteractions(telemetryClientSpy)
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(0)
   }
 
   @Test

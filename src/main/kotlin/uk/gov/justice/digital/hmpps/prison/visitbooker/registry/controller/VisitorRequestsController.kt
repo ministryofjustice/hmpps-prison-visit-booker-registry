@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.BookerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
@@ -49,6 +50,11 @@ class VisitorRequestsController(
         responseCode = "403",
         description = "Incorrect permissions to submit a visitor request",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "422",
+        description = "Visitor request validation failed",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = BookerValidationErrorResponse::class))],
       ),
     ],
   )
