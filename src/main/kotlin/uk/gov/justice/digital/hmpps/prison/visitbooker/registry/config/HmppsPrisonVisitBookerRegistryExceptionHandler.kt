@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Prison
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.UpdatePrisonerPrisonValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestValidationException
 import java.util.*
 
 @RestControllerAdvice
@@ -231,12 +232,24 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
     ).also { LOG.error("Unexpected exception", e) }
 
   @ExceptionHandler(PrisonerValidationException::class)
-  fun handlePrisonerValidationException(e: PrisonerValidationException): ResponseEntity<BookerPrisonerValidationErrorResponse?>? {
+  fun handlePrisonerValidationException(e: PrisonerValidationException): ResponseEntity<BookerValidationErrorResponse?>? {
     LOG.error("Validation exception", e)
     return ResponseEntity
       .status(HttpStatus.UNPROCESSABLE_ENTITY)
       .body(
-        BookerPrisonerValidationErrorResponse(
+        BookerValidationErrorResponse(
+          validationError = e.error.name,
+        ),
+      )
+  }
+
+  @ExceptionHandler(VisitorRequestValidationException::class)
+  fun handleVisitorRequestValidationException(e: VisitorRequestValidationException): ResponseEntity<BookerValidationErrorResponse?>? {
+    LOG.error("Visitor request validation exception - $e")
+    return ResponseEntity
+      .status(HttpStatus.UNPROCESSABLE_ENTITY)
+      .body(
+        BookerValidationErrorResponse(
           validationError = e.error.name,
         ),
       )
@@ -292,6 +305,6 @@ open class ErrorResponse(
     this(status.value(), errorCode, userMessage, developerMessage, moreInfo)
 }
 
-data class BookerPrisonerValidationErrorResponse(
+data class BookerValidationErrorResponse(
   val validationError: String,
 ) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY)

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
@@ -33,7 +34,41 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
   @Test
   fun `when visitor request comes in, it is saved to database successfully`() {
     // Given
-    val bookerReference = "abc-def-ghi"
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().isCreated
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to prisoner.prisonerId,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}")
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(1)
+    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto)
+  }
+
+  @Test
+  fun `when visitor request comes in, but prisoner doesn't exist for booker, then validation response is returned`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
     val prisonerId = "AA123456"
     val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
       firstName = "John",
@@ -42,26 +77,18 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, bookerReference, prisonerId, visitorRequestDto)
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisonerId, visitorRequestDto)
 
     // Then
-    responseSpec.expectStatus().isCreated
+    responseSpec.expectStatus().is4xxClientError
 
-    verify(telemetryClientSpy, times(1)).trackEvent(
-      BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
-      mapOf(
-        "bookerReference" to bookerReference,
-        "prisonerId" to prisonerId,
-      ),
-      null,
-    )
+    verifyNoInteractions(telemetryClientSpy)
+
     val auditEvents = bookerAuditRepository.findAll()
-    assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker $bookerReference, submitted request to add visitor to prisoner $prisonerId")
+    assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
-    assertThat(visitorRequests).hasSize(1)
-    assertVisitorRequest(visitorRequests[0], bookerReference, prisonerId, visitorRequestDto)
+    assertThat(visitorRequests).hasSize(0)
   }
 
   @Test
