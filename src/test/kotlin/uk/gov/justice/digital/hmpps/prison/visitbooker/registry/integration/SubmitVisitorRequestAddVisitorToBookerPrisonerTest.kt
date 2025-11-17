@@ -34,8 +34,8 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
   @Test
   fun `when visitor request comes in, it is saved to database successfully`() {
     // Given
-    val bookerReference = "abc-def-ghi"
-    val prisonerId = "AA123456"
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
     val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
       firstName = "John",
       lastName = "Smith",
@@ -43,7 +43,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, bookerReference, prisonerId, visitorRequestDto)
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
     responseSpec.expectStatus().isCreated
@@ -51,18 +51,18 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     verify(telemetryClientSpy, times(1)).trackEvent(
       BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
       mapOf(
-        "bookerReference" to bookerReference,
-        "prisonerId" to prisonerId,
+        "bookerReference" to booker.reference,
+        "prisonerId" to prisoner.prisonerId,
       ),
       null,
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker $bookerReference, submitted request to add visitor to prisoner $prisonerId")
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}")
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(1)
-    assertVisitorRequest(visitorRequests[0], bookerReference, prisonerId, visitorRequestDto)
+    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto)
   }
 
   @Test
