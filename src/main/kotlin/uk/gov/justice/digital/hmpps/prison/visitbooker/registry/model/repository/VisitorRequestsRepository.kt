@@ -7,6 +7,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Vis
 
 @Repository
 interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
-  @Query("select count(*) from VisitorRequest where bookerReference = :bookerReference and status = 'REQUESTED'")
-  fun countAllActiveRequestsByBookerReference(bookerReference: String): Int
+  @Query("select count(vr) from VisitorRequest vr where vr.bookerReference = :bookerReference and vr.status = 'REQUESTED'")
+  fun countAllActiveRequestsByBookerReference(bookerReference: String): Long
 }
