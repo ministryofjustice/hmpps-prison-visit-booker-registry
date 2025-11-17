@@ -32,7 +32,7 @@ class VisitorRequestsController(
       content = [
         Content(
           mediaType = "application/json",
-          schema = Schema(implementation = SearchBookerDto::class),
+          schema = Schema(implementation = AddVisitorToBookerRequestDto::class),
         ),
       ],
     ),
