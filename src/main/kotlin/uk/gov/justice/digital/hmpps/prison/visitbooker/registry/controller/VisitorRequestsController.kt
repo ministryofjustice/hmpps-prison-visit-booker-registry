@@ -52,6 +52,11 @@ class VisitorRequestsController(
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
+        responseCode = "404",
+        description = "Booker / Prisoner not found for visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
         responseCode = "422",
         description = "Visitor request validation failed",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = BookerValidationErrorResponse::class))],

@@ -8,6 +8,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import java.time.LocalDate
 
 @Transactional(propagation = SUPPORTS)
+@TestPropertySource(properties = ["visitor-requests.request-limit=6"])
 @DisplayName("Visitor Requests - $PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH")
 class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase() {
 
@@ -89,6 +91,39 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(0)
+  }
+
+  @Test
+  fun `when visitor request comes in, but booker has maximum amount of in progress requests, then validation response is returned`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstA", "lastA", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstB", "lastB", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstC", "lastC", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstD", "lastD", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstE", "lastE", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstF", "lastF", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().is4xxClientError
+
+    verifyNoInteractions(telemetryClientSpy)
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(6)
   }
 
   @Test

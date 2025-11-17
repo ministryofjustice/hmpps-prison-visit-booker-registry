@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
@@ -19,13 +20,16 @@ class EntityHelper(
   val testPermittedPrisonerRepository: PermittedPrisonerRepository,
   val testPermittedVisitorRepository: PermittedVisitorRepository,
   val testBookerAuditRepository: BookerAuditRepository,
-  val visitorRequestsRepository: VisitorRequestsRepository,
+  val testVisitorRequestsRepository: VisitorRequestsRepository,
 ) {
   @Transactional
   fun saveBooker(booker: Booker): Booker = testBookerRepository.saveAndFlush(booker)
 
   @Transactional
   fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner = testPermittedPrisonerRepository.saveAndFlush(permittedPrisoner)
+
+  @Transactional
+  fun createVisitorRequest(visitorRequest: VisitorRequest): VisitorRequest = testVisitorRequestsRepository.saveAndFlush(visitorRequest)
 
   @Transactional
   fun createAssociatedPrisonerVisitor(permittedVisitor: PermittedVisitor): PermittedVisitor = testPermittedVisitorRepository.saveAndFlush(permittedVisitor)
@@ -47,7 +51,7 @@ class EntityHelper(
     testBookerAuditRepository.deleteAll()
     testBookerAuditRepository.flush()
 
-    visitorRequestsRepository.deleteAll()
-    visitorRequestsRepository.flush()
+    testVisitorRequestsRepository.deleteAll()
+    testVisitorRequestsRepository.flush()
   }
 }
