@@ -29,7 +29,7 @@ class VisitorRequestsValidationService(
     val booker = bookerDetailsService.getBookerByReference(bookerReference)
     validateBookerPrisonerRelationship(booker, prisonerId)
     validateMaximumAllowedRequestsInProgress(booker)
-    validateVisitorNotAlreadyAdded(booker, prisonerId, visitorRequest)
+    validateVisitorAlreadyAdded(booker, prisonerId, visitorRequest)
 
     LOG.info("Successfully validated visitor request - For booker $bookerReference, prisoner $prisonerId")
   }
@@ -48,7 +48,7 @@ class VisitorRequestsValidationService(
     }
   }
 
-  private fun validateVisitorNotAlreadyAdded(booker: BookerDto, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto) {
+  private fun validateVisitorAlreadyAdded(booker: BookerDto, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto) {
     prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId).forEach { contact ->
       if (contact.firstName == visitorRequest.firstName &&
         contact.lastName == visitorRequest.lastName &&
