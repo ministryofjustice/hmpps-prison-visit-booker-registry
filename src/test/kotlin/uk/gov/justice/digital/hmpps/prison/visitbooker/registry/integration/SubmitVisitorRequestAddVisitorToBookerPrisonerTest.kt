@@ -130,6 +130,34 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
   }
 
   @Test
+  fun `when visitor request comes in, but an existing matching request exists, then validation response is returned`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName", "lastName", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "firstName",
+      lastName = "lastName",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().is4xxClientError
+
+    verifyNoInteractions(telemetryClientSpy)
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(1)
+  }
+
+  @Test
   fun `when visitor request comes in, if visitor is already linked, then validation response is returned`() {
     // Given
     val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
