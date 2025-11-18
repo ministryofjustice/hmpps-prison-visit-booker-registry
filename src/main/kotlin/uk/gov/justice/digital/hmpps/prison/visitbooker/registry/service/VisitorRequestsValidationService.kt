@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
@@ -50,14 +51,13 @@ class VisitorRequestsValidationService(
 
   private fun validateVisitorAlreadyAdded(booker: BookerDto, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto) {
     prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId).forEach { contact ->
-      if (contact.firstName == visitorRequest.firstName &&
-        contact.lastName == visitorRequest.lastName &&
-        contact.dateOfBirth == visitorRequest.dateOfBirth
-      ) {
+      if (isSameVisitorAsRequest(contact, visitorRequest)) {
         if (booker.permittedPrisoners.first { it.prisonerId == prisonerId }.permittedVisitors.any { it.visitorId == contact.personId }) {
           throw VisitorRequestValidationException(VisitorRequestValidationError.VISITOR_ALREADY_EXISTS)
         }
       }
     }
   }
+
+  private fun isSameVisitorAsRequest(contact: PrisonerContactDto, visitorRequest: AddVisitorToBookerPrisonerRequestDto): Boolean = contact.firstName == visitorRequest.firstName && contact.lastName == visitorRequest.lastName && contact.dateOfBirth == visitorRequest.dateOfBirth
 }
