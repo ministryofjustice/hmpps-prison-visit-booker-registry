@@ -10,17 +10,23 @@ import java.time.Duration
 
 @Configuration
 class WebClientConfiguration(
-  @Value("\${prisoner.search.url}")
+  @param:Value("\${prisoner.search.url}")
   private val prisonSearchBaseUrl: String,
 
-  @Value("\${prisoner.search.timeout}")
+  @param:Value("\${prisoner.search.timeout}")
   private val prisonSearchTimeout: Duration,
 
-  @Value("\${visit-scheduler.api.url}")
+  @param:Value("\${visit-scheduler.api.url}")
   private val visitSchedulerUrl: String,
 
-  @Value("\${visit-scheduler.api.timeout}")
+  @param:Value("\${visit-scheduler.api.timeout}")
   private val visitSchedulerTimeout: Duration,
+
+  @param:Value("\${prisoner-contact.registry.url}")
+  private val prisonerContactRegistryBaseUrl: String,
+
+  @param:Value("\${prisoner-contact.registry.timeout}")
+  private val prisonerContactRegistryTimeout: Duration,
 ) {
   private final val clientRegistrationId: String = "hmpps-apis"
 
@@ -29,4 +35,7 @@ class WebClientConfiguration(
 
   @Bean
   fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = builder.authorisedWebClient(authorizedClientManager, registrationId = clientRegistrationId, url = visitSchedulerUrl, timeout = visitSchedulerTimeout)
+
+  @Bean
+  fun prisonerContactRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = builder.authorisedWebClient(authorizedClientManager, registrationId = clientRegistrationId, url = prisonerContactRegistryBaseUrl, prisonerContactRegistryTimeout)
 }

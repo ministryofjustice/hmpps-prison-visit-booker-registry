@@ -90,6 +90,7 @@ management:
 
 prisoner.search.timeout: 10s
 visit-scheduler.api.timeout: 10s
+prisoner-contact.registry.timeout: 10s
 
 feature:
   events:

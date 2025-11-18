@@ -8,6 +8,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
@@ -45,6 +47,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21))))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -124,6 +127,84 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(6)
+  }
+
+  @Test
+  fun `when visitor request comes in, if visitor is already linked, then validation response is returned`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    val visitor = createVisitor(prisoner, 123L)
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(PrisonerContactDto(personId = visitor.visitorId, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21))))
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().is4xxClientError
+
+    verifyNoInteractions(telemetryClientSpy)
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(0)
+  }
+
+  @Test
+  fun `when visitor request comes in, but prisoner contact registry returns an error, then the error is returned upwards`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(0)
+  }
+
+  @Test
+  fun `when visitor request comes in, but prisoner contact registry returns NOT FOUND, then the error is returned upwards`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.NOT_FOUND)
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(0)
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(0)
   }
 
   @Test
