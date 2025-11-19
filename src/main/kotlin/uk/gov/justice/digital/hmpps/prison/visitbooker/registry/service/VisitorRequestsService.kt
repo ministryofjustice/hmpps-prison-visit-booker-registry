@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 class VisitorRequestsService(
   private val visitorRequestsRepository: VisitorRequestsRepository,
   private val bookerAuditService: BookerAuditService,
+  private val bookerDetailsService: BookerDetailsService,
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
 ) {
   private companion object {
@@ -36,5 +38,11 @@ class VisitorRequestsService(
         status = VisitorRequestsStatus.REQUESTED,
       ),
     )
+  }
+
+  fun getActiveVisitorRequests(bookerReference: String): List<BookerPrisonerVisitorRequestDto> {
+    LOG.info("Entered VisitorRequestsService - getAwaitingVisitorRequests - For booker $bookerReference")
+    val booker = bookerDetailsService.getBookerByReference(bookerReference)
+    return visitorRequestsRepository.findAllActiveRequestsByBookerReference(booker.reference).map { BookerPrisonerVisitorRequestDto(it) }
   }
 }
