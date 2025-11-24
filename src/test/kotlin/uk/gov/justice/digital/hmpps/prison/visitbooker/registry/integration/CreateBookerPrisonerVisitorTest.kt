@@ -52,7 +52,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when visitor does not exist then visitor is created and email is sent`() {
     // Given
-    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, active = true, sendNotificationFlag = true)
+    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, sendNotificationFlag = true)
 
     // When
     val responseSpec = callCreateBookerPrisonerVisitor(bookerConfigServiceRoleHttpHeaders, createVisitorDto, bookerReference = booker.reference, prisonerId = prisoner.prisonerId)
@@ -95,7 +95,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when visitor does not exist then visitor is created but email flag is false, no email is sent`() {
     // Given
-    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, active = true, sendNotificationFlag = false)
+    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, sendNotificationFlag = false)
 
     // When
     val responseSpec = callCreateBookerPrisonerVisitor(bookerConfigServiceRoleHttpHeaders, createVisitorDto, bookerReference = booker.reference, prisonerId = prisoner.prisonerId)
@@ -128,7 +128,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when visitor already exist, they're not re-added and 200 is returned`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, active = true)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
 
     val visitor = createVisitor(permittedPrisoner = prisoner, createVisitor.visitorId)
     prisoner.permittedVisitors.add(visitor)
@@ -143,7 +143,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when booker reference not does exist then exception is thrown`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, active = true)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
     val bookerReference = "IDontExist"
 
     // When
@@ -156,7 +156,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when prisonerId not does exist then exception is thrown`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, active = true)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
     val bookerReference = booker.reference
 
     // When
@@ -169,7 +169,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when end point is call with incorrect role`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, active = true)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
     val bookerReference = booker.reference
 
     // When

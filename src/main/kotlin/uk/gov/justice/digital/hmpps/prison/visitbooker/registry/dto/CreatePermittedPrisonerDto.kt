@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Create permitted prisoner with permitted visitors associated with the booker.")
 data class CreatePermittedPrisonerDto(
@@ -16,15 +15,9 @@ data class CreatePermittedPrisonerDto(
   @param:Schema(description = "prison code", example = "MDI", required = true)
   @field:NotBlank
   val prisonCode: String,
-
-  @param:JsonProperty("active")
-  @param:Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
-  @field:NotNull
-  val active: Boolean,
 ) {
   constructor(registerPrisonerRequestDto: RegisterPrisonerRequestDto) : this(
     prisonerId = registerPrisonerRequestDto.prisonerId,
     prisonCode = registerPrisonerRequestDto.prisonCode,
-    active = true,
   )
 }

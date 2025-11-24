@@ -40,7 +40,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when prisoner does not exist then prisoner is created`() {
     // Given
-    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", active = true, prisonCode = PRISON_CODE)
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", prisonCode = PRISON_CODE)
 
     // When
     val responseSpec = callCreateBookerPrisoner(bookerConfigServiceRoleHttpHeaders, createPrisoner, booker.reference)
@@ -72,7 +72,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when prisoner already exist an exception is thrown`() {
     // Given
-    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", active = true, prisonCode = PRISON_CODE)
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", prisonCode = PRISON_CODE)
 
     val prisoner = createPrisoner(booker, createPrisoner.prisonerId)
     booker.permittedPrisoners.add(prisoner)
@@ -87,7 +87,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when booker not does exist then exception is thrown`() {
     // Given
-    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", active = true, prisonCode = PRISON_CODE)
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", prisonCode = PRISON_CODE)
     val bookerReference = "IDontExist"
 
     // When
@@ -100,7 +100,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when prisonerId is not given exception is thrown`() {
     // Given
-    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "", active = true, prisonCode = PRISON_CODE)
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "", prisonCode = PRISON_CODE)
 
     // When
     val responseSpec = callCreateBookerPrisoner(bookerConfigServiceRoleHttpHeaders, createPrisoner, booker.reference)
@@ -112,7 +112,7 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when prisoner end point is call with incorrect role`() {
     // Given
-    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", active = true, prisonCode = PRISON_CODE)
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", prisonCode = PRISON_CODE)
 
     // When
     val responseSpec = callCreateBookerPrisoner(orchestrationServiceRoleHttpHeaders, createPrisoner, "IDontExist")

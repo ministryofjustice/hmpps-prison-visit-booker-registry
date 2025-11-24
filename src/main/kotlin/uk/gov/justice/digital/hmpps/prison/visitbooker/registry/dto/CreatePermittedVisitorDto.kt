@@ -9,10 +9,6 @@ data class CreatePermittedVisitorDto(
   @field:NotNull
   val visitorId: Long,
 
-  @param:Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
-  @field:NotNull
-  val active: Boolean,
-
   @param:Schema(description = "A flag (boolean), when set to true will send booker notification of visitor linking", example = "true", required = false)
   @field:NotNull
   val sendNotificationFlag: Boolean? = false,
