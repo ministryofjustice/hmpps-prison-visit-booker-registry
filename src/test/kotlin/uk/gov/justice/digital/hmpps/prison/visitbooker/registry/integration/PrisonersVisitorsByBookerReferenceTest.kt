@@ -23,7 +23,6 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
   private lateinit var visitor1: PermittedVisitorTestObject
   private lateinit var visitor2: PermittedVisitorTestObject
   private lateinit var visitor3: PermittedVisitorTestObject
-  private lateinit var visitor4: PermittedVisitorTestObject
 
   @BeforeEach
   internal fun setUp() {
@@ -32,8 +31,8 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     // booker 2 has 2 permittedPrisoners associated but no permittedVisitors
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    val prisoner1Details = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
-    val prisoner2Details = PermittedPrisonerTestObject("AB789012", PRISON_CODE, true)
+    val prisoner1Details = PermittedPrisonerTestObject("AB123456", PRISON_CODE)
+    val prisoner2Details = PermittedPrisonerTestObject("AB789012", PRISON_CODE)
 
     val prisoners = createAssociatedPrisoners(
       booker1,
@@ -47,24 +46,22 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
       visitors = listOf(),
     )
 
-    visitor1 = PermittedVisitorTestObject(12, true)
-    visitor2 = PermittedVisitorTestObject(34, true)
-    visitor3 = PermittedVisitorTestObject(56, true)
-    visitor4 = PermittedVisitorTestObject(78, false)
+    visitor1 = PermittedVisitorTestObject(12)
+    visitor2 = PermittedVisitorTestObject(34)
+    visitor3 = PermittedVisitorTestObject(56)
 
     permittedPrisoner1 = prisoners[0]
     permittedPrisoner2 = prisoners[1]
 
     createAssociatedPrisonersVisitors(
       permittedPrisoner1,
-      listOf(visitor1, visitor2, visitor3, visitor4),
+      listOf(visitor1, visitor2, visitor3),
     )
 
     createAssociatedPrisonersVisitors(
       permittedPrisoner2,
       listOf(
         visitor3,
-        visitor4,
       ),
     )
   }
@@ -78,11 +75,10 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedVisitors = getResults(returnResult)
 
-    Assertions.assertThat(associatedVisitors.size).isEqualTo(4)
+    Assertions.assertThat(associatedVisitors.size).isEqualTo(3)
     assertVisitorDetails(associatedVisitors[0], visitor1)
     assertVisitorDetails(associatedVisitors[1], visitor2)
     assertVisitorDetails(associatedVisitors[2], visitor3)
-    assertVisitorDetails(associatedVisitors[3], visitor4)
   }
 
   @Test
@@ -97,18 +93,6 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(associatedVisitors[0], visitor1)
     assertVisitorDetails(associatedVisitors[1], visitor2)
     assertVisitorDetails(associatedVisitors[2], visitor3)
-  }
-
-  @Test
-  fun `get visitors by valid reference returns only active visitors associated with that prisoner if active param is false`() {
-    // When
-    val responseSpec = getPermittedPrisonerVisitorsByBookerReference(webTestClient, booker1.reference, permittedPrisoner1.prisonerId, false, orchestrationServiceRoleHttpHeaders)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedVisitors = getResults(returnResult)
-    Assertions.assertThat(associatedVisitors.size).isEqualTo(1)
-    assertVisitorDetails(associatedVisitors[0], visitor4)
   }
 
   @Test
@@ -153,7 +137,6 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
 
   private fun assertVisitorDetails(visitor: PermittedVisitorDto, visitorDetails: PermittedVisitorTestObject) {
     Assertions.assertThat(visitor.visitorId).isEqualTo(visitorDetails.visitorId)
-    Assertions.assertThat(visitor.active).isEqualTo(visitorDetails.isActive)
   }
 
   fun getPermittedPrisonerVisitorsByBookerReference(
