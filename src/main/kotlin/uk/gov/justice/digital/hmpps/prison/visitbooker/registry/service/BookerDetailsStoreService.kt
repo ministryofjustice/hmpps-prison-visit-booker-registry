@@ -47,7 +47,7 @@ class BookerDetailsStoreService(
         bookerId = booker.id,
         booker = booker,
         prisonerId = createPermittedPrisonerDto.prisonerId,
-        active = createPermittedPrisonerDto.active,
+        active = true,
         prisonCode = createPermittedPrisonerDto.prisonCode,
       ),
     )
@@ -113,7 +113,7 @@ class BookerDetailsStoreService(
         permittedPrisonerId = bookerPrisoner.id,
         permittedPrisoner = bookerPrisoner,
         visitorId = createPermittedVisitorDto.visitorId,
-        active = createPermittedVisitorDto.active,
+        active = true,
       ),
     )
     bookerPrisoner.permittedVisitors.add(permittedVisitor)
