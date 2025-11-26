@@ -401,7 +401,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     )
 
     // an active prisoner already exists for booker
-    val prisoner = createPrisoner(booker, "AB123456", active = true)
+    val prisoner = createPrisoner(booker, "AB123456")
     booker.permittedPrisoners.add(prisoner)
     bookerRepository.saveAndFlush(booker)
     // When

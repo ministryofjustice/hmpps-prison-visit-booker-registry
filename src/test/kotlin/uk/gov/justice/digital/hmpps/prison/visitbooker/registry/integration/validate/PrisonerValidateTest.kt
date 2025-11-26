@@ -40,7 +40,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
   internal fun setUp() {
     booker = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
 
-    prisoner = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
+    prisoner = PermittedPrisonerTestObject("AB123456", PRISON_CODE)
 
     createAssociatedPrisoners(
       booker,

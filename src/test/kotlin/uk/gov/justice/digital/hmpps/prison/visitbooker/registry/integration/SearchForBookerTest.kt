@@ -25,7 +25,6 @@ class SearchForBookerTest : IntegrationTestBase() {
 
   private lateinit var prisoner1: PermittedPrisonerTestObject
   private lateinit var prisoner2: PermittedPrisonerTestObject
-  private lateinit var prisoner3: PermittedPrisonerTestObject
 
   @BeforeEach
   internal fun setUp() {
@@ -34,15 +33,12 @@ class SearchForBookerTest : IntegrationTestBase() {
     // booker 2 has no permittedPrisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
-    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE, true)
-
-    // inactive permittedPrisoner
-    prisoner3 = PermittedPrisonerTestObject("AB345678", PRISON_CODE, false)
+    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE)
+    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE)
 
     createAssociatedPrisoners(
       booker1,
-      listOf(prisoner1, prisoner2, prisoner3),
+      listOf(prisoner1, prisoner2),
     )
   }
 
@@ -56,10 +52,10 @@ class SearchForBookerTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val booker = getResults(returnResult).first()
     assertThat(booker.createdTimestamp).isNotNull()
-    assertThat(booker.permittedPrisoners).hasSize(3)
+    assertThat(booker.permittedPrisoners).hasSize(2)
 
     val actualPrisonerIds = booker.permittedPrisoners.map { it.prisonerId }.toSet()
-    val expectedPrisonerIds = setOf(prisoner1.prisonerId, prisoner2.prisonerId, prisoner3.prisonerId)
+    val expectedPrisonerIds = setOf(prisoner1.prisonerId, prisoner2.prisonerId)
 
     assertThat(actualPrisonerIds).isEqualTo(expectedPrisonerIds)
   }

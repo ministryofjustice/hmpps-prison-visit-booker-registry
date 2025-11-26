@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.BookerValidationErrorResponse
@@ -72,13 +71,7 @@ class BookerDetailsController(
     )
     @NotBlank
     bookerReference: String,
-    @RequestParam(value = "active", required = false)
-    @Parameter(
-      description = "Returns active / inactive permitted prisoners or returns all permitted prisoners if this parameter is not passed.",
-      example = "true",
-    )
-    active: Boolean?,
-  ): List<PermittedPrisonerDto> = bookerDetailsService.getPermittedPrisoners(bookerReference, active)
+  ): List<PermittedPrisonerDto> = bookerDetailsService.getPermittedPrisoners(bookerReference)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PERMITTED_VISITORS)
@@ -118,13 +111,7 @@ class BookerDetailsController(
     )
     @NotBlank
     prisonerId: String,
-    @RequestParam(value = "active", required = false)
-    @Parameter(
-      description = "Returns active / inactive permitted visitors for a permitted prisoner or returns all permitted visitors for the permitted prisoner if this parameter is not passed.",
-      example = "true",
-    )
-    active: Boolean?,
-  ): List<PermittedVisitorDto> = bookerDetailsService.getPermittedVisitors(bookerReference, prisonerId, active)
+  ): List<PermittedVisitorDto> = bookerDetailsService.getPermittedVisitors(bookerReference, prisonerId)
 
   @PreAuthorize("hasAnyRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(VALIDATE_PRISONER)

@@ -22,7 +22,6 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
 
   private lateinit var prisoner1: PermittedPrisonerTestObject
   private lateinit var prisoner2: PermittedPrisonerTestObject
-  private lateinit var prisoner3: PermittedPrisonerTestObject
 
   @BeforeEach
   internal fun setUp() {
@@ -31,15 +30,12 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     // booker 2 has no permittedPrisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
-    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE, true)
-
-    // inactive permittedPrisoner
-    prisoner3 = PermittedPrisonerTestObject("AB345678", PRISON_CODE, false)
+    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE)
+    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE)
 
     createAssociatedPrisoners(
       booker1,
-      listOf(prisoner1, prisoner2, prisoner3),
+      listOf(prisoner1, prisoner2),
     )
   }
 
@@ -51,36 +47,9 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val associatedPrisoners = getResults(returnResult)
-    Assertions.assertThat(associatedPrisoners.size).isEqualTo(3)
-    assertPrisonerDetails(associatedPrisoners[0], prisoner1)
-    assertPrisonerDetails(associatedPrisoners[1], prisoner2)
-    assertPrisonerDetails(associatedPrisoners[2], prisoner3)
-  }
-
-  @Test
-  fun `get prisoners by valid reference returns only acitve prisoners associated with that booker if active parameter is true`() {
-    // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, true, orchestrationServiceRoleHttpHeaders)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedPrisoners = getResults(returnResult)
-
     Assertions.assertThat(associatedPrisoners.size).isEqualTo(2)
     assertPrisonerDetails(associatedPrisoners[0], prisoner1)
     assertPrisonerDetails(associatedPrisoners[1], prisoner2)
-  }
-
-  @Test
-  fun `get prisoners by valid reference returns only inacitve prisoners associated with that booker if active parameter is false`() {
-    // When
-    val responseSpec = getPrisonersByBookerReference(webTestClient, booker1.reference, false, orchestrationServiceRoleHttpHeaders)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val associatedPrisoners = getResults(returnResult)
-    Assertions.assertThat(associatedPrisoners.size).isEqualTo(1)
-    assertPrisonerDetails(associatedPrisoners[0], prisoner3)
   }
 
   @Test
@@ -112,10 +81,8 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
 
   private fun assertPrisonerDetails(prisoner: PermittedPrisonerDto, prisonerDetail: PermittedPrisonerTestObject) {
     Assertions.assertThat(prisoner.prisonerId).isEqualTo(prisonerDetail.prisonerId)
-    Assertions.assertThat(prisoner.active).isEqualTo(prisonerDetail.isActive)
     Assertions.assertThat(prisoner.permittedVisitors).hasSize(1)
     Assertions.assertThat(prisoner.permittedVisitors[0].visitorId).isEqualTo(1)
-    Assertions.assertThat(prisoner.permittedVisitors[0].active).isTrue()
   }
 
   fun getPrisonersByBookerReference(

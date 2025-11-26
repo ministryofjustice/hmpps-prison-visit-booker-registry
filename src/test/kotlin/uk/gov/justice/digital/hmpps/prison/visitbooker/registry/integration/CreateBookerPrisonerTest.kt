@@ -51,7 +51,6 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
 
     assertThat(dto).isNotNull()
     assertThat(dto.prisonerId).isEqualTo(createPrisoner.prisonerId)
-    assertThat(dto.active).isTrue()
     assertThat(dto.permittedVisitors).isEmpty()
     assertThat(dto.prisonCode).isEqualTo(PRISON_CODE)
 

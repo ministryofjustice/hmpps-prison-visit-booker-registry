@@ -47,7 +47,6 @@ class BookerDetailsStoreService(
         bookerId = booker.id,
         booker = booker,
         prisonerId = createPermittedPrisonerDto.prisonerId,
-        active = true,
         prisonCode = createPermittedPrisonerDto.prisonCode,
       ),
     )
@@ -70,26 +69,21 @@ class BookerDetailsStoreService(
   }
 
   @Transactional(readOnly = true)
-  fun getPermittedPrisoners(reference: String, active: Boolean?): List<PermittedPrisonerDto> {
+  fun getPermittedPrisoners(reference: String): List<PermittedPrisonerDto> {
     LOG.info("Enter BookerDetailsStoreService getPermittedPrisoners for booker $reference")
 
     val bookerByReference = getBooker(reference)
-    val associatedPrisoners =
-      active?.let {
-        prisonerRepository.findByBookerIdAndActive(bookerByReference.id, it)
-      } ?: prisonerRepository.findByBookerId(bookerByReference.id)
+    val associatedPrisoners = prisonerRepository.findByBookerId(bookerByReference.id)
 
     return associatedPrisoners.map(::PermittedPrisonerDto)
   }
 
   @Transactional(readOnly = true)
-  fun getPermittedVisitors(bookerReference: String, prisonerId: String, active: Boolean?): List<PermittedVisitorDto> {
+  fun getPermittedVisitors(bookerReference: String, prisonerId: String): List<PermittedVisitorDto> {
     LOG.info("Enter BookerDetailsStoreService getPermittedVisitors for booker $bookerReference")
 
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
-    val visitors = active?.let {
-      visitorRepository.findByPermittedPrisonerIdAndActive(prisoner.id, active)
-    } ?: visitorRepository.findByPermittedPrisonerId(prisoner.id)
+    val visitors = visitorRepository.findByPermittedPrisonerId(prisoner.id)
 
     return visitors.map { PermittedVisitorDto(it) }
   }
@@ -104,7 +98,6 @@ class BookerDetailsStoreService(
       LOG.warn("Visitor  ${createPermittedVisitorDto.visitorId} already exists for booker $bookerReference prisoner $prisonerId")
       return PermittedVisitorDto(
         visitorId = createPermittedVisitorDto.visitorId,
-        active = bookerPrisoner.permittedVisitors.first { it.visitorId == createPermittedVisitorDto.visitorId }.active,
       )
     }
 
@@ -113,7 +106,6 @@ class BookerDetailsStoreService(
         permittedPrisonerId = bookerPrisoner.id,
         permittedPrisoner = bookerPrisoner,
         visitorId = createPermittedVisitorDto.visitorId,
-        active = true,
       ),
     )
     bookerPrisoner.permittedVisitors.add(permittedVisitor)
@@ -121,34 +113,6 @@ class BookerDetailsStoreService(
     LOG.info("Visitor ${createPermittedVisitorDto.visitorId} added to permitted visitors for booker $bookerReference prisoner $prisonerId")
 
     return PermittedVisitorDto(permittedVisitor)
-  }
-
-  @Transactional
-  fun activateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
-    LOG.info("Enter BookerDetailsStoreService activateBookerPrisoner for booker $bookerReference")
-    val permittedPrisonerDto = setPrisonerBooker(bookerReference, prisonerId, true)
-    return permittedPrisonerDto
-  }
-
-  @Transactional
-  fun deactivateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
-    LOG.info("Enter BookerDetailsStoreService deactivateBookerPrisoner for booker $bookerReference")
-    val permittedPrisonerDto = setPrisonerBooker(bookerReference, prisonerId, false)
-    return permittedPrisonerDto
-  }
-
-  @Transactional
-  fun activateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
-    LOG.info("Enter BookerDetailsStoreService activateBookerPrisonerVisitor for booker $bookerReference")
-    val permittedVisitorDto = setVisitorPrisonerBooker(bookerReference, prisonerId, visitorId, true)
-    return permittedVisitorDto
-  }
-
-  @Transactional
-  fun deactivateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
-    LOG.info("Enter BookerDetailsStoreService deactivateBookerPrisonerVisitor for booker $bookerReference")
-    val permittedVisitorDto = setVisitorPrisonerBooker(bookerReference, prisonerId, visitorId, false)
-    return permittedVisitorDto
   }
 
   @Transactional
@@ -194,10 +158,8 @@ class BookerDetailsStoreService(
   private fun setPrisonerBooker(
     bookerReference: String,
     prisonerId: String,
-    active: Boolean,
   ): PermittedPrisonerDto {
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
-    prisoner.active = active
     return PermittedPrisonerDto(prisoner)
   }
 
@@ -205,10 +167,8 @@ class BookerDetailsStoreService(
     bookerReference: String,
     prisonerId: String,
     visitorId: Long,
-    active: Boolean,
   ): PermittedVisitorDto {
     val visitor = findVisitorBy(bookerReference, prisonerId, visitorId)
-    visitor.active = active
     return PermittedVisitorDto(visitor)
   }
 

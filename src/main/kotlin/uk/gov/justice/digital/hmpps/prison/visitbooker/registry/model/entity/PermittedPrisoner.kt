@@ -36,9 +36,6 @@ class PermittedPrisoner(
   @Column(name = "prison_code", nullable = false)
   var prisonCode: String,
 
-  @Column(name = "active", nullable = false)
-  var active: Boolean,
-
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "permittedPrisoner", orphanRemoval = true)
   val permittedVisitors: MutableList<PermittedVisitor> = mutableListOf(),
 ) {

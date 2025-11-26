@@ -21,7 +21,6 @@ class BookerByReferenceTest : IntegrationTestBase() {
 
   private lateinit var prisoner1: PermittedPrisonerTestObject
   private lateinit var prisoner2: PermittedPrisonerTestObject
-  private lateinit var prisoner3: PermittedPrisonerTestObject
 
   @BeforeEach
   internal fun setUp() {
@@ -30,15 +29,12 @@ class BookerByReferenceTest : IntegrationTestBase() {
     // booker 2 has no permittedPrisoners associated
     booker2 = createBooker(oneLoginSub = "456", emailAddress = "test1@example.com")
 
-    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE, true)
-    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE, true)
-
-    // inactive permittedPrisoner
-    prisoner3 = PermittedPrisonerTestObject("AB345678", PRISON_CODE, false)
+    prisoner1 = PermittedPrisonerTestObject("AB123456", PRISON_CODE)
+    prisoner2 = PermittedPrisonerTestObject("AB789012", PRISON_CODE)
 
     createAssociatedPrisoners(
       booker1,
-      listOf(prisoner1, prisoner2, prisoner3),
+      listOf(prisoner1, prisoner2),
     )
   }
 
@@ -51,10 +47,9 @@ class BookerByReferenceTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val booker = getResults(returnResult)
     assertThat(booker.createdTimestamp).isNotNull()
-    assertThat(booker.permittedPrisoners).hasSize(3)
+    assertThat(booker.permittedPrisoners).hasSize(2)
     assertThat(booker.permittedPrisoners[0].prisonerId).isEqualTo(prisoner1.prisonerId)
     assertThat(booker.permittedPrisoners[1].prisonerId).isEqualTo(prisoner2.prisonerId)
-    assertThat(booker.permittedPrisoners[2].prisonerId).isEqualTo(prisoner3.prisonerId)
   }
 
   @Test

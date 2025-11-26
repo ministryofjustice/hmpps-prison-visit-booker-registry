@@ -50,8 +50,8 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     val prisoners = createAssociatedPrisoners(
       booker,
       listOf(
-        PermittedPrisonerTestObject("AB123456", PRISON_CODE, true),
-        PermittedPrisonerTestObject("AB789012", PRISON_CODE, true),
+        PermittedPrisonerTestObject("AB123456", PRISON_CODE),
+        PermittedPrisonerTestObject("AB789012", PRISON_CODE),
       ),
       visitors = listOf(),
     )
@@ -61,8 +61,8 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     val visitors = createAssociatedPrisonersVisitors(
       prisoner,
       listOf(
-        PermittedVisitorTestObject(12, true),
-        PermittedVisitorTestObject(34, true),
+        PermittedVisitorTestObject(12),
+        PermittedVisitorTestObject(34),
       ),
     )
     visitor1 = visitors[0]
@@ -72,8 +72,8 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     val prisonersForBookerTwo = createAssociatedPrisoners(
       booker,
       listOf(
-        PermittedPrisonerTestObject("AB123456", PRISON_CODE, true),
-        PermittedPrisonerTestObject("DD948472", PRISON_CODE, true),
+        PermittedPrisonerTestObject("AB123456", PRISON_CODE),
+        PermittedPrisonerTestObject("DD948472", PRISON_CODE),
       ),
       visitors = listOf(),
     )
@@ -82,8 +82,8 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     val visitorsForBookerTwo = createAssociatedPrisonersVisitors(
       prisonerForBookerTwo,
       listOf(
-        PermittedVisitorTestObject(99, true),
-        PermittedVisitorTestObject(100, true),
+        PermittedVisitorTestObject(99),
+        PermittedVisitorTestObject(100),
       ),
     )
     visitor3 = visitorsForBookerTwo[0]
