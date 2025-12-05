@@ -14,11 +14,6 @@ data class PermittedPrisonerDto(
   @field:NotBlank
   val prisonerId: String,
 
-  @param:JsonProperty("active")
-  @param:Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
-  @field:NotNull
-  val active: Boolean,
-
   @param:JsonProperty("prisonCode")
   @param:Schema(description = "prison code", example = "MDI", required = true)
   @field:NotNull
@@ -31,7 +26,6 @@ data class PermittedPrisonerDto(
 ) {
   constructor(permittedPrisoner: PermittedPrisoner) : this(
     prisonerId = permittedPrisoner.prisonerId,
-    active = permittedPrisoner.active,
     prisonCode = permittedPrisoner.prisonCode,
     permittedVisitors = permittedPrisoner.permittedVisitors.map { PermittedVisitorDto(it) },
   )

@@ -34,7 +34,6 @@ class PrisonerValidationService(
     val permittedPrisoner = bookerDetailsStoreService.getPermittedPrisoner(bookerReference, prisonerId).let { permittedPrisoner ->
       PermittedPrisonerDto(
         prisonerId = permittedPrisoner.prisonerId,
-        active = permittedPrisoner.active,
         prisonCode = permittedPrisoner.prisonCode,
         permittedVisitors = emptyList(),
       )

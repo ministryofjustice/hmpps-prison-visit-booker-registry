@@ -117,7 +117,7 @@ class RegisterPrisonerValidator {
     null
   }
 
-  private fun hasActivePrisoners(permittedPrisoners: List<PermittedPrisonerDto>): Boolean = permittedPrisoners.any { it.active }
+  private fun hasActivePrisoners(permittedPrisoners: List<PermittedPrisonerDto>): Boolean = permittedPrisoners.any()
 
   private fun isPrisonerAlreadyAdded(permittedPrisoners: List<PermittedPrisonerDto>, prisonerIdToRegister: String): Boolean = permittedPrisoners.map { it.prisonerId.uppercase() }.contains(prisonerIdToRegister.uppercase())
 }

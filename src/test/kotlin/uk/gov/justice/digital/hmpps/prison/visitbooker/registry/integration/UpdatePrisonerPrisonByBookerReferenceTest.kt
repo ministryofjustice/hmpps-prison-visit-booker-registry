@@ -36,8 +36,8 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   @BeforeEach
   internal fun setUp() {
     booker = createBooker(oneLoginSub = "123", emailAddress = "test@example.com")
-    prisoner1 = PermittedPrisonerTestObject("AB123451", PRISON_CODE, true)
-    prisoner2 = PermittedPrisonerTestObject("AB123452", PRISON_CODE, true)
+    prisoner1 = PermittedPrisonerTestObject("AB123451", PRISON_CODE)
+    prisoner2 = PermittedPrisonerTestObject("AB123452", PRISON_CODE)
 
     createAssociatedPrisoners(
       booker,

@@ -20,11 +20,9 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.BOOKER_ENDPOINT_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
@@ -129,7 +127,7 @@ abstract class IntegrationTestBase {
     val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
     return entityHelper.saveBooker(booker)
   }
-  fun createPrisoner(booker: Booker, prisonerId: String, active: Boolean = true): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, active = active, prisonCode = PRISON_CODE))
+  fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, prisonCode = PRISON_CODE))
 
   fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus): VisitorRequest = entityHelper.createVisitorRequest(
     VisitorRequest(
@@ -142,16 +140,16 @@ abstract class IntegrationTestBase {
     ),
   )
 
-  fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId, active = true))
+  fun createVisitor(permittedPrisoner: PermittedPrisoner, visitorId: Long): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = visitorId))
 
   fun createAssociatedPrisoners(
     booker: Booker,
     associatedPrisoners: List<PermittedPrisonerTestObject>,
-    visitors: List<PermittedVisitorTestObject> = listOf(PermittedVisitorTestObject(1L, true)),
+    visitors: List<PermittedVisitorTestObject> = listOf(PermittedVisitorTestObject(1L)),
   ): List<PermittedPrisoner> {
     val permittedPrisonerList = mutableListOf<PermittedPrisoner>()
     associatedPrisoners.forEach {
-      val permittedPrisoner = createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, active = it.isActive, prisonCode = PRISON_CODE))
+      val permittedPrisoner = createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, prisonCode = PRISON_CODE))
       permittedPrisonerList.add(permittedPrisoner)
       createAssociatedPrisonersVisitors(permittedPrisoner, visitors)
     }
@@ -166,7 +164,7 @@ abstract class IntegrationTestBase {
   fun createAssociatedPrisonersVisitors(permittedPrisoner: PermittedPrisoner, associatedPrisonersVisitors: List<PermittedVisitorTestObject>): List<PermittedVisitor> {
     val permittedVisitors = mutableListOf<PermittedVisitor>()
     associatedPrisonersVisitors.forEach {
-      val permittedVisitor = PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = it.visitorId, active = it.isActive)
+      val permittedVisitor = PermittedVisitor(permittedPrisonerId = permittedPrisoner.id, permittedPrisoner = permittedPrisoner, visitorId = it.visitorId)
       permittedVisitors.add(createAssociatedPrisonersVisitor(permittedPrisoner, permittedVisitor))
     }
     return permittedVisitors
@@ -224,15 +222,6 @@ abstract class IntegrationTestBase {
       .jsonPath("$.userMessage").value(Matchers.equalTo(userMessage))
       .jsonPath("$.developerMessage").value(Matchers.containsString(developerMessage))
   }
-
-  protected fun callClearBookerDetails(
-    authHttpHeaders: (HttpHeaders) -> Unit,
-    bookerReference: String,
-  ): ResponseSpec = webTestClient.delete().uri(BOOKER_ENDPOINT_PATH.replace("{bookerReference}", bookerReference))
-    .headers(authHttpHeaders)
-    .exchange()
-
-  protected fun getBookerDto(responseSpec: ResponseSpec): BookerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerDto::class.java)
 
   protected fun getPermittedPrisonerDto(responseSpec: ResponseSpec): PermittedPrisonerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedPrisonerDto::class.java)
 

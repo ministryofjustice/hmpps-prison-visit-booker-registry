@@ -63,7 +63,6 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
 
     assertThat(dto).isNotNull()
     assertThat(dto.visitorId).isEqualTo(createVisitorDto.visitorId)
-    assertThat(dto.active).isTrue()
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
@@ -106,7 +105,6 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
 
     assertThat(dto).isNotNull()
     assertThat(dto.visitorId).isEqualTo(createVisitorDto.visitorId)
-    assertThat(dto.active).isTrue()
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(

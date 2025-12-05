@@ -57,44 +57,16 @@ class BookerDetailsService(
     return bookerDto
   }
 
-  fun getPermittedPrisoners(reference: String, active: Boolean?): List<PermittedPrisonerDto> {
+  fun getPermittedPrisoners(reference: String): List<PermittedPrisonerDto> {
     LOG.info("Enter BookerDetailsService getPermittedPrisoners for booker $reference")
 
-    return bookerDetailsStoreService.getPermittedPrisoners(reference, active)
+    return bookerDetailsStoreService.getPermittedPrisoners(reference)
   }
 
-  fun getPermittedVisitors(bookerReference: String, prisonerId: String, active: Boolean?): List<PermittedVisitorDto> {
+  fun getPermittedVisitors(bookerReference: String, prisonerId: String): List<PermittedVisitorDto> {
     LOG.info("Enter BookerDetailsService getPermittedVisitors for booker $bookerReference")
 
-    return bookerDetailsStoreService.getPermittedVisitors(bookerReference, prisonerId, active)
-  }
-
-  fun activateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
-    LOG.info("Enter BookerDetailsService activateBookerPrisoner for booker $bookerReference")
-    val permittedPrisonerDto = bookerDetailsStoreService.activateBookerPrisoner(bookerReference, prisonerId)
-    bookerAuditService.auditActivatePrisoner(bookerReference = bookerReference, prisonNumber = prisonerId)
-    return permittedPrisonerDto
-  }
-
-  fun deactivateBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisonerDto {
-    LOG.info("Enter BookerDetailsService deactivateBookerPrisoner for booker $bookerReference")
-    val permittedPrisonerDto = bookerDetailsStoreService.deactivateBookerPrisoner(bookerReference, prisonerId)
-    bookerAuditService.auditDeactivatePrisoner(bookerReference = bookerReference, prisonNumber = prisonerId)
-    return permittedPrisonerDto
-  }
-
-  fun activateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
-    LOG.info("Enter BookerDetailsService activateBookerPrisonerVisitor for booker $bookerReference")
-    val permittedVisitorDto = bookerDetailsStoreService.activateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
-    bookerAuditService.auditActivateVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = visitorId)
-    return permittedVisitorDto
-  }
-
-  fun deactivateBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
-    LOG.info("Enter BookerDetailsService deactivateBookerPrisonerVisitor for booker $bookerReference")
-    val permittedVisitorDto = bookerDetailsStoreService.deactivateBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
-    bookerAuditService.auditDeactivateVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = visitorId)
-    return permittedVisitorDto
+    return bookerDetailsStoreService.getPermittedVisitors(bookerReference, prisonerId)
   }
 
   fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long) {
