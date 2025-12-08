@@ -29,6 +29,7 @@ class GetCountVisitorRequestsForPrisonTest : IntegrationTestBase() {
     val otherPrisoner = createPrisoner(booker, "BB123456", prisonCode = "XYZ")
 
     createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.APPROVED)
     createVisitorRequest(booker.reference, otherPrisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
 
     // When
