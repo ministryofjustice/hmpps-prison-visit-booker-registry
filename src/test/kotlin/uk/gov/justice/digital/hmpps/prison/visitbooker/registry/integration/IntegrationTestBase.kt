@@ -127,7 +127,7 @@ abstract class IntegrationTestBase {
     val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
     return entityHelper.saveBooker(booker)
   }
-  fun createPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, prisonCode = PRISON_CODE))
+  fun createPrisoner(booker: Booker, prisonerId: String, prisonCode: String = PRISON_CODE): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, prisonCode = prisonCode))
 
   fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus): VisitorRequest = entityHelper.createVisitorRequest(
     VisitorRequest(
