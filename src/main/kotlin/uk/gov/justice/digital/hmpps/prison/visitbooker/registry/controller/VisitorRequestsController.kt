@@ -19,10 +19,13 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResp
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
 const val GET_ACTIVE_VISITOR_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/visitors/requests"
+
+const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 
 @RestController
 class VisitorRequestsController(
@@ -118,4 +121,37 @@ class VisitorRequestsController(
     @NotBlank
     bookerReference: String,
   ): List<BookerPrisonerVisitorRequestDto> = visitorRequestsService.getActiveVisitorRequests(bookerReference)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE)
+  @Operation(
+    summary = "Get a count of all visitor requests for a prison via prison code",
+    description = "Get a count of all visitor requests for a prison via prison code",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Count successfully returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get count of visitor requests for prison.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get count of visitor requests for prison",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitorRequestsCountByPrisonCode(
+    @PathVariable(value = "prisonCode", required = true)
+    @NotBlank
+    prisonCode: String,
+  ): VisitorRequestsCountByPrisonCodeDto = visitorRequestsService.getVisitorRequestsCountByPrisonCode(prisonCode)
 }

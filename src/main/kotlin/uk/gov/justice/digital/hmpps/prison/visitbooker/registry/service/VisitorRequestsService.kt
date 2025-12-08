@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
@@ -44,5 +45,10 @@ class VisitorRequestsService(
     LOG.info("Entered VisitorRequestsService - getAwaitingVisitorRequests - For booker $bookerReference")
     val booker = bookerDetailsService.getBookerByReference(bookerReference)
     return visitorRequestsRepository.findAllActiveRequestsByBookerReference(booker.reference).map { BookerPrisonerVisitorRequestDto(it) }
+  }
+
+  fun getVisitorRequestsCountByPrisonCode(prisonCode: String): VisitorRequestsCountByPrisonCodeDto {
+    LOG.info("Entered VisitorRequestsService - getVisitorRequestsCountByPrisonCode - For prison $prisonCode")
+    return VisitorRequestsCountByPrisonCodeDto(visitorRequestsRepository.findCountOfVisitorRequestsByPrisonCode(prisonCode))
   }
 }
