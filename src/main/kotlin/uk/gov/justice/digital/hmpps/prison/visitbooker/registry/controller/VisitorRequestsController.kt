@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorReque
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
-const val GET_ACTIVE_VISITOR_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/visitors/requests"
+const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE_AND_PRISONER_ID: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/visitors/requests"
 
 const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 
@@ -85,7 +85,7 @@ class VisitorRequestsController(
   }
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(GET_ACTIVE_VISITOR_REQUESTS)
+  @GetMapping(GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE_AND_PRISONER_ID)
   @Operation(
     summary = "Get all active visitor requests for a booker",
     description = "Get all active visitor requests for a booker",

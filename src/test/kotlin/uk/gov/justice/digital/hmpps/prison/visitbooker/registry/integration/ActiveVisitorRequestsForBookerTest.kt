@@ -8,7 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_ACTIVE_VISITOR_REQUESTS
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE_AND_PRISONER_ID
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
@@ -109,7 +109,7 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     bookerReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec = webTestClient.get().uri(GET_ACTIVE_VISITOR_REQUESTS.replace("{bookerReference}", bookerReference))
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri(GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE_AND_PRISONER_ID.replace("{bookerReference}", bookerReference))
     .headers(authHttpHeaders)
     .exchange()
 }
