@@ -12,4 +12,7 @@ interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
 
   @Query("select count(vr) from VisitorRequest vr inner join PermittedPrisoner pp on pp.prisonerId = vr.prisonerId and pp.prisonCode = :prisonCode where vr.status = 'REQUESTED'")
   fun findCountOfVisitorRequestsByPrisonCode(prisonCode: String): Int
+
+  @Query("select vr from VisitorRequest vr inner join PermittedPrisoner pp on pp.prisonerId = vr.prisonerId and pp.prisonCode = :prisonCode where vr.status = 'REQUESTED'")
+  fun findVisitorRequestsByPrisonCode(prisonCode: String): List<VisitorRequest>
 }

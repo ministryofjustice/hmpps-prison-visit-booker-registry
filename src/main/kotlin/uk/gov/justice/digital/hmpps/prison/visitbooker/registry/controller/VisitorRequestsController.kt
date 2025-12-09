@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorR
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/visitors/requests"
 
+const val GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 
 @RestController
@@ -154,4 +155,37 @@ class VisitorRequestsController(
     @NotBlank
     prisonCode: String,
   ): VisitorRequestsCountByPrisonCodeDto = visitorRequestsService.getVisitorRequestsCountByPrisonCode(prisonCode)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(GET_VISITOR_REQUESTS_BY_PRISON_CODE)
+  @Operation(
+    summary = "Get a list of all active visitor requests for a prison via prison code",
+    description = "Get a list of all active visitor requests for a prison via prison code",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "list successfully returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get list of active visitor requests for prison.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get list of active visitor requests for prison",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitorRequestsByPrisonCode(
+    @PathVariable(value = "prisonCode", required = true)
+    @NotBlank
+    prisonCode: String,
+  ): List<BookerPrisonerVisitorRequestDto> = visitorRequestsService.getVisitorRequestsByPrisonCode(prisonCode)
 }

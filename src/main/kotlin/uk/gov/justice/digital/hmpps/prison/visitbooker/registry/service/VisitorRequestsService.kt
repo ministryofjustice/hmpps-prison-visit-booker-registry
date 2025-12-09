@@ -51,4 +51,9 @@ class VisitorRequestsService(
     LOG.info("Entered VisitorRequestsService - getVisitorRequestsCountByPrisonCode - For prison $prisonCode")
     return VisitorRequestsCountByPrisonCodeDto(visitorRequestsRepository.findCountOfVisitorRequestsByPrisonCode(prisonCode))
   }
+
+  fun getVisitorRequestsByPrisonCode(prisonCode: String): List<BookerPrisonerVisitorRequestDto> {
+    LOG.info("Entered VisitorRequestsService - getVisitorRequestsByPrisonCode - For prison $prisonCode")
+    return visitorRequestsRepository.findVisitorRequestsByPrisonCode(prisonCode).map { BookerPrisonerVisitorRequestDto(it) }
+  }
 }
