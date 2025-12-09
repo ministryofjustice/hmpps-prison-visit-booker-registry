@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_VISITOR_REQUESTS_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import java.time.LocalDate
 
@@ -56,10 +56,11 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(responseDto.size).isEqualTo(1)
     Assertions.assertThat(responseDto[0].prisonerId).isEqualTo(prisoner.prisonerId)
     Assertions.assertThat(responseDto[0].bookerReference).isEqualTo(prisoner.booker.reference)
-    Assertions.assertThat(responseDto[0].status).isEqualTo(VisitorRequestsStatus.REQUESTED)
+    Assertions.assertThat(responseDto[0].bookerEmail).isEqualTo(booker.email)
     Assertions.assertThat(responseDto[0].firstName).isEqualTo("firstName1")
     Assertions.assertThat(responseDto[0].lastName).isEqualTo("lastName1")
     Assertions.assertThat(responseDto[0].dateOfBirth).isEqualTo(LocalDate.now().minusYears(21))
+    Assertions.assertThat(responseDto[0].requestedOn).isEqualTo(LocalDate.now())
   }
 
   @Test
@@ -81,7 +82,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorRequestDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<BookerPrisonerVisitorRequestDto>>() {})
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestDto>>() {})
 
   fun getVisitorRequestsByPrisonCode(
     webTestClient: WebTestClient,

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
@@ -52,8 +53,13 @@ class VisitorRequestsService(
     return VisitorRequestsCountByPrisonCodeDto(visitorRequestsRepository.findCountOfVisitorRequestsByPrisonCode(prisonCode))
   }
 
-  fun getVisitorRequestsByPrisonCode(prisonCode: String): List<BookerPrisonerVisitorRequestDto> {
+  fun getVisitorRequestsByPrisonCode(prisonCode: String): List<PrisonVisitorRequestDto> {
     LOG.info("Entered VisitorRequestsService - getVisitorRequestsByPrisonCode - For prison $prisonCode")
-    return visitorRequestsRepository.findVisitorRequestsByPrisonCode(prisonCode).map { BookerPrisonerVisitorRequestDto(it) }
+    val visitorRequests = visitorRequestsRepository.findVisitorRequestsByPrisonCode(prisonCode)
+
+    return visitorRequests.map { visitorRequest ->
+      val booker = bookerDetailsService.getBookerByReference(visitorRequest.bookerReference)
+      PrisonVisitorRequestDto(visitorRequest, booker.email)
+    }.toList()
   }
 }

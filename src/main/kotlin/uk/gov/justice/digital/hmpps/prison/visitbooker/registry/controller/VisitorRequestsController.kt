@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResp
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
@@ -187,5 +188,5 @@ class VisitorRequestsController(
     @PathVariable(value = "prisonCode", required = true)
     @NotBlank
     prisonCode: String,
-  ): List<BookerPrisonerVisitorRequestDto> = visitorRequestsService.getVisitorRequestsByPrisonCode(prisonCode)
+  ): List<PrisonVisitorRequestDto> = visitorRequestsService.getVisitorRequestsByPrisonCode(prisonCode)
 }
