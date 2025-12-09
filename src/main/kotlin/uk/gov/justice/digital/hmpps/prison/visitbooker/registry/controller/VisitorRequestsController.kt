@@ -24,7 +24,8 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorReque
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
-const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/visitors/requests"
+const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/permitted/visitors/requests"
+const val GET_SINGLE_VISITOR_REQUEST: String = "$PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH/{requestReference}"
 
 const val GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
@@ -189,4 +190,45 @@ class VisitorRequestsController(
     @NotBlank
     prisonCode: String,
   ): List<PrisonVisitorRequestDto> = visitorRequestsService.getVisitorRequestsByPrisonCode(prisonCode)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @GetMapping(GET_SINGLE_VISITOR_REQUEST)
+  @Operation(
+    summary = "Get a single visitor request, given a booker-reference, prisonerId and request reference",
+    description = "Get a single visitor request, given a booker-reference, prisonerId and request reference",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "single request successfully returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get a single visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get a single visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Booker not found or visitor request not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getSingleVisitorRequest(
+    @PathVariable
+    bookerReference: String,
+    @PathVariable
+    prisonerId: String,
+    @PathVariable
+    requestReference: String,
+  ): PrisonVisitorRequestDto = visitorRequestsService.getVisitorRequest(bookerReference, prisonerId, requestReference)
 }
