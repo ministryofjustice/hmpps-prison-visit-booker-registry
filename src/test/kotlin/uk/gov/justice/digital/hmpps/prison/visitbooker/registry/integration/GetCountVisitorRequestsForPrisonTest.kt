@@ -1,21 +1,20 @@
-package uk.gov.justice.digital.hmpps.prison.visitbooker.registry
+package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.transaction.annotation.Propagation.SUPPORTS
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@Transactional(propagation = SUPPORTS)
-@DisplayName("Get active visitor requests for booker")
+@Transactional(propagation = Propagation.SUPPORTS)
+@DisplayName("GET count of active visitor requests for booker - $GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE")
 class GetCountVisitorRequestsForPrisonTest : IntegrationTestBase() {
 
   private val prisonCode = "HEI"
@@ -28,9 +27,24 @@ class GetCountVisitorRequestsForPrisonTest : IntegrationTestBase() {
     val prisoner = createPrisoner(booker, "AA123456", prisonCode = prisonCode)
     val otherPrisoner = createPrisoner(booker, "BB123456", prisonCode = "XYZ")
 
-    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
-    createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.APPROVED)
-    createVisitorRequest(booker.reference, otherPrisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(
+      booker.reference,
+      prisoner.prisonerId,
+      AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)),
+      status = VisitorRequestsStatus.REQUESTED,
+    )
+    createVisitorRequest(
+      booker.reference,
+      prisoner.prisonerId,
+      AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(21)),
+      status = VisitorRequestsStatus.APPROVED,
+    )
+    createVisitorRequest(
+      booker.reference,
+      otherPrisoner.prisonerId,
+      AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)),
+      status = VisitorRequestsStatus.REQUESTED,
+    )
 
     // When
     val responseSpec = getCountVisitorRequestsByPrisonCode(webTestClient, prisonCode, orchestrationServiceRoleHttpHeaders)
