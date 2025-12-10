@@ -24,8 +24,10 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorReque
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
+
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/permitted/visitors/requests"
-const val GET_SINGLE_VISITOR_REQUEST: String = "$PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH/{requestReference}"
+
+const val GET_SINGLE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}"
 
 const val GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
@@ -225,10 +227,6 @@ class VisitorRequestsController(
   )
   fun getSingleVisitorRequest(
     @PathVariable
-    bookerReference: String,
-    @PathVariable
-    prisonerId: String,
-    @PathVariable
     requestReference: String,
-  ): PrisonVisitorRequestDto = visitorRequestsService.getVisitorRequest(bookerReference, prisonerId, requestReference)
+  ): PrisonVisitorRequestDto = visitorRequestsService.getVisitorRequest(requestReference)
 }

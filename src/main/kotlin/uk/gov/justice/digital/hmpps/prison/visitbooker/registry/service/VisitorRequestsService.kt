@@ -64,11 +64,13 @@ class VisitorRequestsService(
     }.toList()
   }
 
-  fun getVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String): PrisonVisitorRequestDto {
-    LOG.info("Entered VisitorRequestsService - getVisitorRequest - booker reference $bookerReference, prisoner $prisonerId, requestReference $requestReference")
-    val booker = bookerDetailsService.getBookerByReference(bookerReference)
-    val request = visitorRequestsRepository.findVisitorRequestByBookerReferenceAndPrisonerIdAndReference(bookerReference, prisonerId, requestReference)
-      ?: throw VisitorRequestNotFoundException("Request for $bookerReference and prisonerId $prisonerId not found - request reference $requestReference")
+  fun getVisitorRequest(requestReference: String): PrisonVisitorRequestDto {
+    LOG.info("Entered VisitorRequestsService - getVisitorRequest - requestReference $requestReference")
+
+    val request = visitorRequestsRepository.findVisitorRequestByReference(requestReference)
+      ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
+
+    val booker = bookerDetailsService.getBookerByReference(request.bookerReference)
 
     return PrisonVisitorRequestDto(request, booker.email)
   }

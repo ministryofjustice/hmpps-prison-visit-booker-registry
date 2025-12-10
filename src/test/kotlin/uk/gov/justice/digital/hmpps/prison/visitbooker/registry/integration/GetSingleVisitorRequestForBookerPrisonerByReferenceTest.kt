@@ -20,12 +20,13 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
   @Test
   fun `when get single request by is called, then request is returned`() {
     // Given
+    val prisonCode = "HEI"
     val booker = createBooker("one-sub", "test@test.com")
-    val prisoner = createPrisoner(booker, "AA123456", "HEI")
+    val prisoner = createPrisoner(booker, "AA123456", prisonCode)
     val request = createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
 
     // When
-    val responseSpec = callGetSingleVisitorRequest(webTestClient, booker.reference, prisoner.prisonerId, request.reference, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callGetSingleVisitorRequest(webTestClient, request.reference, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -39,12 +40,10 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
   @Test
   fun `when get single visitor request is called and booker does not exist then NOT_FOUND status is returned`() {
     // Given
-    val bookerReference = "booker-missing"
-    val prisonerId = "AA123456"
     val reference = "abc-def-ghi"
 
     // When
-    val responseSpec = callGetSingleVisitorRequest(webTestClient, bookerReference, prisonerId, reference, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callGetSingleVisitorRequest(webTestClient, reference, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -53,12 +52,10 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
   @Test
   fun `when get single visitor request is called and visitor request does not exist then NOT_FOUND status is returned`() {
     // Given
-    val booker = createBooker("one-sub", "test@test.com")
-    val prisonerId = "AA123456"
     val reference = "missingRef"
 
     // When
-    val responseSpec = callGetSingleVisitorRequest(webTestClient, booker.reference, prisonerId, reference, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callGetSingleVisitorRequest(webTestClient, reference, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -67,7 +64,7 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
   @Test
   fun `access forbidden when no role`() {
     // When
-    val responseSpec = callGetSingleVisitorRequest(webTestClient, "bookerRef", "prisonerId", "visitorRequestRef", setAuthorisation(roles = listOf()))
+    val responseSpec = callGetSingleVisitorRequest(webTestClient, "visitorRequestRef", setAuthorisation(roles = listOf()))
     responseSpec.expectStatus().isForbidden
   }
 
@@ -75,16 +72,10 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
 
   fun callGetSingleVisitorRequest(
     webTestClient: WebTestClient,
-    bookerReference: String,
-    prisonerId: String,
-    reference: String,
+    requestReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec = webTestClient.get().uri(
-    GET_SINGLE_VISITOR_REQUEST
-      .replace("{bookerReference}", bookerReference)
-      .replace("{prisonerId}", prisonerId)
-      .replace("{requestReference}", reference),
-  )
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri(GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference))
     .headers(authHttpHeaders)
     .exchange()
 }
