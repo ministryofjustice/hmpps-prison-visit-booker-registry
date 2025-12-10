@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Prison
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.UpdatePrisonerPrisonValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestValidationException
 import java.util.*
 
@@ -155,6 +156,20 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         ErrorResponse(
           status = NOT_FOUND,
           userMessage = "Visitor not found",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(VisitorRequestNotFoundException::class)
+  fun handleVisitorRequestNotFoundException(e: VisitorRequestNotFoundException): ResponseEntity<ErrorResponse?>? {
+    LOG.debug("Visitor request not found: {}", e.message)
+    return ResponseEntity
+      .status(NOT_FOUND)
+      .body(
+        ErrorResponse(
+          status = NOT_FOUND,
+          userMessage = "Visitor request not found",
           developerMessage = e.message,
         ),
       )
