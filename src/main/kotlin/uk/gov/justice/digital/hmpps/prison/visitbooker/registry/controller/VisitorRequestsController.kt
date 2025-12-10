@@ -196,8 +196,8 @@ class VisitorRequestsController(
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @GetMapping(GET_SINGLE_VISITOR_REQUEST)
   @Operation(
-    summary = "Get a single visitor request, given a booker-reference, prisonerId and request reference",
-    description = "Get a single visitor request, given a booker-reference, prisonerId and request reference",
+    summary = "Get a single visitor request, given a request reference",
+    description = "Get a single visitor request, given a request reference",
     responses = [
       ApiResponse(
         responseCode = "200",
