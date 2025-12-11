@@ -29,6 +29,7 @@ class VisitorRequestsService(
     private val LOG = LoggerFactory.getLogger(this::class.java)
   }
 
+  @Transactional
   fun submitVisitorRequest(bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto) {
     LOG.info("Entered VisitorRequestsService - submitVisitorRequest - For booker $bookerReference, prisoner $prisonerId")
 
