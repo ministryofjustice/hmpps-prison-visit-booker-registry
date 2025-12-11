@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
@@ -89,15 +88,15 @@ class BookerDetailsStoreService(
   }
 
   @Transactional
-  fun storeBookerPrisonerVisitor(bookerReference: String, prisonerId: String, createPermittedVisitorDto: CreatePermittedVisitorDto): PermittedVisitorDto {
-    LOG.info("Enter BookerDetailsStoreService storeBookerPrisonerVisitor for booker $bookerReference, prisoner $prisonerId, visitor ${createPermittedVisitorDto.visitorId}")
+  fun storeBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitorDto {
+    LOG.info("Enter BookerDetailsStoreService storeBookerPrisonerVisitor for booker $bookerReference, prisoner $prisonerId, visitor $visitorId")
 
     val bookerPrisoner = getPermittedPrisoner(bookerReference, prisonerId)
 
-    if (bookerPrisoner.permittedVisitors.any { createPermittedVisitorDto.visitorId == it.visitorId }) {
-      LOG.warn("Visitor  ${createPermittedVisitorDto.visitorId} already exists for booker $bookerReference prisoner $prisonerId")
+    if (bookerPrisoner.permittedVisitors.any { visitorId == it.visitorId }) {
+      LOG.warn("Visitor  $visitorId already exists for booker $bookerReference prisoner $prisonerId")
       return PermittedVisitorDto(
-        visitorId = createPermittedVisitorDto.visitorId,
+        visitorId = visitorId,
       )
     }
 
@@ -105,12 +104,12 @@ class BookerDetailsStoreService(
       PermittedVisitor(
         permittedPrisonerId = bookerPrisoner.id,
         permittedPrisoner = bookerPrisoner,
-        visitorId = createPermittedVisitorDto.visitorId,
+        visitorId = visitorId,
       ),
     )
     bookerPrisoner.permittedVisitors.add(permittedVisitor)
 
-    LOG.info("Visitor ${createPermittedVisitorDto.visitorId} added to permitted visitors for booker $bookerReference prisoner $prisonerId")
+    LOG.info("Visitor $visitorId added to permitted visitors for booker $bookerReference prisoner $prisonerId")
 
     return PermittedVisitorDto(permittedVisitor)
   }

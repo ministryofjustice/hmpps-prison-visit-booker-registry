@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
-import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Visito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
-@Transactional
+@Transactional(readOnly = true)
 @Service
 class VisitorRequestsValidationService(
   private val visitorRequestsRepository: VisitorRequestsRepository,
