@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Vis
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import java.time.LocalDateTime
 
-@Transactional
 @Service
 class VisitorRequestsService(
   private val visitorRequestsRepository: VisitorRequestsRepository,
@@ -78,7 +77,9 @@ class VisitorRequestsService(
     LOG.info("Entered VisitorRequestsService - getVisitorRequest - requestReference $requestReference")
 
     val request = visitorRequestsRepository.findVisitorRequestByReference(requestReference)
-      ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
+    if (request == null || request.status != REQUESTED) {
+      throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
+    }
 
     val booker = bookerDetailsService.getBookerByReference(request.bookerReference)
 
@@ -86,23 +87,21 @@ class VisitorRequestsService(
   }
 
   fun approveAndLinkVisitorRequest(requestReference: String, linkVisitorRequest: LinkVisitorRequestDto) {
-    LOG.info("Entered VisitorRequestsService - approveVisitorRequest for request reference - $requestReference, linkVisitorRequest - $linkVisitorRequest")
+    LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $linkVisitorRequest")
 
-    val request = getVisitorRequestByReference(requestReference)
+    val visitorRequest = getVisitorRequestByReference(requestReference)
 
-    when (request.status) {
+    when (visitorRequest.status) {
       REQUESTED -> {
-        approvalAndLinkVisitor(request.bookerReference, request.prisonerId, requestReference, linkVisitorRequest)
+        approveAndLinkVisitor(visitorRequest.bookerReference, visitorRequest.prisonerId, requestReference, linkVisitorRequest)
         LOG.info("Visitor request with reference $requestReference approved successfully")
       }
 
-      // TODO - need to discuss with frontend
       REJECTED -> {
         LOG.info("Visitor request with reference $requestReference has already been rejected. No action taken.")
         throw VisitorRequestAlreadyRejectedException("Visitor request with reference $requestReference has already been rejected.")
       }
 
-      // TODO - need to discuss with frontend
       APPROVED -> {
         LOG.info("Visitor request with reference $requestReference has already been approved. No action taken.")
         throw VisitorRequestAlreadyApprovedException("Visitor request with reference $requestReference has already been approved.")
@@ -110,7 +109,7 @@ class VisitorRequestsService(
     }
   }
 
-  private fun approvalAndLinkVisitor(bookerReference: String, prisonerId: String, requestReference: String, linkVisitorRequest: LinkVisitorRequestDto) {
+  private fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, requestReference: String, linkVisitorRequest: LinkVisitorRequestDto) {
     val booker = bookerDetailsService.getBookerByReference(bookerReference)
     bookerDetailsService.createBookerPrisonerVisitor(bookerReference = booker.reference, prisonerId = prisonerId, linkVisitorRequest, requestReference = requestReference)
     visitorRequestsRepository.approveVisitorRequest(requestReference, LocalDateTime.now())
