@@ -262,7 +262,7 @@ class VisitorRequestsController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Visitor request not found",
+        description = "Booker or visitor request not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
