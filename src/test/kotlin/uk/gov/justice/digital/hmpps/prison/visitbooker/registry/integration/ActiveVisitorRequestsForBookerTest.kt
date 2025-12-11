@@ -47,10 +47,15 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
+
     val activeVisitorRequests = getResults(returnResult)
-    Assertions.assertThat(activeVisitorRequests.size).isEqualTo(2)
-    assertActiveVisitorRequest(activeVisitorRequests[0], request1)
-    assertActiveVisitorRequest(activeVisitorRequests[1], request4)
+
+    Assertions.assertThat(activeVisitorRequests).hasSize(2)
+
+    for (expected in listOf(request1, request4)) {
+      val match = activeVisitorRequests.first { it.reference == expected.reference }
+      assertActiveVisitorRequest(match, expected)
+    }
   }
 
   @Test

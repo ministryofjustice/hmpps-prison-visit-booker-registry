@@ -12,10 +12,32 @@ interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
   @Query("select vr from VisitorRequest vr where vr.bookerReference = :bookerReference and vr.status = 'REQUESTED'")
   fun findAllActiveRequestsByBookerReference(bookerReference: String): List<VisitorRequest>
 
-  @Query("select count(vr) from VisitorRequest vr inner join PermittedPrisoner pp on pp.prisonerId = vr.prisonerId and pp.prisonCode = :prisonCode where vr.status = 'REQUESTED'")
+  @Query(
+    """
+    select count(vr)
+    from VisitorRequest vr
+    where vr.status = 'REQUESTED'
+      and exists (
+        select 1 from PermittedPrisoner pp
+        where pp.prisonerId = vr.prisonerId
+          and pp.prisonCode = :prisonCode
+      )
+  """,
+  )
   fun findCountOfVisitorRequestsByPrisonCode(prisonCode: String): Int
 
-  @Query("select vr from VisitorRequest vr inner join PermittedPrisoner pp on pp.prisonerId = vr.prisonerId and pp.prisonCode = :prisonCode where vr.status = 'REQUESTED'")
+  @Query(
+    """
+    select vr
+    from VisitorRequest vr
+    where vr.status = 'REQUESTED'
+      and exists (
+        select 1 from PermittedPrisoner pp
+        where pp.prisonerId = vr.prisonerId
+          and pp.prisonCode = :prisonCode
+      )
+  """,
+  )
   fun findVisitorRequestsByPrisonCode(prisonCode: String): List<VisitorRequest>
 
   fun findVisitorRequestByReference(reference: String): VisitorRequest?
