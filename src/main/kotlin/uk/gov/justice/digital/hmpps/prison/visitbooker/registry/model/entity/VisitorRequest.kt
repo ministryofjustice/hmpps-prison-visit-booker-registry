@@ -11,6 +11,7 @@ import jakarta.persistence.PostPersist
 import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
 import java.time.LocalDate
@@ -58,6 +59,10 @@ class VisitorRequest(
   @Column
   val createTimestamp: LocalDateTime? = null
 
+  @UpdateTimestamp
+  @Column
+  val modifyTimestamp: LocalDateTime? = null
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
@@ -68,5 +73,5 @@ class VisitorRequest(
 
   override fun hashCode(): Int = id.hashCode()
 
-  override fun toString(): String = this::class.simpleName + "(id=$id, reference='$reference', created = $createTimestamp)"
+  override fun toString(): String = this::class.simpleName + "(id=$id, reference='$reference', created = $createTimestamp, modified = $modifyTimestamp, status = $status)"
 }

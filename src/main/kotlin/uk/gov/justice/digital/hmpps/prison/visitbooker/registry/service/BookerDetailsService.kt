@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditD
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.LinkVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
@@ -37,7 +38,7 @@ class BookerDetailsService(
   fun createBookerPrisonerVisitor(bookerReference: String, prisonerId: String, createPermittedVisitorDto: CreatePermittedVisitorDto): PermittedVisitorDto {
     LOG.info("Enter BookerDetailsService createBookerPrisonerVisitor for booker $bookerReference, prisoner $prisonerId, visitor ${createPermittedVisitorDto.visitorId}")
 
-    val permittedVisitor = bookerDetailsStoreService.storeBookerPrisonerVisitor(bookerReference, prisonerId, createPermittedVisitorDto)
+    val permittedVisitor = bookerDetailsStoreService.storeBookerPrisonerVisitor(bookerReference, prisonerId, createPermittedVisitorDto.visitorId)
 
     bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = createPermittedVisitorDto.visitorId)
 
@@ -45,6 +46,15 @@ class BookerDetailsService(
       snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, createPermittedVisitorDto.visitorId.toString())
     }
 
+    return permittedVisitor
+  }
+
+  fun createBookerPrisonerVisitor(bookerReference: String, prisonerId: String, linkVisitorRequestDto: LinkVisitorRequestDto, requestReference: String): PermittedVisitorDto {
+    LOG.info("Enter BookerDetailsService createBookerPrisonerVisitor for booker - $bookerReference, prisoner - $prisonerId, visitorId - ${linkVisitorRequestDto.visitorId}, requestReference - $requestReference")
+
+    val permittedVisitor = bookerDetailsStoreService.storeBookerPrisonerVisitor(bookerReference, prisonerId, linkVisitorRequestDto.visitorId)
+    bookerAuditService.auditLinkVisitorApproved(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = linkVisitorRequestDto.visitorId, requestReference = requestReference)
+    snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, linkVisitorRequestDto.visitorId.toString())
     return permittedVisitor
   }
 

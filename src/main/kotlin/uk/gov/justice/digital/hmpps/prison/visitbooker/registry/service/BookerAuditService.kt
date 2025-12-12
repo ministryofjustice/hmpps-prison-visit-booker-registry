@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.REGISTER_PRISONER_SEARCH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_APPROVED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
@@ -33,6 +34,7 @@ class BookerAuditService(
     private const val PRISON_NUMBER_PROPERTY_NAME = "prisonerId"
     private const val VISITOR_ID_PROPERTY_NAME = "visitorId"
     private const val NEW_PRISON_CODE = "newPrisonCode"
+    private const val VISITOR_REQUEST_REFERENCE = "requestReference"
 
     private interface PrisonerSearchPropertyNames {
       companion object {
@@ -107,6 +109,21 @@ class BookerAuditService(
 
     // send event to telemetry client
     val properties = mapOf(
+      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
+      VISITOR_ID_PROPERTY_NAME to visitorId.toString(),
+    )
+    sendTelemetryClientEvent(auditType, properties)
+  }
+
+  fun auditLinkVisitorApproved(bookerReference: String, prisonNumber: String, visitorId: Long, requestReference: String) {
+    val auditType = VISITOR_REQUEST_APPROVED_FOR_PRISONER
+    val text = "Visitor ID - $visitorId approved for prisoner - $prisonNumber, request reference - $requestReference"
+    auditBookerEvent(bookerReference, auditType, text)
+
+    // send event to telemetry client
+    val properties = mapOf(
+      VISITOR_REQUEST_REFERENCE to requestReference,
       BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
       PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
       VISITOR_ID_PROPERTY_NAME to visitorId.toString(),
