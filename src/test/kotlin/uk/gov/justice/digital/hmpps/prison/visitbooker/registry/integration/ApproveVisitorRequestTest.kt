@@ -26,9 +26,8 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Visito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsStoreService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.SnsService
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsApprovalStoreService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 import java.time.LocalDate
 
@@ -43,10 +42,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   private lateinit var visitorRequestsServiceSpy: VisitorRequestsService
 
   @MockitoSpyBean
-  private lateinit var bookerDetailsServiceSpy: BookerDetailsService
-
-  @MockitoSpyBean
-  private lateinit var bookerDetailsStoreServiceSpy: BookerDetailsStoreService
+  private lateinit var visitorRequestsApprovalStoreServiceSpy: VisitorRequestsApprovalStoreService
 
   @MockitoSpyBean
   private lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
@@ -85,8 +81,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     Assertions.assertThat(visitorRequest!!.status).isEqualTo(APPROVED)
 
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(bookerDetailsServiceSpy, times(1)).createBookerPrisonerVisitor(bookerReference, prisonerId, LinkVisitorRequestDto(visitorIdToBeLinked), request.reference)
-    verify(bookerDetailsStoreServiceSpy, times(1)).storeBookerPrisonerVisitor(bookerReference, prisonerId, visitorId = visitorIdToBeLinked)
+    verify(visitorRequestsApprovalStoreServiceSpy, times(1)).approveAndLinkVisitor(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any())
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
@@ -131,8 +126,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(bookerDetailsServiceSpy, times(0)).createBookerPrisonerVisitor(any(), any(), any(), any())
-    verify(bookerDetailsStoreServiceSpy, times(0)).storeBookerPrisonerVisitor(any(), any(), any())
+    verify(visitorRequestsApprovalStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
   }
 
@@ -148,8 +142,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(reference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(bookerDetailsServiceSpy, times(0)).createBookerPrisonerVisitor(any(), any(), any(), any())
-    verify(bookerDetailsStoreServiceSpy, times(0)).storeBookerPrisonerVisitor(any(), any(), any())
+    verify(visitorRequestsApprovalStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
   }
 
@@ -171,13 +164,12 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isBadRequest
       .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("Visitor request already approved")
+      .jsonPath("$.userMessage").isEqualTo("Visitor request already actioned")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Visitor request with reference ${request.reference} has already been approved.")
+      .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(bookerDetailsServiceSpy, times(0)).createBookerPrisonerVisitor(any(), any(), any(), any())
-    verify(bookerDetailsStoreServiceSpy, times(0)).storeBookerPrisonerVisitor(any(), any(), any())
+    verify(visitorRequestsApprovalStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
   }
 

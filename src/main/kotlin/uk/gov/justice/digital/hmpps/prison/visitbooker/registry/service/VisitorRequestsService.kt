@@ -8,15 +8,14 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrison
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.LinkVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.APPROVED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REJECTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyApprovedException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyRejectedException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
-import java.time.LocalDateTime
 
 @Service
 class VisitorRequestsService(
@@ -24,6 +23,9 @@ class VisitorRequestsService(
   private val bookerAuditService: BookerAuditService,
   private val bookerDetailsService: BookerDetailsService,
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
+  private val visitorRequestApprovalStoreService: VisitorRequestsApprovalStoreService,
+  private val bookerRepository: BookerRepository,
+  private val snsService: SnsService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -87,33 +89,37 @@ class VisitorRequestsService(
     return PrisonVisitorRequestDto(request, booker.email)
   }
 
-  fun approveAndLinkVisitorRequest(requestReference: String, linkVisitorRequest: LinkVisitorRequestDto) {
+  @Transactional
+  fun approveAndLinkVisitorRequest(requestReference: String, linkVisitorRequest: LinkVisitorRequestDto): PrisonVisitorRequestDto? {
     LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $linkVisitorRequest")
 
     val visitorRequest = getVisitorRequestByReference(requestReference)
 
-    when (visitorRequest.status) {
+    val requestDto = when (visitorRequest.status) {
       REQUESTED -> {
-        approveAndLinkVisitor(visitorRequest.bookerReference, visitorRequest.prisonerId, requestReference, linkVisitorRequest)
-        LOG.info("Visitor request with reference $requestReference approved successfully")
+        approveAndLinkVisitor(visitorRequest.bookerReference, visitorRequest.prisonerId, requestReference, linkVisitorRequest).also {
+          LOG.info("Visitor request with reference $requestReference approved successfully")
+        }
       }
 
-      REJECTED -> {
-        LOG.info("Visitor request with reference $requestReference has already been rejected. No action taken.")
-        throw VisitorRequestAlreadyRejectedException("Visitor request with reference $requestReference has already been rejected.")
-      }
-
-      APPROVED -> {
-        LOG.info("Visitor request with reference $requestReference has already been approved. No action taken.")
-        throw VisitorRequestAlreadyApprovedException("Visitor request with reference $requestReference has already been approved.")
+      else -> {
+        LOG.info("Visitor request with reference $requestReference has already been actioned. No action taken.")
+        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned.")
       }
     }
+
+    return requestDto
   }
 
-  private fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, requestReference: String, linkVisitorRequest: LinkVisitorRequestDto) {
-    val booker = bookerDetailsService.getBookerByReference(bookerReference)
-    bookerDetailsService.createBookerPrisonerVisitor(bookerReference = booker.reference, prisonerId = prisonerId, linkVisitorRequest, requestReference = requestReference)
-    visitorRequestsRepository.approveVisitorRequest(requestReference, LocalDateTime.now())
+  private fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, requestReference: String, linkVisitorRequest: LinkVisitorRequestDto): PrisonVisitorRequestDto {
+    val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker with reference $bookerReference not found")
+    val bookerPrisoner = booker.permittedPrisoners.firstOrNull { it.prisonerId == prisonerId } ?: throw PrisonerNotFoundException("Booker with reference $bookerReference does not have a permitted prisoner with id $prisonerId")
+
+    visitorRequestApprovalStoreService.approveAndLinkVisitor(bookerPrisoner, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference)
+    bookerAuditService.auditLinkVisitorApproved(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference)
+    snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, linkVisitorRequest.visitorId.toString())
+
+    return PrisonVisitorRequestDto(visitorRequest = getVisitorRequestByReference(requestReference), bookerEmail = booker.email)
   }
 
   private fun getVisitorRequestByReference(requestReference: String): VisitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")

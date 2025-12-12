@@ -23,8 +23,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Prison
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.RegisterPrisonerValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.UpdatePrisonerPrisonValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyApprovedException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyRejectedException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestValidationException
 import java.util.*
@@ -177,29 +176,15 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
       )
   }
 
-  @ExceptionHandler(VisitorRequestAlreadyApprovedException::class)
-  fun handleVisitorRequestAlreadyApprovedException(e: VisitorRequestAlreadyApprovedException): ResponseEntity<ErrorResponse?>? {
-    LOG.debug("Visitor request already approved: {}", e.message)
+  @ExceptionHandler(VisitorRequestAlreadyActionedException::class)
+  fun handleVisitorRequestAlreadyActionedException(e: VisitorRequestAlreadyActionedException): ResponseEntity<ErrorResponse?>? {
+    LOG.debug("Visitor request already actioned: {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
       .body(
         ErrorResponse(
           status = BAD_REQUEST,
-          userMessage = "Visitor request already approved",
-          developerMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(VisitorRequestAlreadyRejectedException::class)
-  fun handleVisitorRequestAlreadyRejectedException(e: VisitorRequestAlreadyRejectedException): ResponseEntity<ErrorResponse?>? {
-    LOG.debug("Visitor request already rejected: {}", e.message)
-    return ResponseEntity
-      .status(BAD_REQUEST)
-      .body(
-        ErrorResponse(
-          status = BAD_REQUEST,
-          userMessage = "Visitor request already approved",
+          userMessage = "Visitor request already actioned",
           developerMessage = e.message,
         ),
       )
