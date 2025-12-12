@@ -20,10 +20,13 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.LinkVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_APPROVED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.APPROVED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.SnsService
@@ -72,7 +75,10 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, visitorIdToBeLinked, bookerConfigServiceRoleHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isCreated.expectBody()
+    val returnResult = responseSpec.expectStatus().isCreated.expectBody()
+    val visitorRequestResponse = getResults(returnResult)
+    assertVisitorRequest(visitorRequestResponse, request, booker)
+
     val permittedPrisoner = bookerRepository.findByReference(bookerReference)?.permittedPrisoners?.first { it.prisonerId == prisonerId }
     Assertions.assertThat(permittedPrisoner!!.permittedVisitors.size).isEqualTo(1)
     Assertions.assertThat(permittedPrisoner.permittedVisitors[0].visitorId).isEqualTo(visitorIdToBeLinked)
@@ -180,6 +186,8 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonVisitorRequestDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonVisitorRequestDto::class.java)
+
   fun callApproveVisitorRequest(
     webTestClient: WebTestClient,
     requestReference: String,
@@ -190,4 +198,15 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     .body(BodyInserters.fromValue(LinkVisitorRequestDto(visitorId)))
     .headers(authHttpHeaders)
     .exchange()
+
+  private fun assertVisitorRequest(visitorRequestResponse: PrisonVisitorRequestDto, visitorRequest: VisitorRequest, booker: Booker) {
+    assertThat(visitorRequestResponse.reference).isEqualTo(visitorRequest.reference)
+    assertThat(visitorRequestResponse.bookerReference).isEqualTo(booker.reference)
+    assertThat(visitorRequestResponse.requestedOn).isEqualTo(visitorRequest.createTimestamp!!.toLocalDate())
+    assertThat(visitorRequestResponse.prisonerId).isEqualTo(visitorRequest.prisonerId)
+    assertThat(visitorRequestResponse.firstName).isEqualTo(visitorRequest.firstName)
+    assertThat(visitorRequestResponse.lastName).isEqualTo(visitorRequest.lastName)
+    assertThat(visitorRequestResponse.dateOfBirth).isEqualTo(visitorRequest.dateOfBirth)
+    assertThat(visitorRequestResponse.bookerEmail).isEqualTo(booker.email)
+  }
 }

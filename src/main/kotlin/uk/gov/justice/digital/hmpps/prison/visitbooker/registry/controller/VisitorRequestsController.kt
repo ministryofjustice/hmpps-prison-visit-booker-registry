@@ -272,5 +272,5 @@ class VisitorRequestsController(
     requestReference: String,
     @RequestBody
     linkVisitorRequest: LinkVisitorRequestDto,
-  ) = visitorRequestsService.approveAndLinkVisitorRequest(requestReference, linkVisitorRequest)
+  ): PrisonVisitorRequestDto = visitorRequestsService.approveAndLinkVisitorRequest(requestReference, linkVisitorRequest)
 }
