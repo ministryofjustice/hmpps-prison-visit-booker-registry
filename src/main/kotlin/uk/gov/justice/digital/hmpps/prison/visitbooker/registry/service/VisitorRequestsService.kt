@@ -9,12 +9,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.LinkVisitorR
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
 @Service
@@ -24,7 +21,6 @@ class VisitorRequestsService(
   private val bookerDetailsService: BookerDetailsService,
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
   private val visitorRequestApprovalStoreService: VisitorRequestsApprovalStoreService,
-  private val bookerRepository: BookerRepository,
   private val snsService: SnsService,
 ) {
   private companion object {
@@ -89,7 +85,6 @@ class VisitorRequestsService(
     return PrisonVisitorRequestDto(request, booker.email)
   }
 
-  @Transactional
   fun approveAndLinkVisitorRequest(requestReference: String, linkVisitorRequest: LinkVisitorRequestDto): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $linkVisitorRequest")
 
@@ -97,8 +92,10 @@ class VisitorRequestsService(
 
     return when (visitorRequest.status) {
       REQUESTED -> {
-        approveAndLinkVisitor(visitorRequest.bookerReference, visitorRequest.prisonerId, requestReference, linkVisitorRequest).also {
+        visitorRequestApprovalStoreService.approveAndLinkVisitor(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference).also {
+          // audit the event
           bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference)
+          // send SNS event
           snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId.toString())
           LOG.info("Visitor request with reference $requestReference approved successfully")
         }
@@ -109,16 +106,6 @@ class VisitorRequestsService(
         throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned.")
       }
     }
-  }
-
-  @Transactional
-  fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, requestReference: String, linkVisitorRequest: LinkVisitorRequestDto): PrisonVisitorRequestDto {
-    val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker with reference $bookerReference not found")
-    val bookerPrisoner = booker.permittedPrisoners.firstOrNull { it.prisonerId == prisonerId } ?: throw PrisonerNotFoundException("Booker with reference $bookerReference does not have a permitted prisoner with id $prisonerId")
-
-    visitorRequestApprovalStoreService.approveAndLinkVisitor(bookerPrisoner, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference)
-    val visitorRequest = getVisitorRequestByReference(requestReference)
-    return PrisonVisitorRequestDto(visitorRequest, booker.email)
   }
 
   private fun getVisitorRequestByReference(requestReference: String): VisitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
