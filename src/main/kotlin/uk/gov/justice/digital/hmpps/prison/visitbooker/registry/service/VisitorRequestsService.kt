@@ -20,7 +20,7 @@ class VisitorRequestsService(
   private val bookerAuditService: BookerAuditService,
   private val bookerDetailsService: BookerDetailsService,
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
-  private val visitorRequestApprovalStoreService: VisitorRequestsApprovalStoreService,
+  private val visitorRequestsStoreService: VisitorRequestsStoreService,
   private val snsService: SnsService,
 ) {
   private companion object {
@@ -75,7 +75,7 @@ class VisitorRequestsService(
   fun getVisitorRequest(requestReference: String): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - getVisitorRequest - requestReference $requestReference")
 
-    val request = getVisitorRequestByReference(requestReference)
+    val request = visitorRequestsStoreService.getVisitorRequestByReference(requestReference)
     if (request.status != REQUESTED) {
       throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
     }
@@ -88,11 +88,11 @@ class VisitorRequestsService(
   fun approveAndLinkVisitorRequest(requestReference: String, linkVisitorRequest: LinkVisitorRequestDto): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $linkVisitorRequest")
 
-    val visitorRequest = getVisitorRequestByReference(requestReference)
+    val visitorRequest = visitorRequestsStoreService.getVisitorRequestByReference(requestReference)
 
     return when (visitorRequest.status) {
       REQUESTED -> {
-        visitorRequestApprovalStoreService.approveAndLinkVisitor(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference).also {
+        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference).also {
           // audit the event
           bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference)
           // send SNS event
@@ -107,6 +107,4 @@ class VisitorRequestsService(
       }
     }
   }
-
-  private fun getVisitorRequestByReference(requestReference: String): VisitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
 }

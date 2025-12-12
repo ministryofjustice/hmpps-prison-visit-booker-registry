@@ -8,13 +8,14 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import java.time.LocalDateTime
 
 @Service
-class VisitorRequestsApprovalStoreService(
+class VisitorRequestsStoreService(
   private val visitorRepository: PermittedVisitorRepository,
   private val visitorRequestsRepository: VisitorRequestsRepository,
   private val bookerRepository: BookerRepository,
@@ -41,4 +42,7 @@ class VisitorRequestsApprovalStoreService(
     LOG.info("Visitor $visitorId successfully linked to prisoner ${bookerPrisoner.prisonerId} for booker ${bookerPrisoner.booker.reference} and request reference $requestReference set to approved")
     return PrisonVisitorRequestDto(visitorRequest, booker.email)
   }
+
+  @Transactional(readOnly = true)
+  fun getVisitorRequestByReference(requestReference: String): VisitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
 }

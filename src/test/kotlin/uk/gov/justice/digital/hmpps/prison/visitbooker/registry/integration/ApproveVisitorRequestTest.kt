@@ -30,8 +30,8 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Vis
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.SnsService
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsApprovalStoreService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsStoreService
 import java.time.LocalDate
 
 @Transactional(propagation = SUPPORTS)
@@ -45,7 +45,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   private lateinit var visitorRequestsServiceSpy: VisitorRequestsService
 
   @MockitoSpyBean
-  private lateinit var visitorRequestsApprovalStoreServiceSpy: VisitorRequestsApprovalStoreService
+  private lateinit var visitorRequestsStoreServiceSpy: VisitorRequestsStoreService
 
   @MockitoSpyBean
   private lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
@@ -87,7 +87,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     Assertions.assertThat(visitorRequest!!.status).isEqualTo(APPROVED)
 
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsApprovalStoreServiceSpy, times(1)).approveAndLinkVisitor(bookerReference, prisonerId, visitorIdToBeLinked, request.reference)
+    verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(bookerReference, prisonerId, visitorIdToBeLinked, request.reference)
     verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any())
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
@@ -132,7 +132,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsApprovalStoreServiceSpy, times(1)).approveAndLinkVisitor(bookerReference, prisonerId, visitorIdToBeLinked, request.reference)
+    verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(bookerReference, prisonerId, visitorIdToBeLinked, request.reference)
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
   }
 
@@ -148,7 +148,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(reference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsApprovalStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
+    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
   }
 
@@ -175,7 +175,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, LinkVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsApprovalStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
+    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
   }
 
