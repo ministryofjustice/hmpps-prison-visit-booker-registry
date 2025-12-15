@@ -60,7 +60,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
   lateinit var snsService: SnsService
 
   @Test
-  fun `when a visitor request is rejected the request is marked as REJECTED and a CREATED response is returned`() {
+  fun `when a visitor request is rejected the request is marked as REJECTED and an OK response is returned`() {
     // Given
     val rejectionReason = ALREADY_LINKED
     val prisonCode = "HEI"
@@ -128,7 +128,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason))
-    verify(visitorRequestsStoreServiceSpy, times(1)).rejectVisitorRequest(bookerReference, prisonerId, request.reference)
+    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(bookerReference, prisonerId, request.reference)
     verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any())
   }
 

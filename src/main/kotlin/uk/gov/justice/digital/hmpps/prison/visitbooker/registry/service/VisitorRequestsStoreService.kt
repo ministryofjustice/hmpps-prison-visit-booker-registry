@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
@@ -25,9 +23,10 @@ class VisitorRequestsStoreService(
   }
 
   @Transactional
-  fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, visitorId: Long, requestReference: String): PrisonVisitorRequestDto {
+  fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, visitorId: Long, requestReference: String) {
+    val booker = bookerRepository.findByReference(bookerReference)!!
+
     LOG.info("Enter VisitorRequestsApprovalStoreService approveAndLinkVisitor, booker reference - $bookerReference, prisonerId - $prisonerId, visitorId = $visitorId")
-    val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker with reference $bookerReference not found")
     val bookerPrisoner = booker.permittedPrisoners.firstOrNull { it.prisonerId == prisonerId } ?: throw PrisonerNotFoundException("Booker with reference $bookerReference does not have a permitted prisoner with id $prisonerId")
 
     visitorRepository.saveAndFlush(
@@ -38,19 +37,12 @@ class VisitorRequestsStoreService(
       ),
     )
     visitorRequestsRepository.approveVisitorRequest(requestReference, LocalDateTime.now())
-    val visitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
-    LOG.info("Visitor $visitorId successfully linked to prisoner ${bookerPrisoner.prisonerId} for booker ${bookerPrisoner.booker.reference} and request reference $requestReference set to approved")
-    return PrisonVisitorRequestDto(visitorRequest, booker.email)
   }
 
   @Transactional
-  fun rejectVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String): PrisonVisitorRequestDto {
+  fun rejectVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String) {
     LOG.info("Enter VisitorRequestsApprovalStoreService rejectVisitorRequest, booker reference - $bookerReference, prisonerId - $prisonerId, requestReference = $requestReference")
-    val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker with reference $bookerReference not found")
     visitorRequestsRepository.rejectVisitorRequest(requestReference, LocalDateTime.now())
-    val visitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
-    LOG.info("Request reference $requestReference rejected.")
-    return PrisonVisitorRequestDto(visitorRequest, booker.email)
   }
 
   @Transactional(readOnly = true)

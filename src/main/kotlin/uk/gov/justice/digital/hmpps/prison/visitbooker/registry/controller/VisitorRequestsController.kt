@@ -238,13 +238,13 @@ class VisitorRequestsController(
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(APPROVE_VISITOR_REQUEST)
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Approve visitor request and link visitor to booker's prisoner.",
     description = "Approve visitor request and link visitor to booker's prisoner.",
     responses = [
       ApiResponse(
-        responseCode = "201",
+        responseCode = "200",
         description = "Visit request approved and visitor linked to booker's prisoner",
       ),
       ApiResponse(

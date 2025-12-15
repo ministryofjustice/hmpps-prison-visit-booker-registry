@@ -23,6 +23,7 @@ class VisitorRequestsService(
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
   private val visitorRequestsStoreService: VisitorRequestsStoreService,
   private val snsService: SnsService,
+  private val bookerDetailsStoreService: BookerDetailsStoreService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -89,17 +90,21 @@ class VisitorRequestsService(
   fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequest: ApproveVisitorRequestDto): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $approveVisitorRequest")
 
-    val visitorRequest = getVisitorRequestByReference(requestReference)
+    var visitorRequest = getVisitorRequestByReference(requestReference)
+    val bookerReference = visitorRequest.bookerReference
 
     return when (visitorRequest.status) {
       REQUESTED -> {
-        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference).also {
-          // audit the event
-          bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
-          // send SNS event
-          snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId.toString())
-          LOG.info("Visitor request with reference $requestReference approved successfully")
-        }
+        val booker = bookerDetailsStoreService.getBookerByReference(bookerReference)
+
+        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
+        // audit the event
+        bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
+        // send SNS event
+        snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId.toString())
+        LOG.info("Visitor request with reference $requestReference approved successfully")
+        visitorRequest = getVisitorRequestByReference(requestReference)
+        PrisonVisitorRequestDto(visitorRequest, booker.email)
       }
 
       else -> {
@@ -112,17 +117,22 @@ class VisitorRequestsService(
   fun rejectVisitorRequest(requestReference: String, rejectVisitorRequest: RejectVisitorRequestDto): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - rejectVisitorRequest for request reference - $requestReference, rejectVisitorRequest - $rejectVisitorRequest")
 
-    val visitorRequest = getVisitorRequestByReference(requestReference)
+    var visitorRequest = getVisitorRequestByReference(requestReference)
+    val bookerReference = visitorRequest.bookerReference
 
     return when (visitorRequest.status) {
       REQUESTED -> {
-        visitorRequestsStoreService.rejectVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference).also {
-          // audit the event
-          bookerAuditService.auditLinkVisitorRejected(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
-          // send SNS event
-          snsService.sendVisitorRequestRejectedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, rejectVisitorRequest.rejectionReason)
-          LOG.info("Visitor request with reference $requestReference rejected.")
-        }
+        val booker = bookerDetailsStoreService.getBookerByReference(bookerReference)
+
+        visitorRequestsStoreService.rejectVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
+        // audit the event
+        bookerAuditService.auditLinkVisitorRejected(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
+        // send SNS event
+        snsService.sendVisitorRequestRejectedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, rejectVisitorRequest.rejectionReason)
+        LOG.info("Visitor request with reference $requestReference rejected.")
+
+        visitorRequest = getVisitorRequestByReference(requestReference)
+        PrisonVisitorRequestDto(visitorRequest, booker.email)
       }
 
       else -> {

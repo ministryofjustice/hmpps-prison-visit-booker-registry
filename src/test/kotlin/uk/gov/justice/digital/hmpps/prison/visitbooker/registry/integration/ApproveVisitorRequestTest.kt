@@ -55,7 +55,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   lateinit var snsService: SnsService
 
   @Test
-  fun `when a visitor request is approved the visitor is linked to the booker and a CREATED response is returned`() {
+  fun `when a visitor request is approved the visitor is linked to the booker and an OK response is returned`() {
     // Given
     val prisonCode = "HEI"
     val booker = createBooker("one-sub", "test@test.com")
@@ -70,7 +70,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, visitorIdToBeLinked, bookerConfigServiceRoleHttpHeaders)
 
     // Then
-    val returnResult = responseSpec.expectStatus().isCreated.expectBody()
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitorRequestResponse = getResults(returnResult)
     assertVisitorRequest(visitorRequestResponse, request, booker)
 
@@ -82,7 +82,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     Assertions.assertThat(visitorRequest!!.status).isEqualTo(APPROVED)
 
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, ApproveVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(bookerReference, prisonerId, visitorIdToBeLinked, request.reference)
+    verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(booker.reference, prisonerId, visitorIdToBeLinked, request.reference)
     verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any())
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
@@ -127,7 +127,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(bookerReference, prisonerId, visitorIdToBeLinked, request.reference)
+    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
   }
 
