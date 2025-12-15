@@ -45,4 +45,9 @@ class VisitorRequestsStoreService(
 
   @Transactional(readOnly = true)
   fun getVisitorRequestByReference(requestReference: String): VisitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
+
+  @Transactional
+  fun deleteVisitorRequestsByBookerPrisoner(bookerReference: String, prisonerId: String) {
+    visitorRequestsRepository.deleteVisitorRequestsByBookerReferenceAndPrisonerId(bookerReference, prisonerId)
+  }
 }

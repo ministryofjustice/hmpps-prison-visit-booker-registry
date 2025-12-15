@@ -26,6 +26,7 @@ class BookerDetailsStoreService(
   private val prisonerRepository: PermittedPrisonerRepository,
   private val visitorRepository: PermittedVisitorRepository,
   private val prisonerSearchService: PrisonerSearchService,
+  private val visitorRequestsStoreService: VisitorRequestsStoreService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -61,6 +62,11 @@ class BookerDetailsStoreService(
     LOG.info("Enter BookerDetailsStoreService clearBookerDetails for booker $bookerReference")
 
     val booker = getBooker(bookerReference)
+
+    booker.permittedPrisoners.forEach { prisoner ->
+      visitorRequestsStoreService.deleteVisitorRequestsByBookerPrisoner(bookerReference, prisoner.prisonerId)
+    }
+
     booker.permittedPrisoners.clear()
     val bookerDto = BookerDto(bookerRepository.saveAndFlush(booker))
 
@@ -153,25 +159,6 @@ class BookerDetailsStoreService(
 
   @Transactional(readOnly = true)
   fun getPermittedPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner = prisonerRepository.findByBookerIdAndPrisonerId(bookerReference, prisonerId) ?: throw PrisonerNotFoundException("Permitted prisoner for - $bookerReference/$prisonerId not found")
-
-  private fun setPrisonerBooker(
-    bookerReference: String,
-    prisonerId: String,
-  ): PermittedPrisonerDto {
-    val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
-    return PermittedPrisonerDto(prisoner)
-  }
-
-  private fun setVisitorPrisonerBooker(
-    bookerReference: String,
-    prisonerId: String,
-    visitorId: Long,
-  ): PermittedVisitorDto {
-    val visitor = findVisitorBy(bookerReference, prisonerId, visitorId)
-    return PermittedVisitorDto(visitor)
-  }
-
-  private fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor = visitorRepository.findVisitorBy(bookerReference, prisonerId, visitorId) ?: throw VisitorForPrisonerBookerNotFoundException("Visitor for prisoner booker $bookerReference/$prisonerId/$visitorId not found")
 
   private fun validateUpdateBookerPrisonerPrison(booker: Booker, prisonerId: String, newPrisonCode: String) {
     var errorMessage: String
