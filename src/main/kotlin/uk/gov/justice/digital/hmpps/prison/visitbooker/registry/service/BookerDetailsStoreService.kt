@@ -64,7 +64,7 @@ class BookerDetailsStoreService(
     val booker = getBooker(bookerReference)
 
     booker.permittedPrisoners.forEach { prisoner ->
-      visitorRequestsStoreService.deleteVisitorRequestsByBookerPrisoner(bookerReference, prisoner.prisonerId)
+      visitorRequestsStoreService.deleteVisitorRequestsByBookerPrisonerInStatusRequested(bookerReference, prisoner.prisonerId)
     }
 
     booker.permittedPrisoners.clear()
