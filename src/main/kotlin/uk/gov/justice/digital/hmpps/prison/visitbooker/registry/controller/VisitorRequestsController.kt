@@ -278,13 +278,13 @@ class VisitorRequestsController(
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(REJECT_VISITOR_REQUEST)
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Reject visitor request.",
     description = "Reject a visitor request.",
     responses = [
       ApiResponse(
-        responseCode = "201",
+        responseCode = "200",
         description = "Visit request rejected, no visitor linked to booker's prisoner",
       ),
       ApiResponse(

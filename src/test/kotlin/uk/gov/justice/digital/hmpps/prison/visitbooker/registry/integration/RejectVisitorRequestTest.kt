@@ -75,7 +75,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     val responseSpec = callRejectVisitorRequest(webTestClient, requestReference, rejectionReason, bookerConfigServiceRoleHttpHeaders)
 
     // Then
-    val returnResult = responseSpec.expectStatus().isCreated.expectBody()
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitorRequestResponse = getResults(returnResult)
     assertVisitorRequest(visitorRequestResponse, request, booker)
 
