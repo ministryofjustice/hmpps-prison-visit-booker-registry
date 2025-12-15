@@ -70,7 +70,8 @@ class SnsService(
     val additionalInformation = RejectedAdditionalInformation(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
-      rejectionReason = rejectionReason,
+      // TODO not setting the rejection reason for now
+      // rejectionReason = rejectionReason,
     )
 
     val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_REJECTED_EVENT, prisonerId, additionalInformation)
@@ -140,7 +141,6 @@ internal data class ApprovedAdditionalInformation(
 internal data class RejectedAdditionalInformation(
   val bookerReference: String,
   val prisonerId: String,
-  val rejectionReason: VisitorRequestRejectionReason,
 ) : AdditionalInformation
 
 internal data class PersonReference(
