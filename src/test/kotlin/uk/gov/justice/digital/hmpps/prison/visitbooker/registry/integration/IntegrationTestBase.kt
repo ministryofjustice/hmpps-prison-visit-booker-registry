@@ -45,6 +45,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Vis
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import java.time.LocalDate
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -93,6 +94,9 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var bookerAuditRepository: BookerAuditRepository
+
+  @Autowired
+  protected lateinit var visitorRequestsRepository: VisitorRequestsRepository
 
   protected lateinit var orchestrationServiceRoleHttpHeaders: (HttpHeaders) -> Unit
   protected lateinit var bookerConfigServiceRoleHttpHeaders: (HttpHeaders) -> Unit

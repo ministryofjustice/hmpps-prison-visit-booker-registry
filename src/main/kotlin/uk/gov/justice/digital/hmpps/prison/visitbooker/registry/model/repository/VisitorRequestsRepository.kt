@@ -52,4 +52,9 @@ interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
   @Modifying
   @Query("update VisitorRequest vr set vr.status = 'REJECTED', vr.modifyTimestamp = :modifyTimestamp where vr.reference = :reference")
   fun rejectVisitorRequest(reference: String, modifyTimestamp: LocalDateTime)
+
+  @Transactional
+  @Modifying
+  @Query("delete VisitorRequest vr where vr.bookerReference = :bookerReference and vr.prisonerId = :prisonerId and vr.status = 'REQUESTED'")
+  fun deleteVisitorRequestsByBookerReferenceAndPrisonerIdInStatusRequested(bookerReference: String, prisonerId: String)
 }

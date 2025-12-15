@@ -30,7 +30,7 @@ import java.time.LocalDate
 class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
-  lateinit var visitorRequestsRepository: VisitorRequestsRepository
+  lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
 
   @MockitoSpyBean
   lateinit var telemetryClientSpy: TelemetryClient

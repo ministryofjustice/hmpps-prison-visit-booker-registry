@@ -11,7 +11,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -42,10 +41,6 @@ import java.time.LocalDate
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Reject visitor request - $REJECT_VISITOR_REQUEST")
 class RejectVisitorRequestTest : IntegrationTestBase() {
-
-  @Autowired
-  private lateinit var visitorRequestsRepository: VisitorRequestsRepository
-
   @MockitoSpyBean
   private lateinit var visitorRequestsServiceSpy: VisitorRequestsService
 
