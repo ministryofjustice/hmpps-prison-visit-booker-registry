@@ -48,6 +48,6 @@ class VisitorRequestsStoreService(
 
   @Transactional
   fun deleteVisitorRequestsByBookerPrisoner(bookerReference: String, prisonerId: String) {
-    visitorRequestsRepository.deleteVisitorRequestsByBookerReferenceAndPrisonerId(bookerReference, prisonerId)
+    visitorRequestsRepository.deleteVisitorRequestsByBookerReferenceAndPrisonerIdInStatusRequested(bookerReference, prisonerId)
   }
 }
