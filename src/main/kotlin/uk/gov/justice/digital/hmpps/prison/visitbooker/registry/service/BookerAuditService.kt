@@ -16,7 +16,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_APPROVED_FOR_PRISONER
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_REJECTED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
@@ -35,6 +37,7 @@ class BookerAuditService(
     private const val VISITOR_ID_PROPERTY_NAME = "visitorId"
     private const val NEW_PRISON_CODE = "newPrisonCode"
     private const val VISITOR_REQUEST_REFERENCE = "requestReference"
+    private const val REJECTION_REASON = "rejectionReason"
 
     private interface PrisonerSearchPropertyNames {
       companion object {
@@ -127,6 +130,21 @@ class BookerAuditService(
       BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
       PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
       VISITOR_ID_PROPERTY_NAME to visitorId.toString(),
+    )
+    sendTelemetryClientEvent(auditType, properties)
+  }
+
+  fun auditLinkVisitorRejected(bookerReference: String, prisonNumber: String, requestReference: String, rejectionReason: VisitorRequestRejectionReason) {
+    val auditType = VISITOR_REQUEST_REJECTED_FOR_PRISONER
+    val text = "Request reference - $requestReference rejected with rejection reason - $rejectionReason"
+    auditBookerEvent(bookerReference, auditType, text)
+
+    // send event to telemetry client
+    val properties = mapOf(
+      VISITOR_REQUEST_REFERENCE to requestReference,
+      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
+      REJECTION_REASON to rejectionReason.name,
     )
     sendTelemetryClientEvent(auditType, properties)
   }

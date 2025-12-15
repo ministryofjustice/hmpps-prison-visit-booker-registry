@@ -47,4 +47,9 @@ interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
   @Modifying
   @Query("update VisitorRequest vr set vr.status = 'APPROVED', vr.modifyTimestamp = :modifyTimestamp where vr.reference = :reference")
   fun approveVisitorRequest(reference: String, modifyTimestamp: LocalDateTime)
+
+  @Transactional
+  @Modifying
+  @Query("update VisitorRequest vr set vr.status = 'REJECTED', vr.modifyTimestamp = :modifyTimestamp where vr.reference = :reference")
+  fun rejectVisitorRequest(reference: String, modifyTimestamp: LocalDateTime)
 }

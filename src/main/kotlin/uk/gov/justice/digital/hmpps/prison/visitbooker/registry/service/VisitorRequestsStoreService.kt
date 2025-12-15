@@ -43,6 +43,16 @@ class VisitorRequestsStoreService(
     return PrisonVisitorRequestDto(visitorRequest, booker.email)
   }
 
+  @Transactional
+  fun rejectVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String): PrisonVisitorRequestDto {
+    LOG.info("Enter VisitorRequestsApprovalStoreService rejectVisitorRequest, booker reference - $bookerReference, prisonerId - $prisonerId, requestReference = $requestReference")
+    val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker with reference $bookerReference not found")
+    visitorRequestsRepository.rejectVisitorRequest(requestReference, LocalDateTime.now())
+    val visitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
+    LOG.info("Request reference $requestReference rejected.")
+    return PrisonVisitorRequestDto(visitorRequest, booker.email)
+  }
+
   @Transactional(readOnly = true)
   fun getVisitorRequestByReference(requestReference: String): VisitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
 }
