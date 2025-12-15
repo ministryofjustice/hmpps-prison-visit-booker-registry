@@ -58,6 +58,7 @@ class ClearBookerByReferenceTest : IntegrationTestBase() {
   fun `when visitor requests exist, and clear booker by reference is called, then visitor requests for that booker and prisoner are deleted`() {
     // When
     createVisitorRequest(booker1.reference, prisoner1.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName", "lastName", LocalDate.now().minusYears(21)), VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker1.reference, prisoner1.prisonerId, AddVisitorToBookerPrisonerRequestDto("anotherName", "anotherFirstLastName", LocalDate.now().minusYears(21)), VisitorRequestsStatus.APPROVED)
 
     val responseSpec = clearBookerByReference(webTestClient, booker1.reference, bookerConfigServiceRoleHttpHeaders)
 
@@ -73,7 +74,7 @@ class ClearBookerByReferenceTest : IntegrationTestBase() {
     assertThat(prisoners).isEmpty()
 
     val visitorRequests = visitorRequestsRepository.findAll()
-    assertThat(visitorRequests).isEmpty()
+    assertThat(visitorRequests.size).isEqualTo(1)
   }
 
   @Test
