@@ -67,7 +67,7 @@ class SnsService(
   fun sendVisitorRequestRejectedEvent(prisonerId: String, requestReference: String) {
     LOG.info("Entered : sendVisitorRequestRejectedAsRejectedEvent, for prisonerId: $prisonerId, requestReference: $requestReference")
     val additionalInformation = RejectedAdditionalInformation(
-      visitRequestReference = requestReference,
+      requestReference = requestReference,
     )
 
     val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_REJECTED_EVENT, prisonerId, additionalInformation)
@@ -77,7 +77,7 @@ class SnsService(
         "${payloadEvent.eventType}-domain-event",
         mapOf(
           "messageId" to it.messageId(),
-          "visitRequestReference" to requestReference,
+          "requestReference" to requestReference,
         ),
         null,
       )
@@ -133,7 +133,7 @@ internal data class ApprovedAdditionalInformation(
 ) : AdditionalInformation
 
 internal data class RejectedAdditionalInformation(
-  val visitRequestReference: String,
+  val requestReference: String,
 ) : AdditionalInformation
 
 internal data class PersonReference(
