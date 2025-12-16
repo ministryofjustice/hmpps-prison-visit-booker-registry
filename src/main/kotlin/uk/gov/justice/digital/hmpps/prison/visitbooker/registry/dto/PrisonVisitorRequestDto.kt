@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import java.time.LocalDate
 
@@ -35,6 +36,12 @@ data class PrisonVisitorRequestDto(
 
   @param:Schema(description = "Date request was submitted", example = "2025-10-28", required = true)
   val requestedOn: LocalDate,
+
+  @param:Schema(description = "If approved, this field will contain the visitorId who was added to the booker prisoner", example = "123456", required = true)
+  val visitorId: Long? = null,
+
+  @param:Schema(description = "If rejected, this field will contain the rejection reason", example = "REJECTED", required = true)
+  val rejectionReason: VisitorRequestRejectionReason? = null,
 ) {
   constructor(visitorRequest: VisitorRequest, bookerEmail: String) : this(
     reference = visitorRequest.reference,
@@ -45,5 +52,7 @@ data class PrisonVisitorRequestDto(
     lastName = visitorRequest.lastName,
     dateOfBirth = visitorRequest.dateOfBirth,
     requestedOn = visitorRequest.createTimestamp!!.toLocalDate(),
+    visitorId = visitorRequest.visitorId,
+    rejectionReason = visitorRequest.rejectionReason,
   )
 }
