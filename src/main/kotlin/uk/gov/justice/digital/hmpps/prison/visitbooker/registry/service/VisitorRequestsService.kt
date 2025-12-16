@@ -124,11 +124,11 @@ class VisitorRequestsService(
       REQUESTED -> {
         val booker = bookerDetailsStoreService.getBookerByReference(bookerReference)
 
-        visitorRequestsStoreService.rejectVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
+        visitorRequestsStoreService.rejectVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
         // audit the event
         bookerAuditService.auditLinkVisitorRejected(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
         // send SNS event
-        snsService.sendVisitorRequestRejectedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, rejectVisitorRequest.rejectionReason)
+        snsService.sendVisitorRequestRejectedEvent(prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
         LOG.info("Visitor request with reference $requestReference rejected.")
 
         visitorRequest = getVisitorRequestByReference(requestReference)

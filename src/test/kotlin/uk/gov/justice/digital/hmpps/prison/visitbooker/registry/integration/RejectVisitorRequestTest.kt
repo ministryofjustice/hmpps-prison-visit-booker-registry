@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -80,11 +79,12 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     assertVisitorRequest(visitorRequestResponse, request, booker)
 
     val visitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference)
-    Assertions.assertThat(visitorRequest!!.status).isEqualTo(REJECTED)
+    assertThat(visitorRequest!!.status).isEqualTo(REJECTED)
+    assertThat(visitorRequest.rejectionReason).isEqualTo(rejectionReason)
 
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(requestReference, RejectVisitorRequestDto(rejectionReason))
-    verify(visitorRequestsStoreServiceSpy, times(1)).rejectVisitorRequest(bookerReference, prisonerId, request.reference)
-    verify(visitorRequestsRepositorySpy, times(1)).rejectVisitorRequest(any(), any())
+    verify(visitorRequestsStoreServiceSpy, times(1)).rejectVisitorRequest(bookerReference, prisonerId, request.reference, rejectionReason)
+    verify(visitorRequestsRepositorySpy, times(1)).rejectVisitorRequest(any(), any(), any())
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
@@ -97,14 +97,12 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       },
       isNull(),
     )
-    verify(snsService, times(1)).sendVisitorRequestRejectedEvent(bookerReference, prisonerId, rejectionReason)
+    verify(snsService, times(1)).sendVisitorRequestRejectedEvent(prisonerId, requestReference)
 
     verify(telemetryClientSpy, times(1)).trackEvent(
       eq("prison-visit-booker.visitor-rejected-domain-event"),
       check {
-        assertThat(it["bookerReference"]).isEqualTo(bookerReference)
-        assertThat(it["prisonerId"]).isEqualTo(prisonerId)
-        assertThat(it["rejectionReason"]).isEqualTo(rejectionReason.name)
+        assertThat(it["visitRequestReference"]).isEqualTo(visitorRequest.reference)
       },
       isNull(),
     )
@@ -128,8 +126,9 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason))
-    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(bookerReference, prisonerId, request.reference)
-    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any())
+    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(bookerReference, prisonerId, request.reference, rejectionReason)
+    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
+    verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
   }
 
   @Test
@@ -144,8 +143,9 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(reference, RejectVisitorRequestDto(rejectionReason))
-    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any())
+    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
+    verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
   }
 
   @Test
@@ -170,8 +170,9 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason))
-    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any())
+    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
+    verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
   }
 
   @Test
@@ -196,8 +197,9 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason))
-    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any())
+    verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
+    verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
   }
 
   @Test
