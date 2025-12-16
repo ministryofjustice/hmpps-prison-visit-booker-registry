@@ -52,7 +52,7 @@ class SnsService(
 
     sendDomainEvent(payloadEvent)?.let {
       telemetryClient.trackEvent(
-        "${payloadEvent.eventType.type}-domain-event",
+        "${payloadEvent.eventType}-domain-event",
         mapOf(
           "messageId" to it.messageId(),
           "bookerReference" to additionalInformation.bookerReference,
@@ -74,7 +74,7 @@ class SnsService(
 
     sendDomainEvent(payloadEvent)?.let {
       telemetryClient.trackEvent(
-        "${payloadEvent.eventType.type}-domain-event",
+        "${payloadEvent.eventType}-domain-event",
         mapOf(
           "messageId" to it.messageId(),
           "visitRequestReference" to requestReference,
@@ -85,7 +85,7 @@ class SnsService(
   }
 
   private fun getPayloadEvent(eventType: SnsEventTypes, prisonerId: String, additionalInformation: AdditionalInformation) = HMPPSDomainEvent(
-    eventType = eventType,
+    eventType = eventType.type,
     version = EVENT_PRISON_VISIT_VERSION,
     description = eventType.description,
     occurredAt = LocalDateTime.now().toOffsetDateFormat(),
@@ -100,7 +100,7 @@ class SnsService(
     }
     try {
       return domainEventsTopic.publish(
-        payloadEvent.eventType.type,
+        payloadEvent.eventType,
         objectMapper.writeValueAsString(payloadEvent),
       )
     } catch (e: Throwable) {
@@ -115,7 +115,7 @@ class SnsService(
 private fun LocalDateTime.toOffsetDateFormat(): String = atZone(ZoneId.of(EVENT_ZONE_ID)).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
 internal data class HMPPSDomainEvent(
-  val eventType: SnsEventTypes,
+  val eventType: String,
   val version: Int,
   val detailUrl: String? = null,
   val description: String,
