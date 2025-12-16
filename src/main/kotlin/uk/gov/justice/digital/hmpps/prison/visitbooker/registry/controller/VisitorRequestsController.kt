@@ -19,10 +19,11 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.BookerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.LinkVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
@@ -31,7 +32,8 @@ const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/permitted/visitors/requests"
 
 const val GET_SINGLE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}"
-const val APPROVE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}/approve"
+const val APPROVE_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/approve"
+const val REJECT_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/reject"
 
 const val GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
@@ -236,13 +238,13 @@ class VisitorRequestsController(
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(APPROVE_VISITOR_REQUEST)
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Approve visitor request and link visitor to booker's prisoner.",
     description = "Approve visitor request and link visitor to booker's prisoner.",
     responses = [
       ApiResponse(
-        responseCode = "201",
+        responseCode = "200",
         description = "Visit request approved and visitor linked to booker's prisoner",
       ),
       ApiResponse(
@@ -271,6 +273,46 @@ class VisitorRequestsController(
     @PathVariable
     requestReference: String,
     @RequestBody
-    linkVisitorRequest: LinkVisitorRequestDto,
-  ): PrisonVisitorRequestDto = visitorRequestsService.approveAndLinkVisitorRequest(requestReference, linkVisitorRequest)
+    approveVisitorRequest: ApproveVisitorRequestDto,
+  ): PrisonVisitorRequestDto = visitorRequestsService.approveAndLinkVisitorRequest(requestReference, approveVisitorRequest)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @PutMapping(REJECT_VISITOR_REQUEST)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Reject visitor request.",
+    description = "Reject a visitor request.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit request rejected, no visitor linked to booker's prisoner",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to reject visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to reject visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Booker or visitor request not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun rejectVisitorRequest(
+    @PathVariable
+    requestReference: String,
+    @RequestBody
+    rejectVisitorRequest: RejectVisitorRequestDto,
+  ): PrisonVisitorRequestDto = visitorRequestsService.rejectVisitorRequest(requestReference, rejectVisitorRequest)
 }

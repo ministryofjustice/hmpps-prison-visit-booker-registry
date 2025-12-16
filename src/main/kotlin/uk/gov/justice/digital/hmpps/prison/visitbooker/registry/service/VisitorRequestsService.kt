@@ -4,9 +4,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.LinkVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
@@ -22,6 +23,7 @@ class VisitorRequestsService(
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
   private val visitorRequestsStoreService: VisitorRequestsStoreService,
   private val snsService: SnsService,
+  private val bookerDetailsStoreService: BookerDetailsStoreService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -85,26 +87,60 @@ class VisitorRequestsService(
     return PrisonVisitorRequestDto(request, booker.email)
   }
 
-  fun approveAndLinkVisitorRequest(requestReference: String, linkVisitorRequest: LinkVisitorRequestDto): PrisonVisitorRequestDto {
-    LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $linkVisitorRequest")
+  fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequest: ApproveVisitorRequestDto): PrisonVisitorRequestDto {
+    LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $approveVisitorRequest")
 
-    val visitorRequest = visitorRequestsStoreService.getVisitorRequestByReference(requestReference)
+    var visitorRequest = getVisitorRequestByReference(requestReference)
+    val bookerReference = visitorRequest.bookerReference
 
     return when (visitorRequest.status) {
       REQUESTED -> {
-        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference).also {
-          // audit the event
-          bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId, requestReference = requestReference)
-          // send SNS event
-          snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = linkVisitorRequest.visitorId.toString())
-          LOG.info("Visitor request with reference $requestReference approved successfully")
-        }
+        val booker = bookerDetailsStoreService.getBookerByReference(bookerReference)
+
+        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
+        // audit the event
+        bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
+        // send SNS event
+        snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId.toString())
+        LOG.info("Visitor request with reference $requestReference approved successfully")
+        visitorRequest = getVisitorRequestByReference(requestReference)
+        PrisonVisitorRequestDto(visitorRequest, booker.email)
       }
 
       else -> {
-        LOG.info("Visitor request with reference $requestReference has already been actioned. No action taken.")
+        LOG.info("Visitor request with reference $requestReference has already been actioned and cannot be approved.")
         throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned.")
       }
     }
   }
+
+  fun rejectVisitorRequest(requestReference: String, rejectVisitorRequest: RejectVisitorRequestDto): PrisonVisitorRequestDto {
+    LOG.info("Entered VisitorRequestsService - rejectVisitorRequest for request reference - $requestReference, rejectVisitorRequest - $rejectVisitorRequest")
+
+    var visitorRequest = getVisitorRequestByReference(requestReference)
+    val bookerReference = visitorRequest.bookerReference
+
+    return when (visitorRequest.status) {
+      REQUESTED -> {
+        val booker = bookerDetailsStoreService.getBookerByReference(bookerReference)
+
+        visitorRequestsStoreService.rejectVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
+        // audit the event
+        bookerAuditService.auditLinkVisitorRejected(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
+        // send SNS event
+        snsService.sendVisitorRequestRejectedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, rejectVisitorRequest.rejectionReason)
+        LOG.info("Visitor request with reference $requestReference rejected.")
+
+        visitorRequest = getVisitorRequestByReference(requestReference)
+        PrisonVisitorRequestDto(visitorRequest, booker.email)
+      }
+
+      else -> {
+        LOG.info("Visitor request with reference $requestReference has already been actioned.")
+        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned.")
+      }
+    }
+  }
+
+  private fun getVisitorRequestByReference(requestReference: String) = visitorRequestsStoreService.getVisitorRequestByReference(requestReference)
 }
