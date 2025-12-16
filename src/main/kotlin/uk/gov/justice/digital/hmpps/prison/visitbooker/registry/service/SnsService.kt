@@ -10,7 +10,6 @@ import software.amazon.awssdk.services.sns.model.PublishResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_APPROVED_EVENT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_REJECTED_EVENT
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PublishEventException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.SnsService.Companion.EVENT_ZONE_ID
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -65,13 +64,10 @@ class SnsService(
     }
   }
 
-  fun sendVisitorRequestRejectedEvent(bookerReference: String, prisonerId: String, rejectionReason: VisitorRequestRejectionReason) {
-    LOG.info("Entered : sendVisitorRequestRejectedAsRejectedEvent, for bookerReference: $bookerReference, prisonerId: $prisonerId")
+  fun sendVisitorRequestRejectedEvent(prisonerId: String, requestReference: String) {
+    LOG.info("Entered : sendVisitorRequestRejectedAsRejectedEvent, for prisonerId: $prisonerId, requestReference: $requestReference")
     val additionalInformation = RejectedAdditionalInformation(
-      bookerReference = bookerReference,
-      prisonerId = prisonerId,
-      // TODO not setting the rejection reason for now
-      // rejectionReason = rejectionReason,
+      visitRequestReference = requestReference,
     )
 
     val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_REJECTED_EVENT, prisonerId, additionalInformation)
@@ -81,9 +77,7 @@ class SnsService(
         "${payloadEvent.eventType.type}-domain-event",
         mapOf(
           "messageId" to it.messageId(),
-          "bookerReference" to additionalInformation.bookerReference,
-          "prisonerId" to additionalInformation.prisonerId,
-          "rejectionReason" to rejectionReason.name,
+          "visitRequestReference" to requestReference,
         ),
         null,
       )
@@ -139,8 +133,7 @@ internal data class ApprovedAdditionalInformation(
 ) : AdditionalInformation
 
 internal data class RejectedAdditionalInformation(
-  val bookerReference: String,
-  val prisonerId: String,
+  val visitRequestReference: String,
 ) : AdditionalInformation
 
 internal data class PersonReference(

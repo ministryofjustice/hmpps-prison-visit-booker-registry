@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
@@ -36,13 +37,13 @@ class VisitorRequestsStoreService(
         visitorId = visitorId,
       ),
     )
-    visitorRequestsRepository.approveVisitorRequest(requestReference, LocalDateTime.now())
+    visitorRequestsRepository.approveVisitorRequest(requestReference, visitorId, LocalDateTime.now())
   }
 
   @Transactional
-  fun rejectVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String) {
-    LOG.info("Enter VisitorRequestsApprovalStoreService rejectVisitorRequest, booker reference - $bookerReference, prisonerId - $prisonerId, requestReference = $requestReference")
-    visitorRequestsRepository.rejectVisitorRequest(requestReference, LocalDateTime.now())
+  fun rejectVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String, rejectionReason: VisitorRequestRejectionReason) {
+    LOG.info("Enter VisitorRequestsApprovalStoreService rejectVisitorRequest, booker reference - $bookerReference, prisonerId - $prisonerId, requestReference = $requestReference, rejectionReason = $rejectionReason")
+    visitorRequestsRepository.rejectVisitorRequest(requestReference, rejectionReason, LocalDateTime.now())
   }
 
   @Transactional(readOnly = true)

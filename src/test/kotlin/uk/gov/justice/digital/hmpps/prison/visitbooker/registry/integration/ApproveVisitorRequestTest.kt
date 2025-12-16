@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -75,15 +74,16 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     assertVisitorRequest(visitorRequestResponse, request, booker)
 
     val permittedPrisoner = bookerRepository.findByReference(bookerReference)?.permittedPrisoners?.first { it.prisonerId == prisonerId }
-    Assertions.assertThat(permittedPrisoner!!.permittedVisitors.size).isEqualTo(1)
-    Assertions.assertThat(permittedPrisoner.permittedVisitors[0].visitorId).isEqualTo(visitorIdToBeLinked)
+    assertThat(permittedPrisoner!!.permittedVisitors.size).isEqualTo(1)
+    assertThat(permittedPrisoner.permittedVisitors[0].visitorId).isEqualTo(visitorIdToBeLinked)
 
     val visitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference)
-    Assertions.assertThat(visitorRequest!!.status).isEqualTo(APPROVED)
+    assertThat(visitorRequest!!.status).isEqualTo(APPROVED)
+    assertThat(visitorRequest.visitorId).isEqualTo(visitorIdToBeLinked)
 
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, ApproveVisitorRequestDto(visitorIdToBeLinked))
     verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(booker.reference, prisonerId, visitorIdToBeLinked, request.reference)
-    verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any())
+    verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any(), any())
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
@@ -128,7 +128,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked))
     verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any())
   }
 
   @Test
@@ -144,7 +144,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(reference, ApproveVisitorRequestDto(visitorIdToBeLinked))
     verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any())
   }
 
   @Test
@@ -171,7 +171,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
 
     verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked))
     verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any())
   }
 
   @Test

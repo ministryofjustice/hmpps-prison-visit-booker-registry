@@ -12,6 +12,7 @@ import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
 import java.time.LocalDate
@@ -43,6 +44,13 @@ class VisitorRequest(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   val status: VisitorRequestsStatus,
+
+  @Column
+  val visitorId: Long? = null,
+
+  @Enumerated(EnumType.STRING)
+  @Column
+  val rejectionReason: VisitorRequestRejectionReason? = null,
 ) {
   @Column
   var reference: String = ""
