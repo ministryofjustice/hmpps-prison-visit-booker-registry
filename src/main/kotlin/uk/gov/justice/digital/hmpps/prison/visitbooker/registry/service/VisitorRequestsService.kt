@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
@@ -78,10 +77,6 @@ class VisitorRequestsService(
     LOG.info("Entered VisitorRequestsService - getVisitorRequest - requestReference $requestReference")
 
     val request = visitorRequestsStoreService.getVisitorRequestByReference(requestReference)
-    if (request.status != REQUESTED) {
-      throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
-    }
-
     val booker = bookerDetailsService.getBookerByReference(request.bookerReference)
 
     return PrisonVisitorRequestDto(request, booker.email)
