@@ -53,21 +53,24 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Then
     responseSpec.expectStatus().isCreated
 
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(1)
+    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto)
+    val visitRequest = visitorRequests[0]
+
     verify(telemetryClientSpy, times(1)).trackEvent(
       BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
       mapOf(
         "bookerReference" to booker.reference,
         "prisonerId" to prisoner.prisonerId,
+        "requestReference" to visitRequest.reference,
+        "prisonCode" to prisoner.prisonCode,
       ),
       null,
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}")
-
-    val visitorRequests = visitorRequestsRepository.findAll()
-    assertThat(visitorRequests).hasSize(1)
-    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto)
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
   }
 
   @Test

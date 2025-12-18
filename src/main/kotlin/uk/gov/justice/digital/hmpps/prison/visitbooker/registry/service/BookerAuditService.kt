@@ -38,6 +38,7 @@ class BookerAuditService(
     private const val NEW_PRISON_CODE = "newPrisonCode"
     private const val VISITOR_REQUEST_REFERENCE = "requestReference"
     private const val REJECTION_REASON = "rejectionReason"
+    private const val REGISTERED_PRISON_CODE = "prisonCode"
 
     private interface PrisonerSearchPropertyNames {
       companion object {
@@ -163,15 +164,19 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditVisitorRequest(bookerReference: String, prisonNumber: String) {
+  fun auditVisitorRequest(bookerReference: String, prisonNumber: String, requestReference: String, registeredPrisonCode: String?) {
     val auditType = BookerAuditType.VISITOR_REQUEST_SUBMITTED
-    val text = "Booker $bookerReference, submitted request to add visitor to prisoner $prisonNumber"
+    val text = "Booker $bookerReference, submitted request to add visitor to prisoner $prisonNumber, request reference - $requestReference"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
     val properties = mapOf(
       BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
       PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
+      VISITOR_REQUEST_REFERENCE to requestReference,
+      registeredPrisonCode.let {
+        REGISTERED_PRISON_CODE to registeredPrisonCode!!
+      },
     )
     sendTelemetryClientEvent(auditType, properties)
   }
