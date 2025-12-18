@@ -34,9 +34,7 @@ class VisitorRequestsService(
 
     visitorRequestsValidationService.validateVisitorRequest(bookerReference, prisonerId, visitorRequest)
 
-    bookerAuditService.auditVisitorRequest(bookerReference, prisonerId)
-
-    visitorRequestsRepository.save(
+    val visitorRequest = visitorRequestsRepository.save(
       VisitorRequest(
         bookerReference = bookerReference,
         prisonerId = prisonerId,
@@ -46,6 +44,10 @@ class VisitorRequestsService(
         status = REQUESTED,
       ),
     )
+
+    // get the registered prison code for prisoner for audit purposes
+    val prisonCode = bookerDetailsService.getBookerByReference(bookerReference).permittedPrisoners.firstOrNull { it.prisonerId == prisonerId }?.prisonCode
+    bookerAuditService.auditVisitorRequest(bookerReference = bookerReference, prisonNumber = prisonerId, requestReference = visitorRequest.reference, registeredPrisonCode = prisonCode)
   }
 
   @Transactional(readOnly = true)
