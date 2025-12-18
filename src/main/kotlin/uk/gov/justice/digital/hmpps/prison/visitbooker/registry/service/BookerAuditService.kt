@@ -38,7 +38,7 @@ class BookerAuditService(
     private const val NEW_PRISON_CODE = "newPrisonCode"
     private const val VISITOR_REQUEST_REFERENCE = "requestReference"
     private const val REJECTION_REASON = "rejectionReason"
-    private const val REGISTERED_PRISON_CODE = "prisonCode"
+    private const val REGISTERED_PRISON_CODE = "prisonId"
 
     private interface PrisonerSearchPropertyNames {
       companion object {

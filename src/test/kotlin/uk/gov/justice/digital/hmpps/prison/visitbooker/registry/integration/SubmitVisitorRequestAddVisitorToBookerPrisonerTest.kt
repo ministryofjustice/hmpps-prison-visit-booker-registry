@@ -64,7 +64,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "bookerReference" to booker.reference,
         "prisonerId" to prisoner.prisonerId,
         "requestReference" to visitRequest.reference,
-        "prisonCode" to prisoner.prisonCode,
+        "prisonId" to prisoner.prisonCode,
       ),
       null,
     )
