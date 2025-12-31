@@ -20,9 +20,10 @@ interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
     from VisitorRequest vr
     where vr.status = 'REQUESTED'
       and exists (
-        select 1 from PermittedPrisoner pp
+        select 1 from PermittedPrisoner pp join Booker b on b.id = pp.bookerId
         where pp.prisonerId = vr.prisonerId
           and pp.prisonCode = :prisonCode
+          and b.reference = vr.bookerReference
       )
   """,
   )
@@ -34,9 +35,10 @@ interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
     from VisitorRequest vr
     where vr.status = 'REQUESTED'
       and exists (
-        select 1 from PermittedPrisoner pp
+        select 1 from PermittedPrisoner pp join Booker b on b.id = pp.bookerId
         where pp.prisonerId = vr.prisonerId
           and pp.prisonCode = :prisonCode
+          and b.reference = vr.bookerReference
       )
   """,
   )
