@@ -22,6 +22,9 @@ components:
   messages:
     prison-visit-booker.visitor-approved:
       $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/prison-visit-booker/prison-visit-booker-visitor-approved.yaml
+    prison-visit-booker.visitor-rejected:
+      $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/prison-visit-booker/prison-visit-booker-visitor-rejected.yaml
+
 
 channels:
   hmpps-domain-events:
@@ -32,6 +35,8 @@ channels:
     messages:
       prison-visit-booker.visitor-approved:
         $ref: '#/components/messages/prison-visit-booker.visitor-approved'
+      prison-visit-booker.visitor-rejected:
+        $ref: '#/components/messages/prison-visit-booker.visitor-rejected'
 
 operations:
   publish-event:
@@ -40,3 +45,5 @@ operations:
       $ref: '#/channels/hmpps-domain-events'
     messages:
       - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-approved'
+      - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-rejected'
+
