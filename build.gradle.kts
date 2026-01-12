@@ -4,7 +4,7 @@ plugins {
   kotlin("plugin.jpa") version "2.3.0"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.3.0"
   idea
-  id("org.owasp.dependencycheck") version "12.1.9"
+  id("org.owasp.dependencycheck") version "12.2.0"
 }
 
 springBoot {
