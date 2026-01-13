@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PERMITTED_VISITORS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
@@ -133,7 +134,7 @@ class PrisonersVisitorsByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PermittedVisitorDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<PermittedVisitorDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PermittedVisitorDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<PermittedVisitorDto>::class.java).toList()
 
   private fun assertVisitorDetails(visitor: PermittedVisitorDto, visitorDetails: PermittedVisitorTestObject) {
     Assertions.assertThat(visitor.visitorId).isEqualTo(visitorDetails.visitorId)

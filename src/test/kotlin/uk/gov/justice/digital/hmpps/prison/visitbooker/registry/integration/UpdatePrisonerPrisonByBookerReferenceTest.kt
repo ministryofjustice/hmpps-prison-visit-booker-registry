@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonersPrisonDto
@@ -187,7 +188,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PermittedPrisonerDto = objectMapper.readValue(returnResult.returnResult().responseBody, PermittedPrisonerDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PermittedPrisonerDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PermittedPrisonerDto::class.java)
 
   fun updatePrisonersPrisonByBookerReference(
     webTestClient: WebTestClient,

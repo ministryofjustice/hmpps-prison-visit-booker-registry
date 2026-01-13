@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_SINGLE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
@@ -68,7 +69,7 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonVisitorRequestDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonVisitorRequestDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonVisitorRequestDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonVisitorRequestDto::class.java)
 
   fun callGetSingleVisitorRequest(
     webTestClient: WebTestClient,

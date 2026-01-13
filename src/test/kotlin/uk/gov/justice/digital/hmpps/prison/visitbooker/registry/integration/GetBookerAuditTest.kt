@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_BOOKER_AUDIT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
@@ -72,7 +73,7 @@ class GetBookerAuditTest : IntegrationTestBase() {
     assertThat(bookerAudit.text).isEqualTo(expectedText)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<BookerAuditDto>? = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerAuditDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<BookerAuditDto>? = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerAuditDto>::class.java)
 
   fun getBookerAudit(
     webTestClient: WebTestClient,

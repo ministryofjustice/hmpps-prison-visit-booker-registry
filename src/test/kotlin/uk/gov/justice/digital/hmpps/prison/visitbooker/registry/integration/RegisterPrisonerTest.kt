@@ -260,7 +260,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
@@ -316,7 +316,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT, LAST_NAME_INCORRECT, DOB_INCORRECT",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
@@ -366,7 +366,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
@@ -412,7 +412,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - BOOKER_ALREADY_HAS_A_PRISONER",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
@@ -457,7 +457,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - PRISONER_NOT_FOUND",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)

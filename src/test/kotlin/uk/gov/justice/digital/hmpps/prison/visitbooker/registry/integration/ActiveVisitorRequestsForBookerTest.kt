@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
@@ -98,7 +99,7 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorRequestDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerVisitorRequestDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorRequestDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerVisitorRequestDto>::class.java).toList()
 
   private fun assertActiveVisitorRequest(visitorRequestDto: BookerPrisonerVisitorRequestDto, visitorRequest: VisitorRequest) {
     Assertions.assertThat(visitorRequestDto.reference).isEqualTo(visitorRequest.reference)

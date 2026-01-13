@@ -1,10 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import org.assertj.core.api.Assertions.assertThat
-import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -13,12 +9,14 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
@@ -51,9 +49,9 @@ import java.time.LocalDate
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 @ExtendWith(HmppsAuthExtension::class)
+@AutoConfigureWebTestClient
 abstract class IntegrationTestBase {
   companion object {
-    val objectMapper: ObjectMapper = ObjectMapper().registerModules(JavaTimeModule(), kotlinModule())
     const val PRISON_CODE = "HEI"
 
     internal val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer()
@@ -223,13 +221,17 @@ abstract class IntegrationTestBase {
     responseSpec
       .expectStatus().isEqualTo(status)
       .expectBody()
-      .jsonPath("$.userMessage").value(Matchers.equalTo(userMessage))
-      .jsonPath("$.developerMessage").value(Matchers.containsString(developerMessage))
+      .jsonPath("$.userMessage").value<String> { actual ->
+        assertThat(actual).isEqualTo(userMessage)
+      }
+      .jsonPath("$.developerMessage").value<String> { actual ->
+        assertThat(actual).isEqualTo(developerMessage)
+      }
   }
 
-  protected fun getPermittedPrisonerDto(responseSpec: ResponseSpec): PermittedPrisonerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedPrisonerDto::class.java)
+  protected fun getPermittedPrisonerDto(responseSpec: ResponseSpec): PermittedPrisonerDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedPrisonerDto::class.java)
 
-  protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
+  protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
 
   protected fun assertAuditEvent(auditEvent: BookerAudit, bookerReference: String, auditType: BookerAuditType, text: String) {
     assertThat(auditEvent.bookerReference).isEqualTo(bookerReference)

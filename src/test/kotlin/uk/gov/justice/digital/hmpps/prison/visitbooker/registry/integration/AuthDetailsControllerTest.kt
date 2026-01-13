@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
-import org.hamcrest.Matchers
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -14,6 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.AUTH_DETAILS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerReference
@@ -225,8 +225,12 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     responseSpec
       .expectStatus().isForbidden
       .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("Access is forbidden")
-      .jsonPath("$.developerMessage").value(Matchers.startsWith("Access Denied"))
+      .jsonPath("$.userMessage").value<String> { actual ->
+        assertThat(actual).startsWith("Access is forbidden")
+      }
+      .jsonPath("$.developerMessage").value<String> { actual ->
+        assertThat(actual).startsWith("Access Denied")
+      }
   }
 
   protected fun callBookerAuth(
@@ -238,7 +242,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     .exchange()
 
   protected fun getReference(responseSpec: ResponseSpec): String {
-    val bookerReferenceObject = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerReference::class.java)
+    val bookerReferenceObject = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerReference::class.java)
     return bookerReferenceObject.value
   }
 }
