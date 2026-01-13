@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_VISITOR_REQUESTS_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
@@ -131,7 +132,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestDto>>() {})
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestDto>>() {})
 
   fun getVisitorRequestsByPrisonCode(
     webTestClient: WebTestClient,

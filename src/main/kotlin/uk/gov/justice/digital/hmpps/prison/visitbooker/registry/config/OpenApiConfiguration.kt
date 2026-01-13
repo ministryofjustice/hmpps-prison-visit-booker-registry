@@ -23,8 +23,8 @@ class SwaggerConfig {
 
 @Configuration
 class OpenApiConfiguration(buildProperties: BuildProperties) {
-  private val buildName: String = buildProperties.name
-  private val buildVersion: String = buildProperties.version
+  private val buildName: String? = buildProperties.name
+  private val buildVersion: String? = buildProperties.version
 
   @Value("\${info.app.description}")
   private val description: String = "A microservice for registering public visit bookers to HMPPS - VSIP services"

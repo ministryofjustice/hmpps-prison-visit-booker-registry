@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.3.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.0"
   kotlin("plugin.spring") version "2.3.0"
   kotlin("plugin.jpa") version "2.3.0"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.3.0"
@@ -21,21 +21,24 @@ repositories {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.8.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.0.0")
+  implementation("org.springframework.boot:spring-boot-starter-webclient")
+  implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
+  implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:6.0.0")
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.23.0")
 
-  implementation("org.springframework.data:spring-data-commons:3.5.7")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.15")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15")
-  implementation("org.springdoc:springdoc-openapi-starter-common:2.8.15")
+  implementation("org.springframework.data:spring-data-commons:4.0.1")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.1")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+  implementation("org.springdoc:springdoc-openapi-starter-common:3.0.1")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.freemarker:freemarker:2.3.34")
@@ -46,18 +49,14 @@ dependencies {
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.37")
-  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("org.mockito:mockito-inline:5.2.0")
+  testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-  testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.13.0")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:postgresql:1.21.4")
   testImplementation("org.testcontainers:localstack:1.21.4")
-  testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.797")
-  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
 }
 
 kotlin {

@@ -15,6 +15,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
@@ -181,7 +182,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonVisitorRequestDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonVisitorRequestDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonVisitorRequestDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonVisitorRequestDto::class.java)
 
   fun callApproveVisitorRequest(
     webTestClient: WebTestClient,

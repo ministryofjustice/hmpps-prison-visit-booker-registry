@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.apache.http.HttpStatus
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
@@ -260,7 +260,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
@@ -316,7 +316,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT, LAST_NAME_INCORRECT, DOB_INCORRECT",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
@@ -366,7 +366,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
@@ -412,7 +412,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - BOOKER_ALREADY_HAS_A_PRISONER",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
@@ -446,8 +446,8 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       prisonerDateOfBirth = dateOfBirth,
     )
 
-    // prisoner not found on prisoner-search
-    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.SC_NOT_FOUND)
+    // a prisoner isn't found on prisoner-search
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, NOT_FOUND)
 
     // When
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
@@ -457,7 +457,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       responseSpec,
       "Prisoner registration validation failed",
       "Prisoner registration validation failed with the following errors - PRISONER_NOT_FOUND",
-      org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+      HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
@@ -491,14 +491,14 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       prisonerDateOfBirth = dateOfBirth,
     )
 
-    // prisoner not found on prisoner-search
-    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    // a prisoner isn't found on prisoner-search
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
@@ -520,7 +520,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, bookerReference)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.SC_NOT_FOUND)
+    responseSpec.expectStatus().isEqualTo(NOT_FOUND)
     assertError(
       responseSpec,
       userMessage = "Booker not found",

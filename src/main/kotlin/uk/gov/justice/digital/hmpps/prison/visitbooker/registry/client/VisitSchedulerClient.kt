@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -15,7 +14,6 @@ import java.time.Duration
 
 @Component
 class VisitSchedulerClient(
-  val objectMapper: ObjectMapper,
   @param:Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
   @param:Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {

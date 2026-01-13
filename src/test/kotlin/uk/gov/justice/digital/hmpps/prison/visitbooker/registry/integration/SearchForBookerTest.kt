@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.SEARCH_FOR_BOOKER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
@@ -76,7 +77,7 @@ class SearchForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<BookerDto>>() {})
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<BookerDto>>() {})
 
   fun callSearchForBooker(
     webTestClient: WebTestClient,

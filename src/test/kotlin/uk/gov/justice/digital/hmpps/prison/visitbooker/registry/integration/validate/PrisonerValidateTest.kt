@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.validate
 
-import org.apache.http.HttpStatus
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -8,10 +7,12 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.BookerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.PrisonerValidationError.PRISONER_RELEASED
@@ -72,7 +73,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
     // Then
-    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationError).isEqualTo(PRISONER_RELEASED.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
@@ -90,7 +91,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
     // Then
-    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationError).isEqualTo(PRISONER_TRANSFERRED_SUPPORTED_PRISON.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
@@ -109,7 +110,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
     // Then
-    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationError).isEqualTo(PRISONER_TRANSFERRED_SUPPORTED_PRISON.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
@@ -128,7 +129,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
     // Then
-    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationError).isEqualTo(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
@@ -147,7 +148,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
 
     // Then
-    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationError).isEqualTo(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
@@ -172,7 +173,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
   fun `when valid prisoner but call to offender search returns NOT_FOUND then NOT_FOUND status is returned`() {
     // When
     val prisonerId = prisoner.prisonerId
-    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.SC_NOT_FOUND)
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.NOT_FOUND)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
     responseSpec.expectStatus().isNotFound
   }
@@ -181,9 +182,9 @@ class PrisonerValidateTest : IntegrationTestBase() {
   fun `when valid prisoner but call to offender search returns INTERNAL_SERVER_ERROR then INTERNAL_SERVER_ERROR status is returned`() {
     // When
     val prisonerId = prisoner.prisonerId
-    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
-    responseSpec.expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
   }
 
   @Test
@@ -191,12 +192,12 @@ class PrisonerValidateTest : IntegrationTestBase() {
     // When
     val prisonerId = prisoner.prisonerId
     val prisonerOffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
-    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.SC_NOT_FOUND)
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.NOT_FOUND)
     visitSchedulerMockServer.stubGetSupportedPublicPrisons(null)
 
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
     // Then
-    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+    val returnResult = responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(returnResult)
     Assertions.assertThat(errorResponse.validationError).isEqualTo(PRISONER_TRANSFERRED_UNSUPPORTED_PRISON.name)
     verify(prisonerSearchService, times(1)).getPrisoner(prisonerId)
@@ -208,10 +209,10 @@ class PrisonerValidateTest : IntegrationTestBase() {
     // When
     val prisonerId = prisoner.prisonerId
     val prisonerOffenderDetails = createPrisonerDto(prisonerNumber = prisoner.prisonerId, prisonId = "XYZ", inOutStatus = "IN")
-    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.SC_NOT_FOUND)
-    visitSchedulerMockServer.stubGetSupportedPublicPrisons(null, HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails, HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubGetSupportedPublicPrisons(null, HttpStatus.INTERNAL_SERVER_ERROR)
     val responseSpec = validatePrisoner(webTestClient, booker.reference, prisonerId, orchestrationServiceRoleHttpHeaders)
-    responseSpec.expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
   }
 
   @Test
@@ -221,7 +222,7 @@ class PrisonerValidateTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerValidationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerValidationErrorResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerValidationErrorResponse::class.java)
 
   fun validatePrisoner(
     webTestClient: WebTestClient,

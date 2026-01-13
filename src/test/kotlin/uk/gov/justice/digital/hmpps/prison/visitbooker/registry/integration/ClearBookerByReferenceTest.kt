@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.BOOKER_ENDPOINT_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
@@ -96,7 +97,7 @@ class ClearBookerByReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerDto = objectMapper.readValue(returnResult.returnResult().responseBody, BookerDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, BookerDto::class.java)
 
   fun clearBookerByReference(
     webTestClient: WebTestClient,

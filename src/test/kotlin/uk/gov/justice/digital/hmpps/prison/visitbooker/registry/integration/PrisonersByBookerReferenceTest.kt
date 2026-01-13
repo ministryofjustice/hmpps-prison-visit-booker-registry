@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
@@ -77,7 +78,7 @@ class PrisonersByBookerReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PermittedPrisonerDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<PermittedPrisonerDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PermittedPrisonerDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<PermittedPrisonerDto>::class.java).toList()
 
   private fun assertPrisonerDetails(prisoner: PermittedPrisonerDto, prisonerDetail: PermittedPrisonerTestObject) {
     Assertions.assertThat(prisoner.prisonerId).isEqualTo(prisonerDetail.prisonerId)
