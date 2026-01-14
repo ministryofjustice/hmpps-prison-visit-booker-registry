@@ -6,12 +6,12 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
 @Service
@@ -19,35 +19,21 @@ class VisitorRequestsService(
   private val visitorRequestsRepository: VisitorRequestsRepository,
   private val bookerAuditService: BookerAuditService,
   private val bookerDetailsService: BookerDetailsService,
-  private val visitorRequestsValidationService: VisitorRequestsValidationService,
   private val visitorRequestsStoreService: VisitorRequestsStoreService,
   private val snsService: SnsService,
-  private val bookerDetailsStoreService: BookerDetailsStoreService,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
   }
 
-  @Transactional
-  fun submitVisitorRequest(bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto) {
+  fun submitVisitorRequest(bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto): CreateVisitorRequestResponseDto {
     LOG.info("Entered VisitorRequestsService - submitVisitorRequest - For booker $bookerReference, prisoner $prisonerId")
 
-    visitorRequestsValidationService.validateVisitorRequest(bookerReference, prisonerId, visitorRequest)
+    val createVisitorRequestResponse = visitorRequestsStoreService.createVisitorRequest(bookerReference, prisonerId, visitorRequest)
 
-    val visitorRequest = visitorRequestsRepository.save(
-      VisitorRequest(
-        bookerReference = bookerReference,
-        prisonerId = prisonerId,
-        firstName = visitorRequest.firstName,
-        lastName = visitorRequest.lastName,
-        dateOfBirth = visitorRequest.dateOfBirth,
-        status = REQUESTED,
-      ),
-    )
+    bookerAuditService.auditVisitorRequest(createVisitorRequestResponse)
 
-    // get the registered prison code for prisoner for audit purposes
-    val prisonCode = bookerDetailsService.getBookerByReference(bookerReference).permittedPrisoners.firstOrNull { it.prisonerId == prisonerId }?.prisonCode
-    bookerAuditService.auditVisitorRequest(bookerReference = bookerReference, prisonNumber = prisonerId, requestReference = visitorRequest.reference, registeredPrisonCode = prisonCode)
+    return createVisitorRequestResponse
   }
 
   @Transactional(readOnly = true)
@@ -92,7 +78,7 @@ class VisitorRequestsService(
 
     return when (visitorRequest.status) {
       REQUESTED -> {
-        val booker = bookerDetailsStoreService.getBookerByReference(bookerReference)
+        val booker = bookerDetailsService.getBookerByReference(bookerReference)
 
         visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
         // audit the event
@@ -119,7 +105,7 @@ class VisitorRequestsService(
 
     return when (visitorRequest.status) {
       REQUESTED -> {
-        val booker = bookerDetailsStoreService.getBookerByReference(bookerReference)
+        val booker = bookerDetailsService.getBookerByReference(bookerReference)
 
         visitorRequestsStoreService.rejectVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
         // audit the event

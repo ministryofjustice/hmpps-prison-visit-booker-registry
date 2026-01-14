@@ -3,7 +3,13 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerContactRegistryClient
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.AUTO_APPROVED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
@@ -18,9 +24,69 @@ class VisitorRequestsStoreService(
   private val visitorRepository: PermittedVisitorRepository,
   private val visitorRequestsRepository: VisitorRequestsRepository,
   private val bookerRepository: BookerRepository,
+  private val visitorRequestsValidationService: VisitorRequestsValidationService,
+  private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
+  }
+
+  @Transactional
+  fun createVisitorRequest(bookerReference: String, prisonerId: String, request: AddVisitorToBookerPrisonerRequestDto): CreateVisitorRequestResponseDto {
+    LOG.info("Entered VisitorRequestsStoreService - createVisitorRequest - Booker {}, prisoner {}", bookerReference, prisonerId)
+
+    val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
+
+    // TODO: VB-6049 - Should we get the approved social contact list or all social contacts?
+    val contactList = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId)
+
+    visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
+
+    val matchingContact = contactList.firstOrNull { contact ->
+      contact.firstName == request.firstName &&
+        contact.lastName == request.lastName &&
+        contact.dateOfBirth == request.dateOfBirth &&
+        contact.personId != null
+    }
+
+    val visitorRequestStatus = if (matchingContact != null) {
+      // Only create a visitor entry if we find a 100% match (Auto approval path)
+      val bookerPrisonerEntity = booker.permittedPrisoners.first { it.prisonerId == prisonerId }
+
+      visitorRepository.saveAndFlush(
+        PermittedVisitor(
+          permittedPrisonerId = bookerPrisonerEntity.id,
+          permittedPrisoner = bookerPrisonerEntity,
+          visitorId = matchingContact.personId!!,
+        ),
+      )
+
+      AUTO_APPROVED
+    } else {
+      REQUESTED
+    }
+
+    val savedVisitorRequest = visitorRequestsRepository.save(
+      VisitorRequest(
+        bookerReference = booker.reference,
+        prisonerId = prisonerId,
+        firstName = request.firstName,
+        lastName = request.lastName,
+        dateOfBirth = request.dateOfBirth,
+        status = visitorRequestStatus, // REQUESTED or AUTO_APPROVED
+      ),
+    )
+
+    // Required for auditing purposes in calling service.
+    val prisonerRegisteredPrisonCode = booker.permittedPrisoners.first { it.prisonerId == prisonerId }.prisonCode
+
+    return CreateVisitorRequestResponseDto(
+      reference = savedVisitorRequest.reference,
+      status = savedVisitorRequest.status,
+      bookerReference = bookerReference,
+      prisonerId = prisonerId,
+      prisonId = prisonerRegisteredPrisonCode,
+    )
   }
 
   @Transactional

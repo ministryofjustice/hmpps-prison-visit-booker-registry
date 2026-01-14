@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_VISITOR
@@ -39,6 +40,7 @@ class BookerAuditService(
     private const val VISITOR_REQUEST_REFERENCE = "requestReference"
     private const val REJECTION_REASON = "rejectionReason"
     private const val REGISTERED_PRISON_CODE = "prisonId"
+    private const val VISITOR_REQUEST_STATUS = "visitorRequestStatus"
 
     private interface PrisonerSearchPropertyNames {
       companion object {
@@ -164,20 +166,20 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditVisitorRequest(bookerReference: String, prisonNumber: String, requestReference: String, registeredPrisonCode: String?) {
+  fun auditVisitorRequest(createVisitorRequestResponseDto: CreateVisitorRequestResponseDto) {
     val auditType = BookerAuditType.VISITOR_REQUEST_SUBMITTED
-    val text = "Booker $bookerReference, submitted request to add visitor to prisoner $prisonNumber, request reference - $requestReference"
-    auditBookerEvent(bookerReference, auditType, text)
+    val text = "Booker ${createVisitorRequestResponseDto.bookerReference}, submitted request to add visitor to prisoner ${createVisitorRequestResponseDto.prisonerId}, request reference - ${createVisitorRequestResponseDto.reference}"
+    auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text)
 
     // send event to telemetry client
     val properties = mapOf(
-      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
-      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
-      VISITOR_REQUEST_REFERENCE to requestReference,
-      registeredPrisonCode.let {
-        REGISTERED_PRISON_CODE to registeredPrisonCode!!
-      },
+      BOOKER_REFERENCE_PROPERTY_NAME to createVisitorRequestResponseDto.bookerReference,
+      PRISON_NUMBER_PROPERTY_NAME to createVisitorRequestResponseDto.prisonerId,
+      VISITOR_REQUEST_REFERENCE to createVisitorRequestResponseDto.reference,
+      VISITOR_REQUEST_STATUS to createVisitorRequestResponseDto.status.name,
+      REGISTERED_PRISON_CODE to createVisitorRequestResponseDto.prisonId,
     )
+
     sendTelemetryClientEvent(auditType, properties)
   }
 

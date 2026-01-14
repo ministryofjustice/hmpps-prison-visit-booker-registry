@@ -36,7 +36,46 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
   lateinit var telemetryClientSpy: TelemetryClient
 
   @Test
-  fun `when visitor request comes in, it is saved to database successfully`() {
+  fun `when visitor request comes in, it is saved to database successfully with status requested`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(PrisonerContactDto(personId = 543L, firstName = "Random", lastName = "Contact", dateOfBirth = LocalDate.now().minusYears(21))))
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().isCreated
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(1)
+    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto)
+    val visitRequest = visitorRequests[0]
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to prisoner.prisonerId,
+        "requestReference" to visitRequest.reference,
+        "visitorRequestStatus" to visitRequest.status.name,
+        "prisonId" to prisoner.prisonCode,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+  }
+
+  @Test
+  fun `when visitor request comes in and is eligible for automatic approval (100 percent match), it is saved to database successfully with status auto_approved`() {
     // Given
     val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
     val prisoner = createPrisoner(booker, "AA123456")
@@ -55,7 +94,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(1)
-    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto)
+    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto, VisitorRequestsStatus.AUTO_APPROVED)
     val visitRequest = visitorRequests[0]
 
     verify(telemetryClientSpy, times(1)).trackEvent(
@@ -64,6 +103,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "bookerReference" to booker.reference,
         "prisonerId" to prisoner.prisonerId,
         "requestReference" to visitRequest.reference,
+        "visitorRequestStatus" to visitRequest.status.name,
         "prisonId" to prisoner.prisonCode,
       ),
       null,
@@ -272,12 +312,12 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       .exchange()
   }
 
-  private fun assertVisitorRequest(visitorRequestEntity: VisitorRequest, bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto) {
+  private fun assertVisitorRequest(visitorRequestEntity: VisitorRequest, bookerReference: String, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus = VisitorRequestsStatus.REQUESTED) {
     assertThat(visitorRequestEntity.bookerReference).isEqualTo(bookerReference)
     assertThat(visitorRequestEntity.prisonerId).isEqualTo(prisonerId)
     assertThat(visitorRequestEntity.firstName).isEqualTo(visitorRequest.firstName)
     assertThat(visitorRequestEntity.lastName).isEqualTo(visitorRequest.lastName)
     assertThat(visitorRequestEntity.dateOfBirth).isEqualTo(visitorRequest.dateOfBirth)
-    assertThat(visitorRequestEntity.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
+    assertThat(visitorRequestEntity.status).isEqualTo(status)
   }
 }
