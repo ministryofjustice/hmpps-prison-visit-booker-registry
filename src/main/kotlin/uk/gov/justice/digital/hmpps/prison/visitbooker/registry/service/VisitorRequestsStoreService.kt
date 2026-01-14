@@ -36,8 +36,6 @@ class VisitorRequestsStoreService(
     LOG.info("Entered VisitorRequestsStoreService - createVisitorRequest - Booker {}, prisoner {}", bookerReference, prisonerId)
 
     val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
-
-    // TODO: VB-6049 - Should we get the approved social contact list or all social contacts?
     val contactList = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId)
 
     visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
