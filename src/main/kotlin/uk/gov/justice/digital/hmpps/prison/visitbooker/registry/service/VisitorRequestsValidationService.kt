@@ -11,11 +11,13 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Visito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
+import java.time.LocalDate
 
 @Transactional(readOnly = true)
 @Service
 class VisitorRequestsValidationService(
   private val visitorRequestsRepository: VisitorRequestsRepository,
+  private val stringInputUtils: StringInputUtils,
   @param:Value("\${visitor-requests.request-limit}") private val maximumRequestsLimit: Int,
 ) {
   private companion object {
@@ -36,6 +38,17 @@ class VisitorRequestsValidationService(
     LOG.info("Successfully validated visitor request - For booker ${booker.reference}, prisoner $prisonerId")
   }
 
+  fun matchContactNameAndDob(contact: PrisonerContactDto, firstName: String, lastName: String, dateOfBirth: LocalDate): Boolean {
+    val contactFirst = stringInputUtils.sanitiseText(contact.firstName)
+    val contactLast = stringInputUtils.sanitiseText(contact.lastName)
+    val inputFirst = stringInputUtils.sanitiseText(firstName)
+    val inputLast = stringInputUtils.sanitiseText(lastName)
+
+    return contactFirst.equals(inputFirst, ignoreCase = true) &&
+      contactLast.equals(inputLast, ignoreCase = true) &&
+      contact.dateOfBirth == dateOfBirth
+  }
+
   private fun validateBookerPrisonerRelationship(booker: Booker, prisonerId: String) {
     if (!(booker.permittedPrisoners.any { it.prisonerId == prisonerId })) {
       LOG.error("Booker with reference ${booker.reference} does not have a permitted prisoner with id $prisonerId")
@@ -51,11 +64,19 @@ class VisitorRequestsValidationService(
   }
 
   private fun validateDuplicateRequest(visitorRequest: AddVisitorToBookerPrisonerRequestDto, existingRequests: List<VisitorRequest>) {
-    existingRequests.forEach { existingRequest ->
-      if (existingRequest.firstName == visitorRequest.firstName &&
-        existingRequest.lastName == visitorRequest.lastName &&
-        existingRequest.dateOfBirth == visitorRequest.dateOfBirth
-      ) {
+    val inputFirst = stringInputUtils.sanitiseText(visitorRequest.firstName)
+    val inputLast = stringInputUtils.sanitiseText(visitorRequest.lastName)
+    val inputDob = visitorRequest.dateOfBirth
+
+    existingRequests.forEach { existing ->
+      val existingFirst = stringInputUtils.sanitiseText(existing.firstName)
+      val existingLast = stringInputUtils.sanitiseText(existing.lastName)
+
+      val isDuplicate = existingFirst.equals(inputFirst, ignoreCase = true) &&
+        existingLast.equals(inputLast, ignoreCase = true) &&
+        existing.dateOfBirth == inputDob
+
+      if (isDuplicate) {
         throw VisitorRequestValidationException(VisitorRequestValidationError.REQUEST_ALREADY_EXISTS)
       }
     }
@@ -63,9 +84,7 @@ class VisitorRequestsValidationService(
 
   private fun validateVisitorAlreadyAdded(booker: Booker, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto, prisonerContactList: List<PrisonerContactDto>) {
     prisonerContactList.forEach { contact ->
-      if (contact.firstName == visitorRequest.firstName &&
-        contact.lastName == visitorRequest.lastName &&
-        contact.dateOfBirth == visitorRequest.dateOfBirth
+      if (matchContactNameAndDob(contact, visitorRequest.firstName, visitorRequest.lastName, visitorRequest.dateOfBirth)
       ) {
         if (booker.permittedPrisoners.first { it.prisonerId == prisonerId }.permittedVisitors.any { it.visitorId == contact.personId }) {
           throw VisitorRequestValidationException(VisitorRequestValidationError.VISITOR_ALREADY_EXISTS)

@@ -26,6 +26,7 @@ class VisitorRequestsStoreService(
   private val bookerRepository: BookerRepository,
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
+  private val stringInputUtils: StringInputUtils,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -41,10 +42,7 @@ class VisitorRequestsStoreService(
     visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
 
     val matchingContact = contactList.firstOrNull { contact ->
-      contact.firstName == request.firstName &&
-        contact.lastName == request.lastName &&
-        contact.dateOfBirth == request.dateOfBirth &&
-        contact.personId != null
+      visitorRequestsValidationService.matchContactNameAndDob(contact, request.firstName, request.lastName, request.dateOfBirth) && contact.personId != null
     }
 
     val visitorRequestStatus = if (matchingContact != null) {
@@ -68,8 +66,8 @@ class VisitorRequestsStoreService(
       VisitorRequest(
         bookerReference = booker.reference,
         prisonerId = prisonerId,
-        firstName = request.firstName,
-        lastName = request.lastName,
+        firstName = request.firstName.trim(),
+        lastName = request.lastName.trim(),
         dateOfBirth = request.dateOfBirth,
         status = visitorRequestStatus, // REQUESTED or AUTO_APPROVED
       ),
