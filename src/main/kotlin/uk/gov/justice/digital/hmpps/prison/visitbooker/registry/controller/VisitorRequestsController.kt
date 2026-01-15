@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResp
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
@@ -90,9 +91,9 @@ class VisitorRequestsController(
     @RequestBody
     @Valid
     visitorRequestDto: AddVisitorToBookerPrisonerRequestDto,
-  ): ResponseEntity<String> {
-    visitorRequestsService.submitVisitorRequest(bookerReference, prisonerId, visitorRequestDto)
-    return ResponseEntity.status(HttpStatus.CREATED.value()).build()
+  ): ResponseEntity<CreateVisitorRequestResponseDto> {
+    val response = visitorRequestsService.submitVisitorRequest(bookerReference, prisonerId, visitorRequestDto)
+    return ResponseEntity.status(HttpStatus.CREATED.value()).body(response)
   }
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
