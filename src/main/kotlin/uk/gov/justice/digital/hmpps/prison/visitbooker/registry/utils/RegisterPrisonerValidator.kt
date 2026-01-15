@@ -1,17 +1,15 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils
 
-import org.apache.commons.lang3.RegExUtils
-import org.apache.commons.lang3.StringUtils
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
-import java.text.Normalizer
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.StringInputUtils
 import java.time.LocalDate
 
 @Service
-class RegisterPrisonerValidator {
+class RegisterPrisonerValidator(private val stringInputUtils: StringInputUtils) {
   fun validateAgainstRegisteredPrisoners(registerPrisonerRequest: RegisterPrisonerRequestDto, registeredPrisoners: List<PermittedPrisonerDto>): List<RegisterPrisonerValidationError> {
     val errors = mutableListOf<RegisterPrisonerValidationError>()
     val prisonerIdToRegister = registerPrisonerRequest.prisonerId
@@ -75,28 +73,12 @@ class RegisterPrisonerValidator {
     prisonerToRegisterName: String,
     prisonerSearchName: String?,
   ): Boolean {
-    val toRegisterName = sanitiseText(prisonerToRegisterName)
+    val toRegisterName = stringInputUtils.sanitiseText(prisonerToRegisterName)
     val prisonApiName = prisonerSearchName?.let {
-      sanitiseText(prisonerSearchName)
+      stringInputUtils.sanitiseText(prisonerSearchName)
     }
 
     return toRegisterName.equals(prisonApiName, ignoreCase = true)
-  }
-
-  private fun sanitiseText(text: String): String = replaceSpecialCharacters(getNormalisedText(text.trim()))
-
-  private fun replaceSpecialCharacters(
-    text: String,
-  ): String = RegExUtils.replacePattern(text, "[^a-zA-Z]", "")
-
-  private fun getNormalisedText(text: String): String {
-    val normalisedText = if (!Normalizer.isNormalized(text, Normalizer.Form.NFKD)) {
-      StringUtils.stripAccents(text)
-    } else {
-      text
-    }
-
-    return normalisedText
   }
 
   private fun validateDob(

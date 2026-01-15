@@ -6,12 +6,13 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.StringInputUtils
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.RegisterPrisonerValidator
 import java.time.LocalDate
 
 @DisplayName("Test for prisoner validation errors")
 class RegisterPrisonerValidatorTest {
-  private val registerPrisonerValidator = RegisterPrisonerValidator()
+  private val registerPrisonerValidator = RegisterPrisonerValidator(StringInputUtils())
   private val prisonerNumber = "A1234567"
   private val prisonCode = "HEI"
   private val firstName = "FirstName"
