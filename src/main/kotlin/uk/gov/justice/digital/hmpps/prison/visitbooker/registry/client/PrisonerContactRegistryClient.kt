@@ -23,7 +23,10 @@ class PrisonerContactRegistryClient(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts/social"
+
+    const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
+    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social"
+    const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social/approved"
   }
 
   fun getPrisonersSocialContacts(prisonerId: String): List<PrisonerContactDto> {
@@ -43,6 +46,24 @@ class PrisonerContactRegistryClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from social contacts endpoint with uri $uri") }
+  }
+
+  fun getPrisonersApprovedSocialContacts(prisonerId: String): List<PrisonerContactDto> {
+    val uri = CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
+    return webClient.get().uri(uri) {
+      getSocialContactsUriBuilder(it).build()
+    }.retrieve()
+      .bodyToMono<List<PrisonerContactDto>>()
+      .onErrorResume { e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getPrisonersApprovedSocialContacts Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getPrisonersApprovedSocialContacts NOT_FOUND for get request $uri")
+          Mono.error { PrisonerNotFoundException("Approved social contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from approved social contacts endpoint with uri $uri") }
   }
 
   private fun getSocialContactsUriBuilder(
