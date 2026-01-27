@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.1"
   kotlin("plugin.spring") version "2.3.0"
   kotlin("plugin.jpa") version "2.3.0"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.3.0"
@@ -33,9 +33,9 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.23.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.24.0")
 
-  implementation("org.springframework.data:spring-data-commons:4.0.1")
+  implementation("org.springframework.data:spring-data-commons:4.0.2")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.1")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
   implementation("org.springdoc:springdoc-openapi-starter-common:3.0.1")
@@ -43,7 +43,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.freemarker:freemarker:2.3.34")
 
-  runtimeOnly("org.postgresql:postgresql:42.7.8")
+  runtimeOnly("org.postgresql:postgresql:42.7.9")
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
