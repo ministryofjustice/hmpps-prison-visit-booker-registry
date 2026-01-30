@@ -265,7 +265,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   fun handlePrisonerValidationException(e: PrisonerValidationException): ResponseEntity<BookerValidationErrorResponse>? {
     LOG.error("Validation exception", e)
     return ResponseEntity
-      .status(HttpStatus.UNPROCESSABLE_ENTITY)
+      .status(HttpStatus.UNPROCESSABLE_CONTENT)
       .body(
         BookerValidationErrorResponse(
           validationError = e.error.name,
@@ -277,7 +277,7 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   fun handleVisitorRequestValidationException(e: VisitorRequestValidationException): ResponseEntity<BookerValidationErrorResponse>? {
     LOG.error("Visitor request validation exception - $e")
     return ResponseEntity
-      .status(HttpStatus.UNPROCESSABLE_ENTITY)
+      .status(HttpStatus.UNPROCESSABLE_CONTENT)
       .body(
         BookerValidationErrorResponse(
           validationError = e.error.name,
@@ -289,10 +289,10 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   fun handleRegisterPrisonerValidationException(e: RegisterPrisonerValidationException): ResponseEntity<ErrorResponse>? {
     LOG.error("Validation exception", e)
     return ResponseEntity
-      .status(HttpStatus.UNPROCESSABLE_ENTITY)
+      .status(HttpStatus.UNPROCESSABLE_CONTENT)
       .body(
         ErrorResponse(
-          status = HttpStatus.UNPROCESSABLE_ENTITY,
+          status = HttpStatus.UNPROCESSABLE_CONTENT,
           errorCode = null,
           userMessage = "Prisoner registration validation failed",
           developerMessage = "Prisoner registration validation failed with the following errors - ${e.errors.joinToString()}",
@@ -337,4 +337,4 @@ open class ErrorResponse(
 
 data class BookerValidationErrorResponse(
   val validationError: String,
-) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY)
+) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT)

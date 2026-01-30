@@ -26,7 +26,6 @@ class VisitorRequestsStoreService(
   private val bookerRepository: BookerRepository,
   private val visitorRequestsValidationService: VisitorRequestsValidationService,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
-  private val stringInputUtils: StringInputUtils,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -37,7 +36,7 @@ class VisitorRequestsStoreService(
     LOG.info("Entered VisitorRequestsStoreService - createVisitorRequest - Booker {}, prisoner {}", bookerReference, prisonerId)
 
     val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
-    val contactList = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId)
+    val contactList = prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(prisonerId)
 
     visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
 
