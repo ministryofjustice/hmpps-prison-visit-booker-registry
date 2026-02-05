@@ -138,13 +138,6 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditLinkVisitorAutoApproved(createVisitorRequestResponseDto: CreateVisitorRequestResponseDto) {
-    val auditType = BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
-    val text = "Visitor ID - ${createVisitorRequestResponseDto.visitorId} auto approved for prisoner - ${createVisitorRequestResponseDto.prisonerId}, request reference - ${createVisitorRequestResponseDto.reference}"
-    auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text)
-    // do not send a separate event to telemetry client
-  }
-
   fun auditLinkVisitorRejected(bookerReference: String, prisonNumber: String, requestReference: String, rejectionReason: VisitorRequestRejectionReason) {
     val auditType = VISITOR_REQUEST_REJECTED_FOR_PRISONER
     val text = "Request reference - $requestReference rejected with rejection reason - $rejectionReason"
@@ -322,5 +315,12 @@ class BookerAuditService(
 
   private fun sendTelemetryClientEvent(bookerAuditType: BookerAuditType, properties: Map<String, String>) {
     telemetryClientService.trackEvent(bookerAuditType, properties)
+  }
+
+  private fun auditLinkVisitorAutoApproved(createVisitorRequestResponseDto: CreateVisitorRequestResponseDto) {
+    val auditType = BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
+    val text = "Visitor ID - ${createVisitorRequestResponseDto.visitorId} auto approved for prisoner - ${createVisitorRequestResponseDto.prisonerId}, request reference - ${createVisitorRequestResponseDto.reference}"
+    auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text)
+    // do not send a separate event to telemetry client
   }
 }
