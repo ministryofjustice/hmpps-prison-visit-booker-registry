@@ -1,8 +1,8 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.3"
-  kotlin("plugin.spring") version "2.3.0"
-  kotlin("plugin.jpa") version "2.3.0"
-  id("org.jetbrains.kotlin.plugin.noarg") version "2.3.0"
+  kotlin("plugin.spring") version "2.3.10"
+  kotlin("plugin.jpa") version "2.3.10"
+  id("org.jetbrains.kotlin.plugin.noarg") version "2.3.10"
   idea
   id("org.owasp.dependencycheck") version "12.2.0"
 }
