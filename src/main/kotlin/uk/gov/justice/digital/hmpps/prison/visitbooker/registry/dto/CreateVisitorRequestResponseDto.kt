@@ -18,4 +18,7 @@ data class CreateVisitorRequestResponseDto(
 
   @param:Schema(description = "The registered prison code of the booker's prisoner for the visitor request", example = "HEI")
   val prisonId: String,
+
+  @param:Schema(description = "Identifier for a matched contact (Person in NOMIS), NULL if an automatic match for the visitor request was not found", required = false)
+  val visitorId: Long?,
 )

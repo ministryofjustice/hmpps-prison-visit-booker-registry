@@ -69,6 +69,7 @@ class VisitorRequestsStoreService(
         lastName = request.lastName.trim(),
         dateOfBirth = request.dateOfBirth,
         status = visitorRequestStatus, // REQUESTED or AUTO_APPROVED
+        visitorId = matchingContact?.personId,
       ),
     )
 
@@ -81,6 +82,7 @@ class VisitorRequestsStoreService(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
       prisonId = prisonerRegisteredPrisonCode,
+      visitorId = matchingContact?.personId,
     )
   }
 

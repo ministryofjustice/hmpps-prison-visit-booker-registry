@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_REJECTED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
@@ -137,6 +138,13 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
+  fun auditLinkVisitorAutoApproved(createVisitorRequestResponseDto: CreateVisitorRequestResponseDto) {
+    val auditType = BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
+    val text = "Visitor ID - ${createVisitorRequestResponseDto.visitorId} auto approved for prisoner - ${createVisitorRequestResponseDto.prisonerId}, request reference - ${createVisitorRequestResponseDto.reference}"
+    auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text)
+    // do not send a separate event to telemetry client
+  }
+
   fun auditLinkVisitorRejected(bookerReference: String, prisonNumber: String, requestReference: String, rejectionReason: VisitorRequestRejectionReason) {
     val auditType = VISITOR_REQUEST_REJECTED_FOR_PRISONER
     val text = "Request reference - $requestReference rejected with rejection reason - $rejectionReason"
@@ -171,14 +179,24 @@ class BookerAuditService(
     val text = "Booker ${createVisitorRequestResponseDto.bookerReference}, submitted request to add visitor to prisoner ${createVisitorRequestResponseDto.prisonerId}, request reference - ${createVisitorRequestResponseDto.reference}"
     auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text)
 
+    // if AUTO_APPROVED also add an entry to the audit table
+    if (createVisitorRequestResponseDto.status == VisitorRequestsStatus.AUTO_APPROVED) {
+      auditLinkVisitorAutoApproved(createVisitorRequestResponseDto)
+    }
+
     // send event to telemetry client
-    val properties = mapOf(
+    val properties = mutableMapOf(
       BOOKER_REFERENCE_PROPERTY_NAME to createVisitorRequestResponseDto.bookerReference,
       PRISON_NUMBER_PROPERTY_NAME to createVisitorRequestResponseDto.prisonerId,
       VISITOR_REQUEST_REFERENCE to createVisitorRequestResponseDto.reference,
       VISITOR_REQUEST_STATUS to createVisitorRequestResponseDto.status.name,
       REGISTERED_PRISON_CODE to createVisitorRequestResponseDto.prisonId,
     )
+
+    // set the matched visitorId if it exists
+    createVisitorRequestResponseDto.visitorId?.let {
+      properties[VISITOR_ID_PROPERTY_NAME] = it.toString()
+    }
 
     sendTelemetryClientEvent(auditType, properties)
   }
