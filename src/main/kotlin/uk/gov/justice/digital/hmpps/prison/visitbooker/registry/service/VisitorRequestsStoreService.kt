@@ -36,7 +36,9 @@ class VisitorRequestsStoreService(
     LOG.info("Entered VisitorRequestsStoreService - createVisitorRequest - Booker {}, prisoner {}", bookerReference, prisonerId)
 
     val booker = bookerRepository.findByReference(bookerReference) ?: throw BookerNotFoundException("Booker for reference : $bookerReference not found")
-    val contactList = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId)
+
+    // sorting contact list by approvedVisitor flg desc to ensure approvedVisitors - true are listed first
+    val contactList = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId).sortedByDescending { it.approvedVisitor }
 
     visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
 
