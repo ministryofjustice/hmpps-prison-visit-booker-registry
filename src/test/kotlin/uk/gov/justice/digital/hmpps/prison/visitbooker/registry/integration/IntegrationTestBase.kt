@@ -13,10 +13,12 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
@@ -95,6 +97,9 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var visitorRequestsRepository: VisitorRequestsRepository
+
+  @MockitoSpyBean
+  protected lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
 
   protected lateinit var orchestrationServiceRoleHttpHeaders: (HttpHeaders) -> Unit
   protected lateinit var bookerConfigServiceRoleHttpHeaders: (HttpHeaders) -> Unit

@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -44,7 +45,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "Random", lastName = "Contact", dateOfBirth = LocalDate.now().minusYears(21))
-    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -70,6 +71,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -85,7 +87,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21))
-    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -112,6 +114,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     assertThat(auditEvents).hasSize(2)
     assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
     assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -127,7 +130,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21))
-    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -154,6 +157,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     assertThat(auditEvents).hasSize(2)
     assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
     assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -169,7 +173,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "jOhN", lastName = "sMiTh", dateOfBirth = LocalDate.now().minusYears(21))
-    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -196,6 +200,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     assertThat(auditEvents).hasSize(2)
     assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
     assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -222,6 +227,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(0)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
   }
 
   @Test
@@ -255,6 +261,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(6)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -283,6 +290,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(1)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -298,7 +306,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(prisonerId = prisoner.prisonerId, listOf(PrisonerContactDto(personId = visitor.visitorId, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21))))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(PrisonerContactDto(personId = visitor.visitorId, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21))))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -311,6 +319,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(0)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -325,7 +334,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -336,6 +345,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(0)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -350,7 +360,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.NOT_FOUND)
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -361,6 +371,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(0)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -379,6 +390,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Then
     responseSpec
       .expectStatus().isForbidden
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any())
   }
 
   private fun callSubmitVisitorRequest(
