@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
-import com.fasterxml.jackson.core.type.TypeReference
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -77,7 +76,7 @@ class SearchForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<BookerDto>>() {})
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerDto>::class.java).toList()
 
   fun callSearchForBooker(
     webTestClient: WebTestClient,
