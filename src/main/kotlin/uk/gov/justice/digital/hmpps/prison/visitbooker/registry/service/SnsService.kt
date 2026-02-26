@@ -1,12 +1,13 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.sns.model.PublishResponse
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_APPROVED_EVENT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_REJECTED_EVENT
@@ -22,6 +23,7 @@ import java.time.format.DateTimeFormatter
 class SnsService(
   private val hmppsQueueService: HmppsQueueService,
   private val telemetryClient: TelemetryClient,
+  @param:Qualifier("objectMapper")
   private val objectMapper: ObjectMapper,
   @param:Value("\${feature.events.sns.enabled:true}")
   private val snsEventsEnabled: Boolean,

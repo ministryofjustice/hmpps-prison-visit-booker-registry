@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -8,6 +9,8 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.web.reactive.function.client.WebClient
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedClientService
 import java.time.Duration
@@ -63,4 +66,7 @@ class WebClientConfiguration(
     registrationId = clientRegistrationId,
     timeout = apiTimeout,
   )
+
+  @Bean
+  fun objectMapper(): ObjectMapper = JsonMapper.builder().changeDefaultPropertyInclusion { it.withValueInclusion(JsonInclude.Include.NON_NULL) }.build()
 }
