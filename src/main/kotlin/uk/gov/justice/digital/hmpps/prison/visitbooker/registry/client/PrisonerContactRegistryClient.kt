@@ -51,7 +51,7 @@ class PrisonerContactRegistryClient(
     uriBuilder: UriBuilder,
   ): UriBuilder {
     uriBuilder.queryParam("hasDateOfBirth", false)
-    uriBuilder.queryParam("withAddress", false)
+    uriBuilder.queryParam("withRestrictions", false)
     return uriBuilder
   }
 }
