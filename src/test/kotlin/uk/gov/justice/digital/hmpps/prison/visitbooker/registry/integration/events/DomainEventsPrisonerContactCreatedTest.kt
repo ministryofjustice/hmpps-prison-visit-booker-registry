@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.DomainEventTypes
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
 @DisplayName("Test for Domain Event Prisoner Contact Created")
@@ -17,7 +18,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
   fun `when domain event 'prisoner contact created' is found, then it is processed - WIP`() {
     // Given
     val domainEvent = createDomainEventJson(
-      "contacts-api.prisoner-contact.created",
+      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
       createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = 12345L),
       "AA123456",
       "9876",
