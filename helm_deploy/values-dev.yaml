@@ -14,6 +14,7 @@ generic-service:
     VISIT-SCHEDULER_API_URL: https://visit-scheduler-dev.prison.service.justice.gov.uk
     PRISONER-CONTACT_REGISTRY_URL: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
     FEATURE_EVENTS_SNS_ENABLED: true
+    SQS_DOMAIN_EVENT_PROCESSING_ENABLED: true
 
   scheduledDowntime:
     enabled: true
@@ -23,3 +24,8 @@ generic-service:
 generic-prometheus-alerts:
   businessHoursOnly: true
   alertSeverity: visits-alerts-nonprod
+  sqsAlertsQueueNames:
+    - "book-a-prison-visit-dev-hmpps_prison_visits_create_contact_event_queue"
+    - "book-a-prison-visit-dev-hmpps_prison_visits_create_contact_event_dlq"
+  sqsAlertsOldestThreshold: 1
+  sqsAlertsTotalMessagesThreshold: 1

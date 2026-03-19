@@ -29,9 +29,19 @@ hmpps:
   sqs:
     enabled: true
     provider: localstack
+    queues:
+      prisonvisitscreatecontactevent:
+        queueName: ${random.uuid}
+        dlqName: ${random.uuid}
+        subscribeTopicId: domainevents
+        dlqMaxReceiveCount: 1
+        visibilityTimeout: 1
     topics:
       domainevents:
         arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
+
+domain-event-processing:
+  enabled: true
 
 hmpps.auth.url: http://localhost:8090/auth
 prisoner.search.url: http://localhost:8091
