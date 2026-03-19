@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.additionalinfo
 
-import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 
 data class PrisonerContactCreatedAdditionalInfo(
-  @field:NotBlank
+  @field:NotNull
   val prisonerContactId: Long,
 )

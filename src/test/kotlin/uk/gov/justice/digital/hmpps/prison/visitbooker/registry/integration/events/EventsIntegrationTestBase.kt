@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.events
 
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -76,7 +75,6 @@ abstract class EventsIntegrationTestBase {
   @MockitoSpyBean
   protected lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
 
-  @AfterEach
   @BeforeEach
   fun cleanQueue() {
     purgeQueue(domainEventsSqsClient, domainEventsQueueUrl)
@@ -88,16 +86,11 @@ abstract class EventsIntegrationTestBase {
     visitorRequestsRepositorySpy.deleteAll()
   }
 
-  @AfterEach
-  fun cleanUp() {
-    visitorRequestsRepositorySpy.deleteAll()
-  }
-
   fun purgeQueue(client: SqsAsyncClient, url: String) {
     client.purgeQueue(PurgeQueueRequest.builder().queueUrl(url).build()).get()
   }
 
-  fun createDomainEventPublishRequest(domainEvent: String): PublishRequest? = PublishRequest.builder()
+  fun createDomainEventPublishRequest(domainEvent: String): PublishRequest = PublishRequest.builder()
     .topicArn(topicArn)
     .message(domainEvent)
     .build()

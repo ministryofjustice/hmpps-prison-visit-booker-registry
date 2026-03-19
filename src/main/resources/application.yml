@@ -103,7 +103,7 @@ feature:
 
 hmpps:
   sqs:
-    enabled: ${hmpps.sqs.enabled}
+    enabled: ${hmpps.sqs.enabled:true}
     queueAdminRole: ROLE_VISIT_BOOKER_REGISTRY_QUEUE_ADMIN
 
 domain-event-processing:
