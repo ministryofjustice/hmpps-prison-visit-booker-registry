@@ -101,6 +101,14 @@ feature:
     sns:
       enabled: true
 
+hmpps:
+  sqs:
+    enabled: ${hmpps.sqs.enabled:true}
+    queueAdminRole: ROLE_VISIT_BOOKER_REGISTRY_QUEUE_ADMIN
+
+domain-event-processing:
+  enabled: ${SQS_DOMAIN_EVENT_PROCESSING_ENABLED}
+
 visitor-requests:
   request-limit: 6
 

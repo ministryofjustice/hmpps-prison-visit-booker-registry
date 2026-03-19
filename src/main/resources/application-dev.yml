@@ -19,3 +19,21 @@ visit-scheduler.api.url: https://visit-scheduler-dev.prison.service.justice.gov.
 #visit-scheduler.api.url:  http://localhost:8081
 prisoner-contact.registry.url: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
 
+hmpps:
+  sqs:
+    enabled: true
+    provider: localstack
+    queues:
+      prisonvisitscreatecontactevent:
+        queueName: sqs_hmpps_visits_create_contact_event_queue
+        dlqName: sqs_hmpps_visits_create_contact_event_dlq
+        subscribeTopicId: domainevents
+        dlqMaxReceiveCount: 1
+        visibilityTimeout: 1
+
+    topics:
+      domainevents:
+        arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
+
+domain-event-processing:
+  enabled: true
