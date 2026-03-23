@@ -60,4 +60,119 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.AUTO_APPROVED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
   }
+
+  @Test
+  fun `when domain event 'prisoner contact created' is found but no visitor requests exist, then it is skipped`() {
+    // Given
+    val prisonerId = "AA123456"
+    val contactId = "123456"
+    val relationshipId = 9876L
+    val contact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+
+    val domainEvent = createDomainEventJson(
+      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      prisonerId,
+      contactId,
+    )
+
+    prisonerContactRegistryMockServer.stubGetPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId, contact)
+
+    val publishRequest = createDomainEventPublishRequest(domainEvent)
+
+    // When
+    awsSnsClient.publish(publishRequest).get()
+
+    // Then
+    await untilAsserted { verify(domainEventListenerSpy, times(1)).processMessage(any()) }
+    await untilAsserted { verify(domainEventListenerServiceSpy, times(1)).handleMessage(any()) }
+    await untilAsserted { verify(prisonerContactCreatedEventHandlerSpy, times(1)).handle(any()) }
+    await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
+
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+  }
+
+  @Test
+  fun `when domain event 'prisoner contact created' is found but contact is not Social, then it is skipped`() {
+    // Given
+    val prisonerId = "AA123456"
+    val contactId = "123456"
+    val relationshipId = 9876L
+    val contact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "O")
+
+    val domainEvent = createDomainEventJson(
+      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      prisonerId,
+      contactId,
+    )
+
+    val booker = createBooker("oneSub", "testEmail@test.com")
+    val prisoner = createPrisoner(booker, prisonerId)
+
+    val visitorRequest = createVisitorRequest(
+      booker.reference,
+      prisoner.prisonerId,
+      AddVisitorToBookerPrisonerRequestDto("john", "smith", LocalDate.now().minusYears(21)),
+      status = VisitorRequestsStatus.REQUESTED,
+    )
+
+    prisonerContactRegistryMockServer.stubGetPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId, contact)
+
+    val publishRequest = createDomainEventPublishRequest(domainEvent)
+
+    // When
+    awsSnsClient.publish(publishRequest).get()
+
+    // Then
+    await untilAsserted { verify(domainEventListenerSpy, times(1)).processMessage(any()) }
+    await untilAsserted { verify(domainEventListenerServiceSpy, times(1)).handleMessage(any()) }
+    await untilAsserted { verify(prisonerContactCreatedEventHandlerSpy, times(1)).handle(any()) }
+    await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
+
+    assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+  }
+
+  @Test
+  fun `when domain event 'prisoner contact created' is found but no requests are in status REQUESTED, then it is skipped`() {
+    // Given
+    val prisonerId = "AA123456"
+    val contactId = "123456"
+    val relationshipId = 9876L
+    val contact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+
+    val domainEvent = createDomainEventJson(
+      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      prisonerId,
+      contactId,
+    )
+
+    val booker = createBooker("oneSub", "testEmail@test.com")
+    val prisoner = createPrisoner(booker, prisonerId)
+
+    val visitorRequest = createVisitorRequest(
+      booker.reference,
+      prisoner.prisonerId,
+      AddVisitorToBookerPrisonerRequestDto("john", "smith", LocalDate.now().minusYears(21)),
+      status = VisitorRequestsStatus.REJECTED,
+    )
+
+    prisonerContactRegistryMockServer.stubGetPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId, contact)
+
+    val publishRequest = createDomainEventPublishRequest(domainEvent)
+
+    // When
+    awsSnsClient.publish(publishRequest).get()
+
+    // Then
+    await untilAsserted { verify(domainEventListenerSpy, times(1)).processMessage(any()) }
+    await untilAsserted { verify(domainEventListenerServiceSpy, times(1)).handleMessage(any()) }
+    await untilAsserted { verify(prisonerContactCreatedEventHandlerSpy, times(1)).handle(any()) }
+    await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
+
+    assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REJECTED)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+  }
 }
