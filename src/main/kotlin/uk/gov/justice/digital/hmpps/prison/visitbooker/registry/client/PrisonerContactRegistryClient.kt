@@ -26,6 +26,8 @@ class PrisonerContactRegistryClient(
 
     const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
     const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social"
+
+    const val CONTACT_REGISTRY_CONTACT_VIA_RELATIONSHIP_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/{contactId}/relationships/{relationshipId}"
   }
 
   fun getPrisonersSocialContacts(prisonerId: String): List<PrisonerContactDto> {
@@ -47,10 +49,39 @@ class PrisonerContactRegistryClient(
       .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from social contacts endpoint with uri $uri") }
   }
 
+  fun getPrisonerContactViaRelationshipId(prisonerId: String, contactId: String, relationshipId: Long): PrisonerContactDto {
+    val uri = CONTACT_REGISTRY_CONTACT_VIA_RELATIONSHIP_PATH
+      .replace("{prisonerId}", prisonerId)
+      .replace("{contactId}", contactId)
+      .replace("{relationshipId}", relationshipId.toString())
+
+    return webClient.get()
+      .uri(uri) { getContactViaRelationshipIdUriBuilder(it).build() }
+      .retrieve()
+      .bodyToMono<PrisonerContactDto>()
+      .onErrorResume { e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getPrisonerContactViaRelationshipId Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getPrisonerContactViaRelationshipId NOT_FOUND for get request $uri")
+          Mono.error { PrisonerNotFoundException("getPrisonerContactViaRelationshipId contactId $contactId for prisonerId $prisonerId not found on prisoner-contact-registry") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from social contacts endpoint with uri $uri") }
+  }
+
   private fun getSocialContactsUriBuilder(
     uriBuilder: UriBuilder,
   ): UriBuilder {
     uriBuilder.queryParam("hasDateOfBirth", false)
+    uriBuilder.queryParam("withRestrictions", false)
+    return uriBuilder
+  }
+
+  private fun getContactViaRelationshipIdUriBuilder(
+    uriBuilder: UriBuilder,
+  ): UriBuilder {
     uriBuilder.queryParam("withRestrictions", false)
     return uriBuilder
   }

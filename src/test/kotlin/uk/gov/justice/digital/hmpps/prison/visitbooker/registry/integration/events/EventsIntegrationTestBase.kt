@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.events
 
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,9 +15,20 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerContactRegistryClient
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.IntegrationTestBase.Companion.PRISON_CODE
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.events.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonOffenderSearchMockServer
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonerContactRegistryMockServer
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.VisitSchedulerMockServer
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.DomainEventListenerService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener
@@ -32,12 +45,26 @@ import uk.gov.justice.hmpps.sqs.HmppsTopic
 @AutoConfigureWebTestClient
 abstract class EventsIntegrationTestBase {
   companion object {
+    internal val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer()
+
     private val localStackContainer = LocalStackContainer.instance
 
     @JvmStatic
     @DynamicPropertySource
     fun testcontainers(registry: DynamicPropertyRegistry) {
       localStackContainer?.also { setLocalStackProperties(it, registry) }
+    }
+
+    @BeforeAll
+    @JvmStatic
+    fun startMocks() {
+      prisonerContactRegistryMockServer.start()
+    }
+
+    @AfterAll
+    @JvmStatic
+    fun stopMocks() {
+      prisonerContactRegistryMockServer.stop()
     }
   }
 
@@ -75,6 +102,18 @@ abstract class EventsIntegrationTestBase {
   @MockitoSpyBean
   protected lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
 
+  @MockitoSpyBean
+  protected lateinit var bookerRepositorySpy: BookerRepository
+
+  @MockitoSpyBean
+  protected lateinit var permittedPrisonerRepository: VisitorRequestsRepository
+
+  @MockitoSpyBean
+  protected lateinit var permittedVisitorRepository: VisitorRequestsRepository
+
+  @MockitoSpyBean
+  protected lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
+
   @BeforeEach
   fun cleanQueue() {
     purgeQueue(domainEventsSqsClient, domainEventsQueueUrl)
@@ -83,7 +122,11 @@ abstract class EventsIntegrationTestBase {
 
   @BeforeEach
   fun setup() {
+    bookerRepositorySpy.deleteAll()
+    permittedPrisonerRepository.deleteAll()
+    permittedVisitorRepository.deleteAll()
     visitorRequestsRepositorySpy.deleteAll()
+    prisonerContactRegistryMockServer.resetAll()
   }
 
   fun purgeQueue(client: SqsAsyncClient, url: String) {
@@ -122,4 +165,21 @@ abstract class EventsIntegrationTestBase {
 
   fun createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId: Long): String = TestObjectMapper.mapper
     .writeValueAsString(PrisonerContactCreatedAdditionalInfo(prisonerContactId = prisonerContactId))
+
+  fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
+    val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
+    return entityHelper.saveBooker(booker)
+  }
+  fun createPrisoner(booker: Booker, prisonerId: String, prisonCode: String = PRISON_CODE): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, prisonCode = prisonCode))
+
+  fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus): VisitorRequest = entityHelper.createVisitorRequest(
+    VisitorRequest(
+      bookerReference = bookerReference,
+      prisonerId = prisonerId,
+      firstName = addVisitorToBookerPrisonerRequestDto.firstName,
+      lastName = addVisitorToBookerPrisonerRequestDto.lastName,
+      dateOfBirth = addVisitorToBookerPrisonerRequestDto.dateOfBirth,
+      status = status,
+    ),
+  )
 }

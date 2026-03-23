@@ -132,7 +132,7 @@ class VisitorRequestsController(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
-  ): List<BookerPrisonerVisitorRequestDto> = visitorRequestsService.getActiveVisitorRequests(bookerReference)
+  ): List<BookerPrisonerVisitorRequestDto> = visitorRequestsService.getActiveVisitorRequestsByBookerReference(bookerReference)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE)

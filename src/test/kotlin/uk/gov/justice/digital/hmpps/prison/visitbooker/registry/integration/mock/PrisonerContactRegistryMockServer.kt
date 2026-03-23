@@ -30,6 +30,30 @@ class PrisonerContactRegistryMockServer : WireMockServer(8093) {
     )
   }
 
+  fun stubGetPrisonerContactViaRelationshipId(
+    prisonerId: String,
+    contactId: String,
+    relationshipId: Long,
+    contact: PrisonerContactDto?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/v2/prisoners/$prisonerId/contacts/$contactId/relationships/$relationshipId?withRestrictions=false")
+        .willReturn(
+          if (contact == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(contact))
+          },
+        ),
+    )
+  }
+
   private fun getContactsQueryParams(): String {
     val queryParams = kotlin.collections.ArrayList<String>()
 
