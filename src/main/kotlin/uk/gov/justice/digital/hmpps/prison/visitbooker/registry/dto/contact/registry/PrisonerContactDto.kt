@@ -15,4 +15,6 @@ data class PrisonerContactDto(
   val dateOfBirth: LocalDate? = null,
   @param:Schema(description = "Approved Visitor Flag", required = true)
   val approvedVisitor: Boolean,
+  @param:Schema(description = "Type of Contact", example = "O", required = true)
+  val contactType: String,
 )

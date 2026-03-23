@@ -24,5 +24,6 @@ data class PersonIdentifier(val type: Identifier, val value: String)
 @Suppress("unused")
 enum class Identifier {
   NOMS,
+  NOMIS,
   DPS_CONTACT_ID,
 }
