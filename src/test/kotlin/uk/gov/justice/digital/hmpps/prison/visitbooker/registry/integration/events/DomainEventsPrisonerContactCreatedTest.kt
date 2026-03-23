@@ -57,7 +57,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
     await untilAsserted { verify(prisonerContactCreatedEventHandlerSpy, times(1)).handle(any()) }
     await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
 
-    assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.APPROVED)
+    assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.AUTO_APPROVED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
   }
 }

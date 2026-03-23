@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerC
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.APPROVED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.AUTO_APPROVED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
@@ -89,7 +90,7 @@ class VisitorRequestsStoreService(
   }
 
   @Transactional
-  fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, visitorId: Long, requestReference: String) {
+  fun approveAndLinkVisitor(bookerReference: String, prisonerId: String, visitorId: Long, requestReference: String, autoApproval: Boolean) {
     val booker = bookerRepository.findByReference(bookerReference)!!
 
     LOG.info("Enter VisitorRequestsApprovalStoreService approveAndLinkVisitor, booker reference - $bookerReference, prisonerId - $prisonerId, visitorId = $visitorId")
@@ -102,7 +103,14 @@ class VisitorRequestsStoreService(
         visitorId = visitorId,
       ),
     )
-    visitorRequestsRepository.approveVisitorRequest(requestReference, visitorId, LocalDateTime.now())
+
+    val approvalStatus = if (autoApproval) {
+      AUTO_APPROVED
+    } else {
+      APPROVED
+    }
+
+    visitorRequestsRepository.approveVisitorRequest(requestReference, visitorId, LocalDateTime.now(), approvalStatus)
   }
 
   @Transactional

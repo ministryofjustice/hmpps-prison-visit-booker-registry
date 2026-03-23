@@ -82,9 +82,9 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     assertThat(visitorRequest!!.status).isEqualTo(APPROVED)
     assertThat(visitorRequest.visitorId).isEqualTo(visitorIdToBeLinked)
 
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, ApproveVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(booker.reference, prisonerId, visitorIdToBeLinked, request.reference)
-    verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any(), any())
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(booker.reference, prisonerId, visitorIdToBeLinked, request.reference, false)
+    verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any(), any(), any())
 
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(1)).trackEvent(
@@ -127,9 +127,9 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any())
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any(), any())
   }
 
   @Test
@@ -143,9 +143,9 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(reference, ApproveVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any())
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(reference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any(), any())
   }
 
   @Test
@@ -170,9 +170,9 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       .jsonPath("$.developerMessage")
       .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked))
-    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any())
-    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any())
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any(), any())
+    verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any(), any())
   }
 
   @Test

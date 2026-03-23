@@ -22,9 +22,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.Inte
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.events.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonerContactRegistryMockServer
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.VisitSchedulerMockServer
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest

@@ -275,7 +275,7 @@ class VisitorRequestsController(
     requestReference: String,
     @RequestBody
     approveVisitorRequest: ApproveVisitorRequestDto,
-  ): PrisonVisitorRequestDto = visitorRequestsService.approveAndLinkVisitorRequest(requestReference, approveVisitorRequest)
+  ): PrisonVisitorRequestDto = visitorRequestsService.approveAndLinkVisitorRequest(requestReference, approveVisitorRequest, autoApproval = false)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(REJECT_VISITOR_REQUEST)

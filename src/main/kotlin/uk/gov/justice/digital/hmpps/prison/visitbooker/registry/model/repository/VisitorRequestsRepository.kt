@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import java.time.LocalDateTime
 
@@ -51,8 +52,8 @@ interface VisitorRequestsRepository : JpaRepository<VisitorRequest, Long> {
 
   @Transactional
   @Modifying
-  @Query("update VisitorRequest vr set vr.status = 'APPROVED', vr.visitorId = :visitorId, vr.modifyTimestamp = :modifyTimestamp where vr.reference = :reference")
-  fun approveVisitorRequest(reference: String, visitorId: Long, modifyTimestamp: LocalDateTime)
+  @Query("update VisitorRequest vr set vr.status = :status, vr.visitorId = :visitorId, vr.modifyTimestamp = :modifyTimestamp where vr.reference = :reference")
+  fun approveVisitorRequest(reference: String, visitorId: Long, modifyTimestamp: LocalDateTime, status: VisitorRequestsStatus)
 
   @Transactional
   @Modifying

@@ -76,7 +76,7 @@ class VisitorRequestsService(
     return PrisonVisitorRequestDto(request, booker.email)
   }
 
-  fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequest: ApproveVisitorRequestDto): PrisonVisitorRequestDto {
+  fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequest: ApproveVisitorRequestDto, autoApproval: Boolean): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - approveAndLinkVisitorRequest for request reference - $requestReference, linkVisitorRequest - $approveVisitorRequest")
 
     var visitorRequest = getVisitorRequestByReference(requestReference)
@@ -86,7 +86,7 @@ class VisitorRequestsService(
       REQUESTED -> {
         val booker = bookerDetailsService.getBookerByReference(bookerReference)
 
-        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
+        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval)
         // audit the event
         bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference)
         // send SNS event
