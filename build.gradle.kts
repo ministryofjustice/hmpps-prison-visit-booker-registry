@@ -56,7 +56,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.13.0")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.testcontainers:localstack:1.21.4")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
 }
 
 kotlin {
