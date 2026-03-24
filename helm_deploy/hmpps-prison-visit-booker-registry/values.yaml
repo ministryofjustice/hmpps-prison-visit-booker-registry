@@ -44,9 +44,15 @@ generic-service:
       SPRING_DATASOURCE_PASSWORD: "database_password"
       DATABASE_NAME: "database_name"
       DATABASE_ENDPOINT: "rds_instance_endpoint"
+
   allowlist:
     groups:
       - internal
+
+  retryDlqCronjob:
+    enabled: true
+    retryDlqSchedule: "*/15 * * * *" # Override to every 15 minutes for the DLQ retry. Allows for downstream API issues to resolve before retrying.
+
 
 generic-prometheus-alerts:
   targetApplication: hmpps-prison-visit-booker-registry
