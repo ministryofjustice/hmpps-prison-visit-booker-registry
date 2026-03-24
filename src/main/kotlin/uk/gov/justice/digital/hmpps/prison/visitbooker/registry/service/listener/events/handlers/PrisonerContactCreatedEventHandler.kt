@@ -38,6 +38,8 @@ class PrisonerContactCreatedEventHandler(
       return
     }
 
+    // TEST
+
     val requests = visitorRequestsService.getActiveVisitorRequestsByPrisonerId(prisonerId)
     if (requests.isEmpty()) {
       LOG.info("PrisonerContactCreatedEventHandler - No visitor requests found for prisoner $prisonerId")
