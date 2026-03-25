@@ -37,14 +37,10 @@ ADD --chown=appuser:appgroup https://truststore.pki.rds.amazonaws.com/global/glo
 
 WORKDIR /app
 
-COPY --chown=appuser:appgroup applicationinsights.json ./
-COPY --chown=appuser:appgroup applicationinsights.dev.json ./
-COPY --chown=appuser:appgroup applicationinsights-agent*.jar ./agent.jar
-
-COPY --from=builder --chown=appuser:appgroup /builder/extracted/dependencies/ ./
-COPY --from=builder --chown=appuser:appgroup /builder/extracted/spring-boot-loader/ ./
-COPY --from=builder --chown=appuser:appgroup /builder/extracted/snapshot-dependencies/ ./
-COPY --from=builder --chown=appuser:appgroup /builder/extracted/application/ ./
+COPY --from=builder --chown=appuser:appgroup /app/build/libs/hmpps-prison-visit-booker-registry*.jar /app/app.jar
+COPY --from=builder --chown=appuser:appgroup /app/build/libs/applicationinsights-agent*.jar /app/agent.jar
+COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.json /app
+COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.dev.json /app
 
 USER 2000
 
