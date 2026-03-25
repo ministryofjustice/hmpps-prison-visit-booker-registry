@@ -3,11 +3,14 @@ FROM --platform=$BUILDPLATFORM ${BASE_IMAGE} AS builder
 
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
+ENV GRADLE_USER_HOME=/tmp/.gradle
 
-WORKDIR /builder
+USER root
 
-COPY build/libs/hmpps-prison-visit-booker-registry*.jar app.jar
-RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
+WORKDIR /app
+COPY . .
+RUN chmod +x ./gradlew && \
+    ./gradlew --no-daemon assemble
 
 FROM ${BASE_IMAGE}
 
@@ -24,7 +27,12 @@ RUN apt-get update && \
 ENV TZ=Europe/London
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 
-RUN mkdir -p /home/appuser/.postgresql
+RUN addgroup --gid 2000 --system appgroup && \
+    adduser --uid 2000 --system appuser --gid 2000 || true
+
+RUN mkdir -p /home/appuser/.postgresql && \
+    chown -R 2000:2000 /home/appuser
+
 ADD --chown=appuser:appgroup https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appuser/.postgresql/root.crt
 
 WORKDIR /app
@@ -40,4 +48,4 @@ COPY --from=builder --chown=appuser:appgroup /builder/extracted/application/ ./
 
 USER 2000
 
-ENTRYPOINT ["java", "-XX:+ExitOnOutOfMemoryError", "-XX:+AlwaysActAsServerClassMachine", "-javaagent:agent.jar", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:+AlwaysActAsServerClassMachine", "-javaagent:/app/agent.jar", "-jar", "/app/app.jar"]
