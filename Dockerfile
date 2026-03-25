@@ -12,6 +12,8 @@ FROM ${BASE_IMAGE}
 
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
+USER root
+
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
 
