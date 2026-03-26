@@ -54,7 +54,6 @@ class VisitorRequest(
 ) {
   @Column
   var reference: String = ""
-    private set
 
   @PostPersist
   fun createReference() {
