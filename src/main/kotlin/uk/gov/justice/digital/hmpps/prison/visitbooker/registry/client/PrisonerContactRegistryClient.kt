@@ -68,7 +68,7 @@ class PrisonerContactRegistryClient(
           Mono.empty()
         }
       }
-      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from social contacts endpoint with uri $uri") }
+      .blockOptional(apiTimeout).orElse(null)
   }
 
   private fun getSocialContactsUriBuilder(
