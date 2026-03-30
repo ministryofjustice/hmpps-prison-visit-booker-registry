@@ -13,7 +13,7 @@ generic-service:
     VISIT-SCHEDULER_API_URL: https://visit-scheduler.prison.service.justice.gov.uk
     PRISONER-CONTACT_REGISTRY_URL: https://prisoner-contact-registry.prison.service.justice.gov.uk
     FEATURE_EVENTS_SNS_ENABLED: true
-    SQS_DOMAIN_EVENT_PROCESSING_ENABLED: true
+    SQS_DOMAIN_EVENT_PROCESSING_ENABLED: false
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
