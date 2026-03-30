@@ -49,7 +49,7 @@ class PrisonerContactRegistryClient(
       .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from social contacts endpoint with uri $uri") }
   }
 
-  fun getPrisonerContactViaRelationshipId(prisonerId: String, contactId: String, relationshipId: Long): PrisonerContactDto {
+  fun getPrisonerContactViaRelationshipId(prisonerId: String, contactId: String, relationshipId: Long): PrisonerContactDto? {
     val uri = CONTACT_REGISTRY_CONTACT_VIA_RELATIONSHIP_PATH
       .replace("{prisonerId}", prisonerId)
       .replace("{contactId}", contactId)
@@ -65,7 +65,7 @@ class PrisonerContactRegistryClient(
           Mono.error(e)
         } else {
           LOG.error("getPrisonerContactViaRelationshipId NOT_FOUND for get request $uri")
-          Mono.error { PrisonerNotFoundException("getPrisonerContactViaRelationshipId contactId $contactId for prisonerId $prisonerId not found on prisoner-contact-registry") }
+          Mono.empty()
         }
       }
       .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from social contacts endpoint with uri $uri") }

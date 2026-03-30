@@ -45,6 +45,11 @@ class PrisonerContactCreatedEventHandler(
     }
 
     val contactDetails = prisonerContactRegistryClient.getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+    if (contactDetails == null) {
+      LOG.info("Couldn't find relationship for $prisonerId, contactId: $contactId, relationshipId (prisonerContactId): $relationshipId")
+      return
+    }
+
     if (contactDetails.contactType != "S") {
       LOG.info("Skipping processing of event as contact is not a social contact, prisonerId: $prisonerId, contactId: $contactId, relationshipId: $relationshipId, contactType: ${contactDetails.contactType}")
       return
