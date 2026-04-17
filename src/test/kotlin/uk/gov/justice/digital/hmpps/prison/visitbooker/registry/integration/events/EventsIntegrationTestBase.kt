@@ -161,7 +161,7 @@ abstract class EventsIntegrationTestBase {
   }
     """.trimIndent().replace("\n", "").replace("  ", "")
 
-  fun createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId: Long): String = TestObjectMapper.mapper
+  fun createPrisonerContactCreatedUpdatedEventAdditionalInformationJson(prisonerContactId: Long): String = TestObjectMapper.mapper
     .writeValueAsString(PrisonerContactCreatedAdditionalInfo(prisonerContactId = prisonerContactId))
 
   fun createBooker(oneLoginSub: String, emailAddress: String): Booker {

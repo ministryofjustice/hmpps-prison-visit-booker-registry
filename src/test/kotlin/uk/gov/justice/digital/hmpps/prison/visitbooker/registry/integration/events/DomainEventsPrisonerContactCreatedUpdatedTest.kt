@@ -40,7 +40,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
     val domainEvent = createDomainEventJson(
       event,
-      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      createPrisonerContactCreatedUpdatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
     )
@@ -83,7 +83,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
     val domainEvent = createDomainEventJson(
       event,
-      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      createPrisonerContactCreatedUpdatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
     )
@@ -115,7 +115,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
     val domainEvent = createDomainEventJson(
       event,
-      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      createPrisonerContactCreatedUpdatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
     )
@@ -158,7 +158,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
     val domainEvent = createDomainEventJson(
       event,
-      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      createPrisonerContactCreatedUpdatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
     )
@@ -200,7 +200,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
     val domainEvent = createDomainEventJson(
       event,
-      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      createPrisonerContactCreatedUpdatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
     )
