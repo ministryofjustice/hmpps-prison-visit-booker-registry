@@ -39,10 +39,6 @@ generic-service:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
-    sqs-prison-visits-create-contact-event-secret:
-      HMPPS_SQS_QUEUES_PRISONVISITSCREATECONTACTEVENT_QUEUE_NAME: "sqs_queue_name"
-    sqs-prison-visits-create-contact-event-dlq-secret:
-      HMPPS_SQS_QUEUES_PRISONVISITSCREATECONTACTEVENT_DLQ_NAME: "sqs_queue_name"
     sqs-prison-visits-booker-events-secret:
       HMPPS_SQS_QUEUES_PRISONVISITSBOOKEREVENTS_QUEUE_NAME: "sqs_queue_name"
     sqs-prison-visits-booker-events-dlq-secret:

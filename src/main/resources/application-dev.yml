@@ -24,13 +24,6 @@ hmpps:
     enabled: true
     provider: localstack
     queues:
-      prisonvisitscreatecontactevent:
-        queueName: sqs_hmpps_visits_create_contact_event_queue
-        dlqName: sqs_hmpps_visits_create_contact_event_dlq
-        subscribeTopicId: domainevents
-        dlqMaxReceiveCount: 1
-        visibilityTimeout: 1
-
       prisonvisitsbookerevents:
         queueName: sqs_hmpps_visits_booker_events_queue
         dlqName: sqs_hmpps_visits_booker_events_dlq
