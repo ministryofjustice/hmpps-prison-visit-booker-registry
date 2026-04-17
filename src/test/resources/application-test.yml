@@ -30,13 +30,6 @@ hmpps:
     enabled: true
     provider: localstack
     queues:
-      prisonvisitscreatecontactevent:
-        queueName: ${random.uuid}
-        dlqName: ${random.uuid}
-        subscribeTopicId: domainevents
-        dlqMaxReceiveCount: 1
-        visibilityTimeout: 1
-
       prisonvisitsbookerevents:
         queueName: ${random.uuid}
         dlqName: ${random.uuid}
