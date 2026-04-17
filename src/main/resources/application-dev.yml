@@ -31,6 +31,13 @@ hmpps:
         dlqMaxReceiveCount: 1
         visibilityTimeout: 1
 
+      prisonvisitsbookerevents:
+        queueName: sqs_hmpps_visits_booker_events_queue
+        dlqName: sqs_hmpps_visits_booker_events_dlq
+        subscribeTopicId: domainevents
+        dlqMaxReceiveCount: 1
+        visibilityTimeout: 1
+
     topics:
       domainevents:
         arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
