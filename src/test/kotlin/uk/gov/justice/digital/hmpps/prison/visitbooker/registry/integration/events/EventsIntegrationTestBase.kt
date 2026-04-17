@@ -32,7 +32,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.DomainEv
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener.Companion.PRISON_VISITS_CREATE_CONTACT_EVENT_QUEUE_CONFIG_KEY
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.additionalinfo.PrisonerContactCreatedAdditionalInfo
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.PrisonerContactCreatedEventHandler
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.PrisonerContactCreatedUpdatedEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
@@ -95,7 +95,7 @@ abstract class EventsIntegrationTestBase {
   protected lateinit var domainEventListenerServiceSpy: DomainEventListenerService
 
   @MockitoSpyBean
-  protected lateinit var prisonerContactCreatedEventHandlerSpy: PrisonerContactCreatedEventHandler
+  protected lateinit var prisonerContactCreatedUpdatedEventHandlerSpy: PrisonerContactCreatedUpdatedEventHandler
 
   @MockitoSpyBean
   protected lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
