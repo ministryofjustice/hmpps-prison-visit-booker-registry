@@ -74,7 +74,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
   @ParameterizedTest(name = "when domain event ''{0}'' is found but no visitor requests exist, then it is skipped")
   @MethodSource("events")
-  fun `when domain event is found but no visitor requests exist, then it is skipped`() {
+  fun `when domain event is found but no visitor requests exist, then it is skipped`(event: String) {
     // Given
     val prisonerId = "AA123456"
     val contactId = "123456"
@@ -82,7 +82,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
     val contact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
 
     val domainEvent = createDomainEventJson(
-      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      event,
       createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
@@ -106,7 +106,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
   @ParameterizedTest(name = "when domain event ''{0}'' is found but contact is not Social, then it is skipped")
   @MethodSource("events")
-  fun `when domain event is found but contact is not Social, then it is skipped`() {
+  fun `when domain event is found but contact is not Social, then it is skipped`(event: String) {
     // Given
     val prisonerId = "AA123456"
     val contactId = "123456"
@@ -114,7 +114,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
     val contact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "O")
 
     val domainEvent = createDomainEventJson(
-      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      event,
       createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
@@ -149,7 +149,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
   @ParameterizedTest(name = "when domain event ''{0}'' is found but no requests are in status REQUESTED, then it is skipped")
   @MethodSource("events")
-  fun `when domain event is found but no requests are in status REQUESTED, then it is skipped`() {
+  fun `when domain event is found but no requests are in status REQUESTED, then it is skipped`(event: String) {
     // Given
     val prisonerId = "AA123456"
     val contactId = "123456"
@@ -157,7 +157,7 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
     val contact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
 
     val domainEvent = createDomainEventJson(
-      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      event,
       createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
@@ -192,14 +192,14 @@ class DomainEventsPrisonerContactCreatedUpdatedTest : EventsIntegrationTestBase(
 
   @ParameterizedTest(name = "when domain event ''{0}'' is found but relationship is not found on prisoner-contact-registry, then it is skipped")
   @MethodSource("events")
-  fun `when domain event is found but relationship is not found on prisoner-contact-registry, then it is skipped`() {
+  fun `when domain event is found but relationship is not found on prisoner-contact-registry, then it is skipped`(event: String) {
     // Given
     val prisonerId = "AA123456"
     val contactId = "123456"
     val relationshipId = 9876L
 
     val domainEvent = createDomainEventJson(
-      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      event,
       createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
       prisonerId,
       contactId,
