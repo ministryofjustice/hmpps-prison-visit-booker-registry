@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.additionalinfo.PrisonerContactCreatedAdditionalInfo
 
 @Service
-class PrisonerContactCreatedUpdatedEventHandler(
+class PrisonerContactCreatedEventHandler(
   @param:Qualifier("objectMapper")
   private val objectMapper: ObjectMapper,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
@@ -31,16 +31,16 @@ class PrisonerContactCreatedUpdatedEventHandler(
     val contactId = domainEvent.personReference.identifiers.firstOrNull { it.type == Identifier.DPS_CONTACT_ID }?.value
     val relationshipId = objectMapper.readValue(domainEvent.additionalInformation, PrisonerContactCreatedAdditionalInfo::class.java).prisonerContactId
 
-    LOG.info("PrisonerContactCreatedUpdatedEventHandler called for event ${domainEvent.eventType}, prisoner $prisonerId, contact $contactId and relationship (prisonerContactId) $relationshipId")
+    LOG.info("PrisonerContactCreatedEventHandler called for event ${domainEvent.eventType}, prisoner $prisonerId, contact $contactId and relationship (prisonerContactId) $relationshipId")
 
     if (prisonerId == null || contactId == null) {
-      LOG.error("PrisonerContactCreatedUpdatedEventHandler called for event ${domainEvent.eventType} with no prisonerId ($prisonerId) or contactId ($contactId), skipping processing of event")
+      LOG.error("PrisonerContactCreatedEventHandler called for event ${domainEvent.eventType} with no prisonerId ($prisonerId) or contactId ($contactId), skipping processing of event")
       return
     }
 
     val requests = visitorRequestsService.getActiveVisitorRequestsByPrisonerId(prisonerId)
     if (requests.isEmpty()) {
-      LOG.info("PrisonerContactCreatedUpdatedEventHandler - No visitor requests found for prisoner $prisonerId")
+      LOG.info("PrisonerContactCreatedEventHandler - No visitor requests found for prisoner $prisonerId")
       return
     }
 
