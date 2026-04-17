@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.DomainEventListenerService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener.Companion.PRISON_VISITS_CREATE_CONTACT_EVENT_QUEUE_CONFIG_KEY
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener.Companion.PRISON_VISITS_BOOKER_EVENTS_QUEUE_CONFIG_KEY
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.additionalinfo.PrisonerContactCreatedAdditionalInfo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.PrisonerContactCreatedUpdatedEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueue
@@ -74,16 +74,16 @@ abstract class EventsIntegrationTestBase {
 
   internal val topic by lazy { hmppsQueueService.findByTopicId("domainevents") as HmppsTopic }
 
-  internal val prisonVisitsCreateContactEventQueue by lazy {
+  internal val prisonVisitsBookerEventsQueue by lazy {
     hmppsQueueService.findByQueueId(
-      PRISON_VISITS_CREATE_CONTACT_EVENT_QUEUE_CONFIG_KEY,
+      PRISON_VISITS_BOOKER_EVENTS_QUEUE_CONFIG_KEY,
     ) as HmppsQueue
   }
 
-  internal val domainEventsSqsClient by lazy { prisonVisitsCreateContactEventQueue.sqsClient }
-  internal val domainEventsSqsDlqClient by lazy { prisonVisitsCreateContactEventQueue.sqsDlqClient }
-  internal val domainEventsQueueUrl by lazy { prisonVisitsCreateContactEventQueue.queueUrl }
-  internal val domainEventsDlqUrl by lazy { prisonVisitsCreateContactEventQueue.dlqUrl }
+  internal val domainEventsSqsClient by lazy { prisonVisitsBookerEventsQueue.sqsClient }
+  internal val domainEventsSqsDlqClient by lazy { prisonVisitsBookerEventsQueue.sqsDlqClient }
+  internal val domainEventsQueueUrl by lazy { prisonVisitsBookerEventsQueue.queueUrl }
+  internal val domainEventsDlqUrl by lazy { prisonVisitsBookerEventsQueue.dlqUrl }
 
   internal val awsSnsClient by lazy { topic.snsClient }
   internal val topicArn by lazy { topic.arn }

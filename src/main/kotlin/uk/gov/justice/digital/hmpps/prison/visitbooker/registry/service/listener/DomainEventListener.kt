@@ -19,11 +19,11 @@ class DomainEventListener(
   @param:Value("\${domain-event-processing.enabled}") val domainEventProcessingEnabled: Boolean,
 ) {
   companion object {
-    const val PRISON_VISITS_CREATE_CONTACT_EVENT_QUEUE_CONFIG_KEY = "prisonvisitscreatecontactevent"
+    const val PRISON_VISITS_BOOKER_EVENTS_QUEUE_CONFIG_KEY = "prisonvisitsbookerevents"
     private val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SqsListener(PRISON_VISITS_CREATE_CONTACT_EVENT_QUEUE_CONFIG_KEY, factory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener(PRISON_VISITS_BOOKER_EVENTS_QUEUE_CONFIG_KEY, factory = "hmppsQueueContainerFactoryProxy")
   fun processMessage(sqsMessage: SQSMessage) {
     if (!domainEventProcessingEnabled) {
       LOG.debug("Domain event processing is disabled")
