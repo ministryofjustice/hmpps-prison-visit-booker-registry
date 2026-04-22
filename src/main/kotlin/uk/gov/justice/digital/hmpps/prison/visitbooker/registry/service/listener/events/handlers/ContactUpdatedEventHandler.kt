@@ -20,6 +20,7 @@ class ContactUpdatedEventHandler(
   }
 
   override fun handle(domainEvent: DomainEvent) {
+    LOG.warn("Not yet implemented")
   }
 
   override val eventType: DomainEventTypes = CONTACT_UPDATED_EVENT

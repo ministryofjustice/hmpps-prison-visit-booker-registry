@@ -20,11 +20,11 @@ class DomainEventListenerService(
     val handler = handlersByType[domainEvent.eventType]
 
     if (handler == null) {
-      LOG.warn("Received unknown domain event type: {}", domainEvent.eventType)
+      LOG.warn("Received unknown domain event: {}", domainEvent)
       return
     }
 
-    LOG.info("Received domain event type: {}", domainEvent.eventType)
+    LOG.info("Received domain event: {}", domainEvent)
     handler.handle(domainEvent)
   }
 }
