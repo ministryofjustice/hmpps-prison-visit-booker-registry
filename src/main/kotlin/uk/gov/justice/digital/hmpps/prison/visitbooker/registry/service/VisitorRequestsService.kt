@@ -86,9 +86,9 @@ class VisitorRequestsService(
       REQUESTED -> {
         val booker = bookerDetailsService.getBookerByReference(bookerReference)
 
-        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval)
+        visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval = autoApproval)
         // audit the event
-        bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval)
+        bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval = autoApproval)
         // send SNS event
         snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId.toString())
         LOG.info("Visitor request with reference $requestReference approved successfully")
