@@ -13,6 +13,7 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.DomainEventTypes
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
@@ -26,7 +27,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
     val prisonerId = "AA123456"
     val contactId = "123456"
     val relationshipId = 9876L
-    val contact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+    val contact = PrisonerContactDto(personId = contactId.toLong(), firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
 
     val domainEvent = createDomainEventJson(
       DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
@@ -60,6 +61,17 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.AUTO_APPROVED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER.telemetryEventName,
+      mapOf(
+        "requestReference" to visitorRequest.reference,
+        "bookerReference" to booker.reference,
+        "prisonerId" to prisoner.prisonerId,
+        "visitorId" to contactId,
+      ),
+      null,
+    )
   }
 
   @Test
@@ -91,6 +103,8 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
     await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
 
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
 
   @Test
@@ -133,6 +147,8 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
 
   @Test
@@ -175,6 +191,8 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REJECTED)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
 
   @Test
@@ -216,5 +234,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
 }

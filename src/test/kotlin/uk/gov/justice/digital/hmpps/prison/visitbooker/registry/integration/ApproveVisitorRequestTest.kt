@@ -111,7 +111,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_APPROVED_FOR_PRISONER, "Visitor ID - $visitorIdToBeLinked approved for prisoner - $prisonerId, request reference - $requestReference")
+    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_APPROVED_FOR_PRISONER, "Visitor ID - $visitorIdToBeLinked approved (autoApproved = false) for prisoner - $prisonerId, request reference - $requestReference")
   }
 
   @Test

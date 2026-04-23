@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.events
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -120,6 +121,9 @@ abstract class EventsIntegrationTestBase {
 
   @MockitoSpyBean
   protected lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
+
+  @MockitoSpyBean
+  protected lateinit var telemetryClientSpy: TelemetryClient
 
   @BeforeEach
   fun cleanQueue() {
