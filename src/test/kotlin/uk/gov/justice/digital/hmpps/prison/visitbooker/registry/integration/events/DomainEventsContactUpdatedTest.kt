@@ -152,7 +152,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
   }
 
   @Test
-  fun `when domain event 'contact updated' is found but not found exception on contact-registry returned, then NOT_FOUND is returned`() {
+  fun `when domain event 'contact updated' is found but contact-registry returns not found, then message is sent to DLQ`() {
     // Given
     val contactId = "123456"
     val prisonerId = "AA123456"

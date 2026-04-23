@@ -34,7 +34,7 @@ class ContactUpdatedEventHandler(
 
     val linkedPrisoners = prisonerContactRegistryClient.getContactLinkedSocialPrisoners(contactId)
     if (linkedPrisoners.isEmpty()) {
-      LOG.info("ContactUpdatedEventHandler - No social connected prisoners found for contactId: {}", contactId)
+      LOG.info("ContactUpdatedEventHandler - No socially connected prisoners found for contactId: {}", contactId)
       return
     }
 
