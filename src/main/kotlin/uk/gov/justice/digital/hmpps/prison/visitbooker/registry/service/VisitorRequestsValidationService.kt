@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.ContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestValidationException
@@ -38,15 +39,50 @@ class VisitorRequestsValidationService(
     LOG.info("Successfully validated visitor request - For booker ${booker.reference}, prisoner $prisonerId")
   }
 
-  fun matchContactNameAndDob(contact: PrisonerContactDto, firstName: String, lastName: String, dateOfBirth: LocalDate): Boolean {
-    val contactFirst = stringInputUtils.sanitiseText(contact.firstName)
-    val contactLast = stringInputUtils.sanitiseText(contact.lastName)
+  fun matchContactNameAndDob(
+    contact: PrisonerContactDto,
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate,
+  ): Boolean = matchNameAndDob(
+    contact.firstName,
+    contact.lastName,
+    contact.dateOfBirth,
+    firstName,
+    lastName,
+    dateOfBirth,
+  )
+
+  fun matchContactNameAndDob(
+    contact: ContactDto,
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate,
+  ): Boolean = matchNameAndDob(
+    contact.firstName,
+    contact.lastName,
+    contact.dateOfBirth,
+    firstName,
+    lastName,
+    dateOfBirth,
+  )
+
+  private fun matchNameAndDob(
+    contactFirstName: String,
+    contactLastName: String,
+    contactDateOfBirth: LocalDate? = null,
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate,
+  ): Boolean {
+    val contactFirst = stringInputUtils.sanitiseText(contactFirstName)
+    val contactLast = stringInputUtils.sanitiseText(contactLastName)
     val inputFirst = stringInputUtils.sanitiseText(firstName)
     val inputLast = stringInputUtils.sanitiseText(lastName)
 
     return contactFirst.equals(inputFirst, ignoreCase = true) &&
       contactLast.equals(inputLast, ignoreCase = true) &&
-      contact.dateOfBirth == dateOfBirth
+      contactDateOfBirth == dateOfBirth
   }
 
   private fun validateBookerPrisonerRelationship(booker: Booker, prisonerId: String) {

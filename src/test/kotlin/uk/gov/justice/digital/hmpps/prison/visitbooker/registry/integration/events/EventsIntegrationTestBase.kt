@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.events
 
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -38,6 +41,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
+import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -135,6 +139,12 @@ abstract class EventsIntegrationTestBase {
   fun purgeQueue(client: SqsAsyncClient, url: String) {
     client.purgeQueue(PurgeQueueRequest.builder().queueUrl(url).build()).get()
   }
+
+  fun awaitVisitsDlqHasOneMessage() {
+    await untilCallTo { getNumberOfMessagesCurrentlyOnVisitsDlq() } matches { it == 1 }
+  }
+
+  fun getNumberOfMessagesCurrentlyOnVisitsDlq(): Int = domainEventsSqsDlqClient!!.countAllMessagesOnQueue(domainEventsDlqUrl!!).get()
 
   fun createDomainEventPublishRequest(domainEvent: String): PublishRequest = PublishRequest.builder()
     .topicArn(topicArn)

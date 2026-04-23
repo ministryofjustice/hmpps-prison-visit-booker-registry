@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerVisitorAlreadyExistsException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.ContactNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.CreateBookerException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerValidationException
@@ -143,6 +144,20 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
         ErrorResponse(
           status = NOT_FOUND,
           userMessage = "Permitted prisoner not found for booker",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(ContactNotFoundException::class)
+  fun handleContactNotFoundException(e: ContactNotFoundException): ResponseEntity<ErrorResponse>? {
+    LOG.debug("Contact not found exception caught: {}", e.message)
+    return ResponseEntity
+      .status(NOT_FOUND)
+      .body(
+        ErrorResponse(
+          status = NOT_FOUND,
+          userMessage = "Contact not found",
           developerMessage = e.message,
         ),
       )
