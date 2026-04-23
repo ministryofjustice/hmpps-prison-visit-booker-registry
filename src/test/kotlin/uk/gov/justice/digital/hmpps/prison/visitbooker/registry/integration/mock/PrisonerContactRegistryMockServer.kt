@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.moc
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.ContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.ContactLinkedSocialPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.MockUtils.Companion.getJsonString
@@ -49,6 +51,50 @@ class PrisonerContactRegistryMockServer : WireMockServer(8093) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(contact))
+          },
+        ),
+    )
+  }
+
+  fun stubGetContact(
+    contactId: String,
+    contact: ContactDto? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/v2/contacts/$contactId")
+        .willReturn(
+          if (contact == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(contact))
+          },
+        ),
+    )
+  }
+
+  fun stubGetContactLinkedSocialPrisoners(
+    contactId: String,
+    linkedSocialPrisoners: List<ContactLinkedSocialPrisonerDto>? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/v2/contacts/$contactId/linked-social-prisoners")
+        .willReturn(
+          if (linkedSocialPrisoners == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(linkedSocialPrisoners))
           },
         ),
     )

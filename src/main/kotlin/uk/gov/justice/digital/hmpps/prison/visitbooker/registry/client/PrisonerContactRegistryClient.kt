@@ -9,7 +9,10 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.ContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.ContactLinkedSocialPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.ContactNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.ClientUtils.Companion.isNotFoundError
 import java.time.Duration
@@ -24,14 +27,20 @@ class PrisonerContactRegistryClient(
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
 
-    const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
-    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social"
+    // Prisoner Contact Endpoints
+    const val CONTACT_REGISTRY_PRISONER_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
+    const val CONTACT_REGISTRY_PRISONER_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_PRISONER_CONTACTS_PATH/social"
 
-    const val CONTACT_REGISTRY_CONTACT_VIA_RELATIONSHIP_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/{contactId}/relationships/{relationshipId}"
+    const val CONTACT_REGISTRY_CONTACT_VIA_RELATIONSHIP_PATH: String = "$CONTACT_REGISTRY_PRISONER_CONTACTS_PATH/{contactId}/relationships/{relationshipId}"
+
+    // Contact endpoints (No prisoner relationship)
+    const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/contacts"
+    const val CONTACT_REGISTRY_GET_SINGLE_CONTACT_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/{contactId}"
+    const val CONTACT_REGISTRY_GET_CONTACT_LINKED_SOCIAL_PRISONERS_PATH: String = "$CONTACT_REGISTRY_GET_SINGLE_CONTACT_PATH/linked-social-prisoners"
   }
 
   fun getPrisonersSocialContacts(prisonerId: String): List<PrisonerContactDto> {
-    val uri = CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
+    val uri = CONTACT_REGISTRY_PRISONER_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
 
     return webClient.get()
       .uri(uri) { getSocialContactsUriBuilder(it).build() }
@@ -47,6 +56,44 @@ class PrisonerContactRegistryClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from social contacts endpoint with uri $uri") }
+  }
+
+  fun getContact(contactId: String): ContactDto {
+    val uri = CONTACT_REGISTRY_GET_SINGLE_CONTACT_PATH.replace("{contactId}", contactId)
+
+    return webClient.get()
+      .uri(uri)
+      .retrieve()
+      .bodyToMono<ContactDto>()
+      .onErrorResume { e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getContact Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getContact NOT_FOUND for get request $uri")
+          Mono.error { ContactNotFoundException("Contact $contactId - not found on prisoner-contact-registry") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from get contact endpoint with uri $uri") }
+  }
+
+  fun getContactLinkedSocialPrisoners(contactId: String): List<ContactLinkedSocialPrisonerDto> {
+    val uri = CONTACT_REGISTRY_GET_CONTACT_LINKED_SOCIAL_PRISONERS_PATH.replace("{contactId}", contactId)
+
+    return webClient.get()
+      .uri(uri)
+      .retrieve()
+      .bodyToMono<List<ContactLinkedSocialPrisonerDto>>()
+      .onErrorResume { e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getContactLinkedSocialPrisoners Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getContactLinkedSocialPrisoners NOT_FOUND for get request $uri")
+          Mono.error { ContactNotFoundException("Contact $contactId - not found on prisoner-contact-registry") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("no response from get contact linked social prisoners endpoint with uri $uri") }
   }
 
   fun getPrisonerContactViaRelationshipId(prisonerId: String, contactId: String, relationshipId: Long): PrisonerContactDto? {
