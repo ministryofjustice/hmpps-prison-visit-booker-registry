@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.DomainEventTypes
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsValidationService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.DomainEvent
@@ -62,4 +64,6 @@ class PrisonerContactCreatedEventHandler(
       }
     }
   }
+
+  override val eventType: DomainEventTypes = PRISONER_CONTACT_CREATED_EVENT
 }

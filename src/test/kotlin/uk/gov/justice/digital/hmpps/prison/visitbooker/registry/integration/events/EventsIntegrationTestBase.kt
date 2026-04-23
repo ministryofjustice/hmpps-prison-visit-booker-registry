@@ -31,7 +31,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.DomainEventListenerService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener.Companion.PRISON_VISITS_BOOKER_EVENTS_QUEUE_CONFIG_KEY
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.additionalinfo.ContactUpdatedAdditionalInfo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.additionalinfo.PrisonerContactCreatedAdditionalInfo
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.ContactUpdatedEventHandler
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.PrisonerContactCreatedEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -98,6 +100,9 @@ abstract class EventsIntegrationTestBase {
   protected lateinit var prisonerContactCreatedEventHandlerSpy: PrisonerContactCreatedEventHandler
 
   @MockitoSpyBean
+  protected lateinit var contactUpdatedEventHandlerSpy: ContactUpdatedEventHandler
+
+  @MockitoSpyBean
   protected lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
 
   @MockitoSpyBean
@@ -139,30 +144,30 @@ abstract class EventsIntegrationTestBase {
   fun createDomainEventJson(
     eventType: String,
     additionalInformation: String,
-    nomsId: String,
-    contactId: String,
-  ): String =
-    """
-  {
-    "eventType":"$eventType",
-    "additionalInformation":$additionalInformation,
-    "personReference":{
-      "identifiers":[
-        {
-          "type":"NOMS",
-          "value":"$nomsId"
-        },
-        {
-          "type":"DPS_CONTACT_ID",
-          "value":"$contactId"
-        }
-      ]
-    }
+    nomsId: String? = null,
+    contactId: String? = null,
+  ): String {
+    val identifiers = listOfNotNull(
+      nomsId?.let { mapOf("type" to "NOMS", "value" to it) },
+      contactId?.let { mapOf("type" to "DPS_CONTACT_ID", "value" to it) },
+    )
+
+    val payload = mapOf(
+      "eventType" to eventType,
+      "additionalInformation" to TestObjectMapper.mapper.readTree(additionalInformation),
+      "personReference" to mapOf(
+        "identifiers" to identifiers,
+      ),
+    )
+
+    return TestObjectMapper.mapper.writeValueAsString(payload)
   }
-    """.trimIndent().replace("\n", "").replace("  ", "")
 
   fun createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId: Long): String = TestObjectMapper.mapper
     .writeValueAsString(PrisonerContactCreatedAdditionalInfo(prisonerContactId = prisonerContactId))
+
+  fun createContactUpdatedEventAdditionalInformationJson(contactId: Long): String = TestObjectMapper.mapper
+    .writeValueAsString(ContactUpdatedAdditionalInfo(contactId = contactId))
 
   fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
     val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
