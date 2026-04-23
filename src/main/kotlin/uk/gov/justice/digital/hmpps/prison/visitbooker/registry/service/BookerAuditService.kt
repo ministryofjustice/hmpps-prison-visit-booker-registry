@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_APPROVED_FOR_PRISONER
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_REJECTED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
@@ -123,9 +124,13 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditLinkVisitorApproved(bookerReference: String, prisonNumber: String, visitorId: Long, requestReference: String) {
-    val auditType = VISITOR_REQUEST_APPROVED_FOR_PRISONER
-    val text = "Visitor ID - $visitorId approved for prisoner - $prisonNumber, request reference - $requestReference"
+  fun auditLinkVisitorApproved(bookerReference: String, prisonNumber: String, visitorId: Long, requestReference: String, autoApproval: Boolean) {
+    val auditType = if (autoApproval) {
+      VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
+    } else {
+      VISITOR_REQUEST_APPROVED_FOR_PRISONER
+    }
+    val text = "Visitor ID - $visitorId approved (autoApproved = $autoApproval) for prisoner - $prisonNumber, request reference - $requestReference"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
