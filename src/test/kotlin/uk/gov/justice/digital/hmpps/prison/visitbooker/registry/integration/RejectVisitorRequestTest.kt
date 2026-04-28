@@ -70,9 +70,10 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     val prisonerId = prisoner.prisonerId
     val request = createVisitorRequest(bookerReference, prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = REQUESTED)
     val requestReference = request.reference
+    val userName = "TEST-USER"
 
     // When
-    val responseSpec = callRejectVisitorRequest(webTestClient, requestReference, rejectionReason, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callRejectVisitorRequest(webTestClient, requestReference, rejectionReason, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -83,7 +84,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     assertThat(visitorRequest!!.status).isEqualTo(REJECTED)
     assertThat(visitorRequest.rejectionReason).isEqualTo(rejectionReason)
 
-    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(requestReference, RejectVisitorRequestDto(rejectionReason))
+    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(requestReference, RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = userName))
     verify(visitorRequestsStoreServiceSpy, times(1)).rejectVisitorRequest(bookerReference, prisonerId, request.reference, rejectionReason)
     verify(visitorRequestsRepositorySpy, times(1)).rejectVisitorRequest(any(), any(), any())
 
@@ -110,7 +111,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_REJECTED_FOR_PRISONER, "Request reference - $requestReference rejected with rejection reason - $rejectionReason, actionedBy - SYSTEM")
+    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_REJECTED_FOR_PRISONER, "Request reference - $requestReference rejected with rejection reason - $rejectionReason, actionedBy - $userName")
   }
 
   @Test
@@ -120,13 +121,14 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     val bookerReference = "invalid-booker-ref"
     val prisonerId = "AB123456"
     val request = createVisitorRequest(bookerReference, prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = REQUESTED)
+    val userName = "TEST-USER"
 
     // When
-    val responseSpec = callRejectVisitorRequest(webTestClient, request.reference, rejectionReason, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callRejectVisitorRequest(webTestClient, request.reference, rejectionReason, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason))
+    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = userName))
     verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(bookerReference, prisonerId, request.reference, rejectionReason)
     verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
     verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
@@ -137,13 +139,14 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     // Given
     val rejectionReason = REJECT
     val reference = "missingRef"
+    val userName = "test-user"
 
     // When
-    val responseSpec = callRejectVisitorRequest(webTestClient, reference, rejectionReason, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callRejectVisitorRequest(webTestClient, reference, rejectionReason, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(reference, RejectVisitorRequestDto(rejectionReason))
+    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(reference, RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = userName))
     verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
     verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
@@ -156,12 +159,13 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     val prisonCode = "HEI"
     val booker = createBooker("one-sub", "test@test.com")
     val prisoner = createPrisoner(booker, "AA123456", prisonCode)
+    val userName = "test-user"
 
     // request has already been APPROVED
     val request = createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = APPROVED)
 
     // When
-    val responseSpec = callRejectVisitorRequest(webTestClient, request.reference, rejectionReason, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callRejectVisitorRequest(webTestClient, request.reference, rejectionReason, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
@@ -170,7 +174,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       .jsonPath("$.developerMessage")
       .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
-    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason))
+    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = userName))
     verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
     verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
@@ -183,12 +187,13 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     val prisonCode = "HEI"
     val booker = createBooker("one-sub", "test@test.com")
     val prisoner = createPrisoner(booker, "AA123456", prisonCode)
+    val userName = "test-user"
 
     // request has already been REJECTED
     val request = createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = REJECTED)
 
     // When
-    val responseSpec = callRejectVisitorRequest(webTestClient, request.reference, rejectionReason, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callRejectVisitorRequest(webTestClient, request.reference, rejectionReason, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
@@ -197,7 +202,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       .jsonPath("$.developerMessage")
       .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
-    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason))
+    verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = userName))
     verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).rejectVisitorRequest(any(), any(), any())
     verify(snsService, times(0)).sendVisitorRequestRejectedEvent(any(), any())
@@ -206,9 +211,9 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `access forbidden when no role`() {
     val rejectionReason = ALREADY_LINKED
-
+    val userName = "TEST-USER"
     // When
-    val responseSpec = callRejectVisitorRequest(webTestClient, "visitorRequestRef", rejectionReason, setAuthorisation(roles = listOf()))
+    val responseSpec = callRejectVisitorRequest(webTestClient, "visitorRequestRef", rejectionReason, userName, setAuthorisation(roles = listOf()))
     responseSpec.expectStatus().isForbidden
   }
 
@@ -218,10 +223,11 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     requestReference: String,
     rejectionReason: VisitorRequestRejectionReason,
+    actionedBy: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec = webTestClient.put()
     .uri(REJECT_VISITOR_REQUEST.replace("{requestReference}", requestReference))
-    .body(BodyInserters.fromValue(RejectVisitorRequestDto(rejectionReason)))
+    .body(BodyInserters.fromValue(RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = actionedBy)))
     .headers(authHttpHeaders)
     .exchange()
 

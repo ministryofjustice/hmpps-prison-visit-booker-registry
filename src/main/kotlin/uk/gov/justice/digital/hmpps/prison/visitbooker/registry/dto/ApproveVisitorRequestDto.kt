@@ -9,5 +9,6 @@ data class ApproveVisitorRequestDto(
   val visitorId: Long,
 
   @param:Schema(description = "STAFF username who approved the visitor, defaults to SYSTEM if not passed", example = "ABC123D", required = true)
-  val actionedBy: String = "SYSTEM",
+  @field:NotNull
+  val actionedBy: String,
 )

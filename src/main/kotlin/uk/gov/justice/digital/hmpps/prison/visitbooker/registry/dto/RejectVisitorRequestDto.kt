@@ -9,6 +9,7 @@ data class RejectVisitorRequestDto(
   @field:NotNull
   val rejectionReason: VisitorRequestRejectionReason,
 
-  @param:Schema(description = "STAFF username who rejected the visitor, defaults to SYSTEM if not passed", example = "ABC123D", required = true)
-  val actionedBy: String = "SYSTEM",
+  @param:Schema(description = "STAFF username who rejected the visitor", example = "ABC123D", required = true)
+  @field:NotNull
+  val actionedBy: String,
 )
