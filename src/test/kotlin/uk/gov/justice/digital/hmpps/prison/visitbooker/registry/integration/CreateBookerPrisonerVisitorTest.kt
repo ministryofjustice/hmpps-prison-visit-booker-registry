@@ -31,6 +31,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   private val emailAddress = "aled@aled.com"
   private lateinit var booker: Booker
   private lateinit var prisoner: PermittedPrisoner
+  private val userName = "TEST_USER"
 
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
@@ -52,7 +53,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when visitor does not exist then visitor is created and email is sent`() {
     // Given
-    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, sendNotificationFlag = true)
+    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, sendNotificationFlag = true, actionedBy = userName)
 
     // When
     val responseSpec = callCreateBookerPrisonerVisitor(bookerConfigServiceRoleHttpHeaders, createVisitorDto, bookerReference = booker.reference, prisonerId = prisoner.prisonerId)
@@ -71,6 +72,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
         assertThat(it["bookerReference"]).isEqualTo(booker.reference)
         assertThat(it["prisonerId"]).isEqualTo(prisoner.prisonerId)
         assertThat(it["visitorId"]).isEqualTo(createVisitorDto.visitorId.toString())
+        assertThat(it["actionedBy"]).isEqualTo(createVisitorDto.actionedBy)
       },
       isNull(),
     )
@@ -94,7 +96,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when visitor does not exist then visitor is created but email flag is false, no email is sent`() {
     // Given
-    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, sendNotificationFlag = false)
+    val createVisitorDto = CreatePermittedVisitorDto(visitorId = 1233, sendNotificationFlag = false, actionedBy = userName)
 
     // When
     val responseSpec = callCreateBookerPrisonerVisitor(bookerConfigServiceRoleHttpHeaders, createVisitorDto, bookerReference = booker.reference, prisonerId = prisoner.prisonerId)
@@ -113,6 +115,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
         assertThat(it["bookerReference"]).isEqualTo(booker.reference)
         assertThat(it["prisonerId"]).isEqualTo(prisoner.prisonerId)
         assertThat(it["visitorId"]).isEqualTo(createVisitorDto.visitorId.toString())
+        assertThat(it["actionedBy"]).isEqualTo(createVisitorDto.actionedBy)
       },
       isNull(),
     )
@@ -126,7 +129,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when visitor already exist, they're not re-added and 200 is returned`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, actionedBy = userName)
 
     val visitor = createVisitor(permittedPrisoner = prisoner, createVisitor.visitorId)
     prisoner.permittedVisitors.add(visitor)
@@ -141,7 +144,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when booker reference not does exist then exception is thrown`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, actionedBy = userName)
     val bookerReference = "IDontExist"
 
     // When
@@ -154,7 +157,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when prisonerId not does exist then exception is thrown`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, actionedBy = userName)
     val bookerReference = booker.reference
 
     // When
@@ -167,7 +170,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
   @Test
   fun `when end point is call with incorrect role`() {
     // Given
-    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233)
+    val createVisitor = CreatePermittedVisitorDto(visitorId = 1233, actionedBy = userName)
     val bookerReference = booker.reference
 
     // When

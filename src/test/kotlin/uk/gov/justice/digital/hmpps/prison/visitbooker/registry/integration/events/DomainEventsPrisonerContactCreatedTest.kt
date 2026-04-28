@@ -69,6 +69,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
         "bookerReference" to booker.reference,
         "prisonerId" to prisoner.prisonerId,
         "visitorId" to contactId,
+        "actionedBy" to "SYSTEM",
       ),
       null,
     )

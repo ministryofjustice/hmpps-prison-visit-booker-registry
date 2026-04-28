@@ -110,7 +110,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_REJECTED_FOR_PRISONER, "Request reference - $requestReference rejected with rejection reason - $rejectionReason")
+    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_REJECTED_FOR_PRISONER, "Request reference - $requestReference rejected with rejection reason - $rejectionReason, actionedBy - SYSTEM")
   }
 
   @Test

@@ -88,7 +88,7 @@ class VisitorRequestsService(
 
         visitorRequestsStoreService.approveAndLinkVisitor(bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval = autoApproval)
         // audit the event
-        bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval = autoApproval)
+        bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval = autoApproval, actionedBy = approveVisitorRequest.actionedBy)
         // send SNS event
         snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId.toString())
         LOG.info("Visitor request with reference $requestReference approved successfully")
@@ -115,7 +115,7 @@ class VisitorRequestsService(
 
         visitorRequestsStoreService.rejectVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
         // audit the event
-        bookerAuditService.auditLinkVisitorRejected(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason)
+        bookerAuditService.auditLinkVisitorRejected(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference, rejectVisitorRequest.rejectionReason, actionedBy = rejectVisitorRequest.actionedBy)
         // send SNS event
         snsService.sendVisitorRequestRejectedEvent(prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
         LOG.info("Visitor request with reference $requestReference rejected.")

@@ -7,4 +7,7 @@ data class ApproveVisitorRequestDto(
   @param:Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
   @field:NotNull
   val visitorId: Long,
+
+  @param:Schema(description = "STAFF username who approved the visitor, defaults to SYSTEM if not passed", example = "ABC123D", required = true)
+  val actionedBy: String = "SYSTEM",
 )

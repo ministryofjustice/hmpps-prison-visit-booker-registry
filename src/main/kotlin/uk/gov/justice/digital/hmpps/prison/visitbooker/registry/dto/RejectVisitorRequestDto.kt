@@ -8,4 +8,7 @@ data class RejectVisitorRequestDto(
   @param:Schema(description = "Rejection Reason type", example = "ALREADY_LINKED", required = true)
   @field:NotNull
   val rejectionReason: VisitorRequestRejectionReason,
+
+  @param:Schema(description = "STAFF username who rejected the visitor, defaults to SYSTEM if not passed", example = "ABC123D", required = true)
+  val actionedBy: String = "SYSTEM",
 )

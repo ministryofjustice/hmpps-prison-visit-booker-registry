@@ -43,6 +43,7 @@ class BookerAuditService(
     private const val REJECTION_REASON = "rejectionReason"
     private const val REGISTERED_PRISON_CODE = "prisonId"
     private const val VISITOR_REQUEST_STATUS = "visitorRequestStatus"
+    private const val ACTIONED_BY = "actionedBy"
 
     private interface PrisonerSearchPropertyNames {
       companion object {
@@ -110,7 +111,7 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditAddVisitor(bookerReference: String, visitorId: Long, prisonNumber: String) {
+  fun auditAddVisitor(bookerReference: String, visitorId: Long, prisonNumber: String, actionedBy: String) {
     val auditType = VISITOR_ADDED_TO_PRISONER
     val text = "Visitor ID - $visitorId added to prisoner - $prisonNumber"
     auditBookerEvent(bookerReference, auditType, text)
@@ -120,17 +121,18 @@ class BookerAuditService(
       BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
       PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
       VISITOR_ID_PROPERTY_NAME to visitorId.toString(),
+      ACTIONED_BY to actionedBy,
     )
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditLinkVisitorApproved(bookerReference: String, prisonNumber: String, visitorId: Long, requestReference: String, autoApproval: Boolean) {
+  fun auditLinkVisitorApproved(bookerReference: String, prisonNumber: String, visitorId: Long, requestReference: String, autoApproval: Boolean, actionedBy: String) {
     val auditType = if (autoApproval) {
       VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
     } else {
       VISITOR_REQUEST_APPROVED_FOR_PRISONER
     }
-    val text = "Visitor ID - $visitorId approved (autoApproved = $autoApproval) for prisoner - $prisonNumber, request reference - $requestReference"
+    val text = "Visitor ID - $visitorId approved (autoApproved = $autoApproval) for prisoner - $prisonNumber, request reference - $requestReference, actionedBy - $actionedBy"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
@@ -139,13 +141,14 @@ class BookerAuditService(
       BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
       PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
       VISITOR_ID_PROPERTY_NAME to visitorId.toString(),
+      ACTIONED_BY to actionedBy,
     )
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditLinkVisitorRejected(bookerReference: String, prisonNumber: String, requestReference: String, rejectionReason: VisitorRequestRejectionReason) {
+  fun auditLinkVisitorRejected(bookerReference: String, prisonNumber: String, requestReference: String, rejectionReason: VisitorRequestRejectionReason, actionedBy: String) {
     val auditType = VISITOR_REQUEST_REJECTED_FOR_PRISONER
-    val text = "Request reference - $requestReference rejected with rejection reason - $rejectionReason"
+    val text = "Request reference - $requestReference rejected with rejection reason - $rejectionReason, actionedBy - $actionedBy"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
@@ -154,6 +157,7 @@ class BookerAuditService(
       BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
       PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
       REJECTION_REASON to rejectionReason.name,
+      ACTIONED_BY to actionedBy,
     )
     sendTelemetryClientEvent(auditType, properties)
   }
