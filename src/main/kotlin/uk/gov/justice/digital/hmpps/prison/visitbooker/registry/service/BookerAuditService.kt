@@ -113,7 +113,7 @@ class BookerAuditService(
 
   fun auditAddVisitor(bookerReference: String, visitorId: Long, prisonNumber: String, actionedBy: String) {
     val auditType = VISITOR_ADDED_TO_PRISONER
-    val text = "Visitor ID - $visitorId added to prisoner - $prisonNumber"
+    val text = "Visitor ID - $visitorId added to prisoner - $prisonNumber, actionedBy - $actionedBy"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
@@ -327,7 +327,7 @@ class BookerAuditService(
   }
 
   private fun auditLinkVisitorAutoApproved(createVisitorRequestResponseDto: CreateVisitorRequestResponseDto) {
-    val auditType = BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
+    val auditType = VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
     val text = "Visitor ID - ${createVisitorRequestResponseDto.visitorId} auto approved for prisoner - ${createVisitorRequestResponseDto.prisonerId}, request reference - ${createVisitorRequestResponseDto.reference}"
     auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text)
     // do not send a separate event to telemetry client

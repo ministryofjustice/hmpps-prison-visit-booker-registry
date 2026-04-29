@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 data class ApproveVisitorRequestDto(
@@ -10,5 +11,6 @@ data class ApproveVisitorRequestDto(
 
   @param:Schema(description = "STAFF username who approved the visitor, defaults to SYSTEM if not passed", example = "ABC123D", required = true)
   @field:NotNull
+  @field:NotBlank
   val actionedBy: String,
 )
