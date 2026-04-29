@@ -90,7 +90,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}")
+    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}, actionedBy - TEST_USER")
   }
 
   @Test
@@ -123,7 +123,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}")
+    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}, actionedBy - TEST_USER")
   }
 
   @Test
