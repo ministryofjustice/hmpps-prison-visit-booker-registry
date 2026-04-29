@@ -21,6 +21,7 @@ class ContactUpdatedEventHandler(
 
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+    private const val SYSTEM_USER_NAME = "SYSTEM"
   }
 
   override fun handle(domainEvent: DomainEvent) {
@@ -60,7 +61,7 @@ class ContactUpdatedEventHandler(
 
           visitorRequestsService.approveAndLinkVisitorRequest(
             request.reference,
-            ApproveVisitorRequestDto(contactDetails.contactId!!),
+            ApproveVisitorRequestDto(contactDetails.contactId!!, SYSTEM_USER_NAME),
             autoApproval = true,
           )
         }

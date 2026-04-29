@@ -39,7 +39,7 @@ class BookerDetailsService(
 
     val permittedVisitor = bookerDetailsStoreService.storeBookerPrisonerVisitor(bookerReference, prisonerId, createPermittedVisitorDto.visitorId)
 
-    bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = createPermittedVisitorDto.visitorId)
+    bookerAuditService.auditAddVisitor(bookerReference = bookerReference, prisonNumber = prisonerId, visitorId = createPermittedVisitorDto.visitorId, actionedBy = createPermittedVisitorDto.actionedBy)
 
     if (createPermittedVisitorDto.sendNotificationFlag == true) {
       snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, createPermittedVisitorDto.visitorId.toString())

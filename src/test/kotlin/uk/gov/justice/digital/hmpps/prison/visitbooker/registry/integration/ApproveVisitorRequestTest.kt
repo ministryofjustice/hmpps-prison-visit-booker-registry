@@ -65,9 +65,10 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     val visitorIdToBeLinked = 12345L
     val request = createVisitorRequest(bookerReference, prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = REQUESTED)
     val requestReference = request.reference
+    val userName = "TEST-USER"
 
     // When
-    val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, visitorIdToBeLinked, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, visitorIdToBeLinked, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -82,7 +83,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     assertThat(visitorRequest!!.status).isEqualTo(APPROVED)
     assertThat(visitorRequest.visitorId).isEqualTo(visitorIdToBeLinked)
 
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(requestReference, ApproveVisitorRequestDto(visitorIdToBeLinked, userName), false)
     verify(visitorRequestsStoreServiceSpy, times(1)).approveAndLinkVisitor(booker.reference, prisonerId, visitorIdToBeLinked, request.reference, false)
     verify(visitorRequestsRepositorySpy, times(1)).approveVisitorRequest(any(), any(), any(), any())
 
@@ -94,6 +95,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
         assertThat(it["prisonerId"]).isEqualTo(prisonerId)
         assertThat(it["visitorId"]).isEqualTo(visitorIdToBeLinked.toString())
         assertThat(it["requestReference"]).isEqualTo(requestReference)
+        assertThat(it["actionedBy"]).isEqualTo(userName)
       },
       isNull(),
     )
@@ -111,7 +113,18 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_APPROVED_FOR_PRISONER, "Visitor ID - $visitorIdToBeLinked approved (autoApproved = false) for prisoner - $prisonerId, request reference - $requestReference")
+    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_APPROVED_FOR_PRISONER, "Visitor ID - $visitorIdToBeLinked approved (autoApproved = false) for prisoner - $prisonerId, request reference - $requestReference, actionedBy - TEST-USER")
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      eq(VISITOR_REQUEST_APPROVED_FOR_PRISONER.telemetryEventName),
+      org.mockito.kotlin.check {
+        assertThat(it["bookerReference"]).isEqualTo(bookerReference)
+        assertThat(it["prisonerId"]).isEqualTo(prisonerId)
+        assertThat(it["visitorId"]).isEqualTo(visitorIdToBeLinked.toString())
+        assertThat(it["requestReference"]).isEqualTo(requestReference)
+        assertThat(it["actionedBy"]).isEqualTo(userName)
+      },
+      isNull(),
+    )
   }
 
   @Test
@@ -121,15 +134,17 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     val bookerReference = "invalid-booker-ref"
     val prisonerId = "AB123456"
     val request = createVisitorRequest(bookerReference, prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = REQUESTED)
+    val userName = "TEST-USER"
 
     // When
-    val responseSpec = callApproveVisitorRequest(webTestClient, request.reference, visitorId = visitorIdToBeLinked, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callApproveVisitorRequest(webTestClient, request.reference, visitorId = visitorIdToBeLinked, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked, userName), false)
     verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
 
   @Test
@@ -137,31 +152,33 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Given
     val reference = "missingRef"
     val visitorIdToBeLinked = 12345L
+    val userName = "TEST-USER"
 
     // When
-    val responseSpec = callApproveVisitorRequest(webTestClient, reference, visitorId = visitorIdToBeLinked, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callApproveVisitorRequest(webTestClient, reference, visitorId = visitorIdToBeLinked, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(reference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(reference, ApproveVisitorRequestDto(visitorIdToBeLinked, userName), false)
     verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
 
   @Test
   fun `when approve visitor request is called but visitor already approved then NOT_FOUND status is returned`() {
     // Given
-    // Given
     val prisonCode = "HEI"
     val booker = createBooker("one-sub", "test@test.com")
     val prisoner = createPrisoner(booker, "AA123456", prisonCode)
     val visitorIdToBeLinked = 12345L
+    val userName = "TEST-USER"
 
     // request has already been APPROVED
     val request = createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = APPROVED)
 
     // When
-    val responseSpec = callApproveVisitorRequest(webTestClient, request.reference, visitorId = visitorIdToBeLinked, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = callApproveVisitorRequest(webTestClient, request.reference, visitorId = visitorIdToBeLinked, userName, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
@@ -170,15 +187,19 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       .jsonPath("$.developerMessage")
       .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
 
-    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked), false)
+    verify(visitorRequestsServiceSpy, times(1)).approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(visitorIdToBeLinked, userName), false)
     verify(visitorRequestsStoreServiceSpy, times(0)).approveAndLinkVisitor(any(), any(), any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).approveVisitorRequest(any(), any(), any(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
 
   @Test
   fun `access forbidden when no role`() {
+    // Given
+    val userName = "TEST-USER"
+
     // When
-    val responseSpec = callApproveVisitorRequest(webTestClient, "visitorRequestRef", 12345L, setAuthorisation(roles = listOf()))
+    val responseSpec = callApproveVisitorRequest(webTestClient, "visitorRequestRef", 12345L, userName, setAuthorisation(roles = listOf()))
     responseSpec.expectStatus().isForbidden
   }
 
@@ -188,10 +209,11 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     requestReference: String,
     visitorId: Long,
+    userName: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec = webTestClient.put()
     .uri(APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference))
-    .body(BodyInserters.fromValue(ApproveVisitorRequestDto(visitorId)))
+    .body(BodyInserters.fromValue(ApproveVisitorRequestDto(visitorId, userName)))
     .headers(authHttpHeaders)
     .exchange()
 

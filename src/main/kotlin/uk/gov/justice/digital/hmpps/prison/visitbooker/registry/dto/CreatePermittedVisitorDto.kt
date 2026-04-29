@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Create permitted prisoner with permitted visitors associated with the booker.")
@@ -12,4 +13,9 @@ data class CreatePermittedVisitorDto(
   @param:Schema(description = "A flag (boolean), when set to true will send booker notification of visitor linking", example = "true", required = false)
   @field:NotNull
   val sendNotificationFlag: Boolean? = false,
+
+  @param:Schema(description = "STAFF username who registered the visitor", example = "ABC123D", required = true)
+  @field:NotNull
+  @field:NotBlank
+  val actionedBy: String,
 )
