@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 
-@DisplayName("Unlink booker prisoner visitor - DELETE $VISITOR_ENDPOINT_PATH")
+@DisplayName("Unlink booker prisoner visitor - POST $VISITOR_ENDPOINT_PATH")
 class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
