@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -132,6 +133,19 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), anyOrNull())
+  }
+
+  @Test
+  fun `when blank actionedBy then BAD_REQUEST status is returned`() {
+    // Given
+    val actionedByDto = ActionedByDto(actionedBy = "")
+    // When
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", visitorId = 123, actionedByDto, bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), anyOrNull())
   }
 
   @Test
