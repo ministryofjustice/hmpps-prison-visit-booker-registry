@@ -6,13 +6,16 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.VISITOR_ENDPOINT_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ActionedByDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
@@ -21,7 +24,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 
-@DisplayName("Unlink booker prisoner visitor - DELETE $VISITOR_ENDPOINT_PATH")
+@DisplayName("Unlink booker prisoner visitor - POST $VISITOR_ENDPOINT_PATH")
 class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
@@ -93,9 +96,10 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when prisoner is unlinked for booker, then they're removed from the DB successfully`() {
     // Given
+    val actionedByDto = ActionedByDto(actionedBy = "test-user")
 
     // When
-    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisoner.prisonerId, visitor1.visitorId, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisoner.prisonerId, visitor1.visitorId, actionedByDto, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -107,13 +111,14 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
         "bookerReference" to booker.reference,
         "prisonerId" to prisoner.prisonerId,
         "visitorId" to visitor1.visitorId.toString(),
+        "actionedBy" to actionedByDto.actionedBy,
       ),
       null,
     )
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UNLINK_VISITOR, "Visitor ID - ${visitor1.visitorId} unlinked for prisoner - ${prisoner.prisonerId}, booker - ${booker.reference}")
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UNLINK_VISITOR, "Visitor ID - ${visitor1.visitorId} unlinked for prisoner - ${prisoner.prisonerId}, booker - ${booker.reference}, actionedBy - ${actionedByDto.actionedBy}")
 
     val visitors = permittedVisitorRepository.findAll()
     assertThat(visitors).hasSize(3)
@@ -122,18 +127,33 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // Given
+    val actionedByDto = ActionedByDto(actionedBy = "test-user")
     // When
-    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", visitorId = 123, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", visitorId = 123, actionedByDto, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), anyOrNull())
+  }
+
+  @Test
+  fun `when blank actionedBy then BAD_REQUEST status is returned`() {
+    // Given
+    val actionedByDto = ActionedByDto(actionedBy = "")
+    // When
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, "invalid-reference", prisonerId = "IDontExist", visitorId = 123, actionedByDto, bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), anyOrNull())
   }
 
   @Test
   fun `access forbidden when no role`() {
     // Given
+    val actionedByDto = ActionedByDto(actionedBy = "test-user")
     // When
-    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisonerId = prisoner.prisonerId, visitorId = 12, setAuthorisation(roles = listOf()))
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisonerId = prisoner.prisonerId, visitorId = 12, actionedByDto, setAuthorisation(roles = listOf()))
     // Then
     responseSpec.expectStatus().isForbidden
   }
@@ -143,6 +163,7 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     bookerReference: String,
     prisonerId: String,
     visitorId: Long,
+    actionedByDto: ActionedByDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val url = VISITOR_ENDPOINT_PATH
@@ -150,8 +171,9 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
       .replace("{prisonerId}", prisonerId)
       .replace("{visitorId}", visitorId.toString())
 
-    return webTestClient.delete().uri(url)
+    return webTestClient.post().uri(url)
       .headers(authHttpHeaders)
+      .body(BodyInserters.fromValue(actionedByDto))
       .exchange()
   }
 }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ActionedByDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
@@ -200,7 +201,7 @@ class BookerDetailConfigController(
   ): BookerDto = bookerDetailsService.getBookerByReference(bookerReference)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
-  @DeleteMapping(VISITOR_ENDPOINT_PATH)
+  @PostMapping(VISITOR_ENDPOINT_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "unlink booker prisoner visitor",
@@ -237,7 +238,10 @@ class BookerDetailConfigController(
     @PathVariable(value = "visitorId", required = true)
     @NotNull
     visitorId: Long,
-  ) = bookerDetailsService.unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
+    @RequestBody
+    @Valid
+    actionedByDto: ActionedByDto,
+  ) = bookerDetailsService.unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId, actionedByDto.actionedBy)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PostMapping(SEARCH_FOR_BOOKER)
