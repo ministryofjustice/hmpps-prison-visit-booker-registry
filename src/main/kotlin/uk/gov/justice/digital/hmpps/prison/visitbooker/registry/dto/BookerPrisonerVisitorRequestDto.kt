@@ -32,6 +32,9 @@ data class BookerPrisonerVisitorRequestDto(
 
   @param:Schema(description = "Request status", example = "REQUESTED", required = true)
   val status: VisitorRequestsStatus,
+
+  @param:Schema(description = "Date when the visitor request was added", example = "2026-05-01", required = true)
+  val requestedOn: LocalDate,
 ) {
   constructor(visitorRequest: VisitorRequest) : this(
     reference = visitorRequest.reference,
@@ -41,5 +44,6 @@ data class BookerPrisonerVisitorRequestDto(
     lastName = visitorRequest.lastName,
     dateOfBirth = visitorRequest.dateOfBirth,
     status = visitorRequest.status,
+    requestedOn = visitorRequest.createTimestamp?.toLocalDate() ?: LocalDate.now(),
   )
 }
