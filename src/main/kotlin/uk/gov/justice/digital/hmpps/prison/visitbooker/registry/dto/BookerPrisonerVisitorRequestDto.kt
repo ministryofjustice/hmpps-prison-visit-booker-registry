@@ -44,6 +44,6 @@ data class BookerPrisonerVisitorRequestDto(
     lastName = visitorRequest.lastName,
     dateOfBirth = visitorRequest.dateOfBirth,
     status = visitorRequest.status,
-    requestedOn = visitorRequest.createTimestamp?.toLocalDate() ?: LocalDate.now(),
+    requestedOn = visitorRequest.createTimestamp!!.toLocalDate(),
   )
 }
