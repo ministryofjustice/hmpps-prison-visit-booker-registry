@@ -43,7 +43,7 @@ const val UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH: String = "$PRISONER_END
 
 // Visitor Endpoints
 const val CREATE_BOOKER_PRISONER_VISITOR_PATH: String = "$PRISONER_ENDPOINT_PATH/visitor"
-const val VISITOR_ENDPOINT_PATH: String = "$PRISONER_ENDPOINT_PATH/visitor/{visitorId}"
+const val UNLINK_VISITOR_ENDPOINT_PATH: String = "$PRISONER_ENDPOINT_PATH/visitor/{visitorId}/unlink"
 
 @RestController
 class BookerDetailConfigController(
@@ -201,7 +201,7 @@ class BookerDetailConfigController(
   ): BookerDto = bookerDetailsService.getBookerByReference(bookerReference)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
-  @PostMapping(VISITOR_ENDPOINT_PATH)
+  @PostMapping(UNLINK_VISITOR_ENDPOINT_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "unlink booker prisoner visitor",

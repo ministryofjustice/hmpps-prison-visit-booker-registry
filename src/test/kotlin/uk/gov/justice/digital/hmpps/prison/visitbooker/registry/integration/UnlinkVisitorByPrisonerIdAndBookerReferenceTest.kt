@@ -14,7 +14,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.VISITOR_ENDPOINT_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.UNLINK_VISITOR_ENDPOINT_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ActionedByDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 
-@DisplayName("Unlink booker prisoner visitor - POST $VISITOR_ENDPOINT_PATH")
+@DisplayName("Unlink booker prisoner visitor - POST $UNLINK_VISITOR_ENDPOINT_PATH")
 class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var bookerAuditRepositorySpy: BookerAuditRepository
@@ -166,7 +166,7 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     actionedByDto: ActionedByDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    val url = VISITOR_ENDPOINT_PATH
+    val url = UNLINK_VISITOR_ENDPOINT_PATH
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerId)
       .replace("{visitorId}", visitorId.toString())
