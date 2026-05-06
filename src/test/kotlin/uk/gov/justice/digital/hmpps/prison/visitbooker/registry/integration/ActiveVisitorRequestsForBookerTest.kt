@@ -109,6 +109,7 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     Assertions.assertThat(visitorRequestDto.lastName).isEqualTo(visitorRequest.lastName)
     Assertions.assertThat(visitorRequestDto.dateOfBirth).isEqualTo(visitorRequest.dateOfBirth)
     Assertions.assertThat(visitorRequestDto.status).isEqualTo(visitorRequest.status)
+    Assertions.assertThat(visitorRequestDto.requestedOn).isEqualTo(visitorRequest.createTimestamp!!.toLocalDate())
   }
 
   fun getActiveVisitorRequestsByBookerReference(
