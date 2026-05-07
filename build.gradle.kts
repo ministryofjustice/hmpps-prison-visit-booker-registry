@@ -47,6 +47,12 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
+  annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+  testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
+  testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.jsonwebtoken:jjwt:0.13.0")
   testImplementation("org.springframework.security:spring-security-test")
