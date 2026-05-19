@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.MockUtils.Companion.getJsonString
 
 class PrisonerContactRegistryMockServer : WireMockServer(8093) {
-  fun stubGetPrisonerContacts(
+  fun stubGetPrisonerSocialContacts(
     prisonerId: String,
     contactsList: List<PrisonerContactDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,

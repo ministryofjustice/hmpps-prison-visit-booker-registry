@@ -47,6 +47,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
     )
 
     prisonerContactRegistryMockServer.stubGetPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId, contact)
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId, listOf(contact))
 
     val publishRequest = createDomainEventPublishRequest(domainEvent)
 
@@ -61,6 +62,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.AUTO_APPROVED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
 
     verify(telemetryClientSpy, times(1)).trackEvent(
       BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER.telemetryEventName,
@@ -90,8 +92,6 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
       contactId,
     )
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId, contact)
-
     val publishRequest = createDomainEventPublishRequest(domainEvent)
 
     // When
@@ -104,6 +104,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
     await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
 
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(prisonerId)
 
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
@@ -148,6 +149,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(prisonerId)
 
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
@@ -192,6 +194,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REJECTED)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(prisonerId)
 
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }
@@ -235,6 +238,54 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
 
     assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(prisonerId)
+
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
+  }
+
+  @Test
+  fun `when domain event 'prisoner contact created' is found, but multiple contacts match details provided then it is skipped`() {
+    // Given
+    val prisonerId = "AA123456"
+    val contactId = "123456"
+    val relationshipId = 9876L
+    val contact1 = PrisonerContactDto(personId = contactId.toLong(), firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+    val contact2 = PrisonerContactDto(personId = 9876654L, firstName = "Jake", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+
+    val domainEvent = createDomainEventJson(
+      DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
+      createPrisonerContactCreatedEventAdditionalInformationJson(prisonerContactId = relationshipId),
+      prisonerId,
+      contactId,
+    )
+
+    val booker = createBooker("oneSub", "testEmail@test.com")
+    val prisoner = createPrisoner(booker, prisonerId)
+
+    val visitorRequest = createVisitorRequest(
+      booker.reference,
+      prisoner.prisonerId,
+      AddVisitorToBookerPrisonerRequestDto("john", "smith", LocalDate.now().minusYears(21)),
+      status = VisitorRequestsStatus.REQUESTED,
+    )
+
+    prisonerContactRegistryMockServer.stubGetPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId, contact1)
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId, listOf(contact1, contact2))
+
+    val publishRequest = createDomainEventPublishRequest(domainEvent)
+
+    // When
+    awsSnsClient.publish(publishRequest).get()
+
+    // Then
+    await untilAsserted { verify(domainEventListenerSpy, times(1)).processMessage(any()) }
+    await untilAsserted { verify(domainEventListenerServiceSpy, times(1)).handleMessage(any()) }
+    await untilAsserted { verify(prisonerContactCreatedEventHandlerSpy, times(1)).handle(any()) }
+    await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
+
+    assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonerContactViaRelationshipId(prisonerId, contactId, relationshipId)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
 
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
   }

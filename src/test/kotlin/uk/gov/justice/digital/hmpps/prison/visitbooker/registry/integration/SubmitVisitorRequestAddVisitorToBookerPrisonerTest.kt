@@ -45,7 +45,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "Random", lastName = "Contact", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -87,7 +87,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -131,7 +131,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // When
     // match exists but is unapproved
     val prisonerContactUnapproved = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = false, contactType = "S")
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContactUnapproved))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContactUnapproved))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -162,52 +162,6 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
   }
 
   @Test
-  fun `when visitor request added and there is 1 matching approved and 1 matching unapproved visitor with same details match is made with approved visitor`() {
-    // Given
-    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
-    val prisoner = createPrisoner(booker, "AA123456")
-    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
-      firstName = "John",
-      lastName = "Smith",
-      dateOfBirth = LocalDate.now().minusYears(21),
-    )
-
-    // When
-    // matching details but unapproved and first on list
-    val prisonerContactUnapproved = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = false, contactType = "S")
-    // matching details but approved and last on list
-    val prisonerContactApproved = PrisonerContactDto(personId = 544L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContactUnapproved, prisonerContactApproved))
-    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
-
-    // Then
-    responseSpec.expectStatus().isCreated
-
-    val visitorRequests = visitorRequestsRepository.findAll()
-    assertThat(visitorRequests).hasSize(1)
-    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto, VisitorRequestsStatus.AUTO_APPROVED, personId = prisonerContactApproved.personId)
-    val visitRequest = visitorRequests[0]
-
-    verify(telemetryClientSpy, times(1)).trackEvent(
-      BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
-      mapOf(
-        "bookerReference" to booker.reference,
-        "prisonerId" to prisoner.prisonerId,
-        "requestReference" to visitRequest.reference,
-        "visitorRequestStatus" to visitRequest.status.name,
-        "prisonId" to prisoner.prisonCode,
-        "visitorId" to prisonerContactApproved.personId.toString(),
-      ),
-      null,
-    )
-    val auditEvents = bookerAuditRepository.findAll()
-    assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
-    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
-  }
-
-  @Test
   fun `when visitor request comes in, 100 percent match checking ignores special chars, it is saved to database successfully with status auto_approved`() {
     // Given
     val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
@@ -220,7 +174,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = false, contactType = "S")
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -263,7 +217,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     // When
     val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "jOhN", lastName = "sMiTh", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -318,6 +272,50 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     val visitorRequests = visitorRequestsRepository.findAll()
     assertThat(visitorRequests).hasSize(0)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
+  }
+
+  @Test
+  fun `when visitor request comes in and multiple contacts have a 100 percent match, it is saved to database successfully with status requested`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    val prisonerContact1 = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+    val prisonerContact2 = PrisonerContactDto(personId = 544L, firstName = "James", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact1, prisonerContact2))
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().isCreated
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(1)
+    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto, status = VisitorRequestsStatus.REQUESTED, personId = null)
+
+    val visitRequest = visitorRequests[0]
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to prisoner.prisonerId,
+        "requestReference" to visitRequest.reference,
+        "visitorRequestStatus" to visitRequest.status.name,
+        "prisonId" to prisoner.prisonCode,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
   @Test
@@ -396,7 +394,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(PrisonerContactDto(personId = visitor.visitorId, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(PrisonerContactDto(personId = visitor.visitorId, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")))
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -424,7 +422,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then
@@ -450,7 +448,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, null, HttpStatus.NOT_FOUND)
     val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
 
     // Then

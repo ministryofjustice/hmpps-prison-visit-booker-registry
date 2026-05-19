@@ -25,7 +25,12 @@ class VisitorRequestsValidationService(
     private val LOG = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun validateVisitorRequest(booker: Booker, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto, prisonerContactList: List<PrisonerContactDto>) {
+  fun validateVisitorRequest(
+    booker: Booker,
+    prisonerId: String,
+    visitorRequest: AddVisitorToBookerPrisonerRequestDto,
+    prisonerContactList: List<PrisonerContactDto>,
+  ) {
     LOG.info("Entered VisitorRequestsService - validateVisitorRequest - For booker ${booker.reference}, prisoner $prisonerId")
 
     validateBookerPrisonerRelationship(booker, prisonerId)
@@ -39,49 +44,48 @@ class VisitorRequestsValidationService(
     LOG.info("Successfully validated visitor request - For booker ${booker.reference}, prisoner $prisonerId")
   }
 
-  fun matchContactNameAndDob(
+  fun hasMultipleMatchingContacts(
+    contacts: List<PrisonerContactDto>,
+    lastName: String,
+    dateOfBirth: LocalDate?,
+  ): Boolean = contacts.count { contact ->
+    isEligibleMatchingContact(contact) && matchContactLastNameAndDob(contact, lastName, dateOfBirth)
+  } > 1
+
+  private fun isEligibleMatchingContact(contact: PrisonerContactDto): Boolean = contact.personId != null
+
+  fun matchContactLastNameAndDob(
     contact: PrisonerContactDto,
-    firstName: String,
     lastName: String,
-    dateOfBirth: LocalDate,
-  ): Boolean = matchNameAndDob(
-    contact.firstName,
+    dateOfBirth: LocalDate?,
+  ): Boolean = matchLastNameAndDob(
     contact.lastName,
     contact.dateOfBirth,
-    firstName,
     lastName,
     dateOfBirth,
   )
 
-  fun matchContactNameAndDob(
+  fun matchContactLastNameAndDob(
     contact: ContactDto,
-    firstName: String,
     lastName: String,
-    dateOfBirth: LocalDate,
-  ): Boolean = matchNameAndDob(
-    contact.firstName,
+    dateOfBirth: LocalDate?,
+  ): Boolean = matchLastNameAndDob(
     contact.lastName,
     contact.dateOfBirth,
-    firstName,
     lastName,
     dateOfBirth,
   )
 
-  private fun matchNameAndDob(
-    contactFirstName: String,
+  private fun matchLastNameAndDob(
     contactLastName: String,
     contactDateOfBirth: LocalDate? = null,
-    firstName: String,
     lastName: String,
-    dateOfBirth: LocalDate,
+    dateOfBirth: LocalDate?,
   ): Boolean {
-    val contactFirst = stringInputUtils.sanitiseText(contactFirstName)
     val contactLast = stringInputUtils.sanitiseText(contactLastName)
-    val inputFirst = stringInputUtils.sanitiseText(firstName)
     val inputLast = stringInputUtils.sanitiseText(lastName)
 
-    return contactFirst.equals(inputFirst, ignoreCase = true) &&
-      contactLast.equals(inputLast, ignoreCase = true) &&
+    return contactLast.equals(inputLast, ignoreCase = true) &&
       contactDateOfBirth == dateOfBirth
   }
 
@@ -119,13 +123,24 @@ class VisitorRequestsValidationService(
   }
 
   private fun validateVisitorAlreadyAdded(booker: Booker, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto, prisonerContactList: List<PrisonerContactDto>) {
-    prisonerContactList.forEach { contact ->
-      if (matchContactNameAndDob(contact, visitorRequest.firstName, visitorRequest.lastName, visitorRequest.dateOfBirth)
-      ) {
-        if (booker.permittedPrisoners.first { it.prisonerId == prisonerId }.permittedVisitors.any { it.visitorId == contact.personId }) {
-          throw VisitorRequestValidationException(VisitorRequestValidationError.VISITOR_ALREADY_EXISTS)
-        }
-      }
+    val permittedVisitorIds = booker.permittedPrisoners
+      .first { it.prisonerId == prisonerId }
+      .permittedVisitors
+      .map { it.visitorId }
+      .distinct()
+      .toList()
+
+    val visitorAlreadyExists = prisonerContactList.any { contact ->
+      contact.personId in permittedVisitorIds &&
+        matchContactLastNameAndDob(
+          contact,
+          visitorRequest.lastName,
+          visitorRequest.dateOfBirth,
+        )
+    }
+
+    if (visitorAlreadyExists) {
+      throw VisitorRequestValidationException(VisitorRequestValidationError.VISITOR_ALREADY_EXISTS)
     }
   }
 }
