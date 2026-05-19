@@ -44,7 +44,7 @@ class VisitorRequestsStoreService(
     visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
 
     val matchingContact = contactList.firstOrNull { contact ->
-      visitorRequestsValidationService.matchContactNameAndDob(contact, request.firstName, request.lastName, request.dateOfBirth) && contact.personId != null
+      visitorRequestsValidationService.matchContactNameAndDob(contact, request.lastName, request.dateOfBirth) && contact.personId != null
     }
 
     val visitorRequestStatus = if (matchingContact != null) {

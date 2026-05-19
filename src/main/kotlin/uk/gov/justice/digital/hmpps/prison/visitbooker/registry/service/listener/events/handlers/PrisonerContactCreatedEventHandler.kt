@@ -59,7 +59,7 @@ class PrisonerContactCreatedEventHandler(
     }
 
     requests.forEach { request ->
-      if (visitorRequestsValidationService.matchContactNameAndDob(contactDetails, request.firstName, request.lastName, request.dateOfBirth)) {
+      if (visitorRequestsValidationService.matchContactNameAndDob(contactDetails, request.lastName, request.dateOfBirth)) {
         LOG.info("PrisonerContactCreatedEventHandler - Approving visitor request for prisoner $prisonerId, contactId: $contactId, relationshipId: $relationshipId, visitor request reference: ${request.reference}")
         visitorRequestsService.approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(contactDetails.personId!!, SYSTEM_USER_NAME), autoApproval = true)
       }

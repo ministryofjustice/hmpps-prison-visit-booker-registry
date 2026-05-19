@@ -41,48 +41,36 @@ class VisitorRequestsValidationService(
 
   fun matchContactNameAndDob(
     contact: PrisonerContactDto,
-    firstName: String,
     lastName: String,
     dateOfBirth: LocalDate,
   ): Boolean = matchNameAndDob(
-    contact.firstName,
     contact.lastName,
     contact.dateOfBirth,
-    firstName,
     lastName,
     dateOfBirth,
   )
 
   fun matchContactNameAndDob(
     contact: ContactDto,
-    firstName: String,
     lastName: String,
     dateOfBirth: LocalDate,
   ): Boolean = matchNameAndDob(
-    contact.firstName,
     contact.lastName,
     contact.dateOfBirth,
-    firstName,
     lastName,
     dateOfBirth,
   )
 
   private fun matchNameAndDob(
-    contactFirstName: String,
     contactLastName: String,
     contactDateOfBirth: LocalDate? = null,
-    firstName: String,
     lastName: String,
     dateOfBirth: LocalDate,
   ): Boolean {
-    val contactFirst = stringInputUtils.sanitiseText(contactFirstName)
     val contactLast = stringInputUtils.sanitiseText(contactLastName)
-    val inputFirst = stringInputUtils.sanitiseText(firstName)
     val inputLast = stringInputUtils.sanitiseText(lastName)
 
-    return contactFirst.equals(inputFirst, ignoreCase = true) &&
-      contactLast.equals(inputLast, ignoreCase = true) &&
-      contactDateOfBirth == dateOfBirth
+    return contactLast.equals(inputLast, ignoreCase = true) && contactDateOfBirth == dateOfBirth
   }
 
   private fun validateBookerPrisonerRelationship(booker: Booker, prisonerId: String) {
@@ -120,7 +108,7 @@ class VisitorRequestsValidationService(
 
   private fun validateVisitorAlreadyAdded(booker: Booker, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto, prisonerContactList: List<PrisonerContactDto>) {
     prisonerContactList.forEach { contact ->
-      if (matchContactNameAndDob(contact, visitorRequest.firstName, visitorRequest.lastName, visitorRequest.dateOfBirth)
+      if (matchContactNameAndDob(contact, visitorRequest.lastName, visitorRequest.dateOfBirth)
       ) {
         if (booker.permittedPrisoners.first { it.prisonerId == prisonerId }.permittedVisitors.any { it.visitorId == contact.personId }) {
           throw VisitorRequestValidationException(VisitorRequestValidationError.VISITOR_ALREADY_EXISTS)

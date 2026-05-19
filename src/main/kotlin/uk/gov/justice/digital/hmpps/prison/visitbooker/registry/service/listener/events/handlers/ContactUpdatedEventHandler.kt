@@ -51,7 +51,6 @@ class ContactUpdatedEventHandler(
       for (request in requests) {
         val matches = visitorRequestsValidationService.matchContactNameAndDob(
           contactDetails,
-          request.firstName,
           request.lastName,
           request.dateOfBirth,
         )
