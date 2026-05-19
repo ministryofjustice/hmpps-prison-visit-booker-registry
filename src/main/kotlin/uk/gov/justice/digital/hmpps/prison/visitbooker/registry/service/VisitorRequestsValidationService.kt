@@ -131,11 +131,12 @@ class VisitorRequestsValidationService(
       .toList()
 
     val visitorAlreadyExists = prisonerContactList.any { contact ->
-      contact.personId in permittedVisitorIds && matchContactLastNameAndDob(
-        contact,
-        visitorRequest.lastName,
-        visitorRequest.dateOfBirth,
-      )
+      contact.personId in permittedVisitorIds &&
+        matchContactLastNameAndDob(
+          contact,
+          visitorRequest.lastName,
+          visitorRequest.dateOfBirth,
+        )
     }
 
     if (visitorAlreadyExists) {
