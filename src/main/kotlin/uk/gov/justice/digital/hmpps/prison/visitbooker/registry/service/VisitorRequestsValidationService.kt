@@ -48,7 +48,11 @@ class VisitorRequestsValidationService(
     contacts: List<PrisonerContactDto>,
     lastName: String,
     dateOfBirth: LocalDate?,
-  ): Boolean = contacts.count { contact -> matchContactLastNameAndDob(contact, lastName, dateOfBirth) } > 1
+  ): Boolean = contacts.count { contact ->
+    isEligibleMatchingContact(contact) && matchContactLastNameAndDob(contact, lastName, dateOfBirth)
+  } > 1
+
+  private fun isEligibleMatchingContact(contact: PrisonerContactDto): Boolean = contact.personId != null
 
   fun matchContactLastNameAndDob(
     contact: PrisonerContactDto,

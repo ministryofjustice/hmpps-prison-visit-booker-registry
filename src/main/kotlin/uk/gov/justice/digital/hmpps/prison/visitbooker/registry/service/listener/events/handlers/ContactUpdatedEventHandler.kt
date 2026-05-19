@@ -53,7 +53,7 @@ class ContactUpdatedEventHandler(
       val multipleMatches = visitorRequestsValidationService.hasMultipleMatchingContacts(prisonerSocialContactList, contactDetails.lastName, contactDetails.dateOfBirth)
       if (multipleMatches) {
         LOG.info("Skipping processing of event as multiple contacts exist with same last name and DOB - cannot auto approve {}", prisonerNumber)
-        return
+        continue
       }
 
       for (request in requests) {

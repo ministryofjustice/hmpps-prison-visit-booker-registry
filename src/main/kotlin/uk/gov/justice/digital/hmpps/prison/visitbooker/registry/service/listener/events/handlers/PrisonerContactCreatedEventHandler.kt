@@ -62,7 +62,7 @@ class PrisonerContactCreatedEventHandler(
 
     val multipleMatches = visitorRequestsValidationService.hasMultipleMatchingContacts(prisonerSocialContactList, contactDetails.lastName, contactDetails.dateOfBirth)
     if (multipleMatches) {
-      LOG.info("Skipping processing of event as multiple contacts exist with same last name and DOB - cannot auto approve $prisonerId: $prisonerId, contactId: $contactId")
+      LOG.info("Skipping processing of event as multiple contacts exist with same last name and DOB - cannot auto approve prisonerId: $prisonerId, contactId: $contactId")
       return
     }
 
