@@ -118,6 +118,49 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
   }
 
   @Test
+  fun `when visitor request comes in and is eligible for automatic approval (lastname and DOB match), it is saved to database successfully with status auto_approved`() {
+    // Given
+    val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
+    val prisoner = createPrisoner(booker, "AA123456")
+    val visitorRequestDto = AddVisitorToBookerPrisonerRequestDto(
+      firstName = "Jon",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    // When
+    val prisonerContact = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact))
+    val responseSpec = callSubmitVisitorRequest(bookerConfigServiceRoleHttpHeaders, booker.reference, prisoner.prisonerId, visitorRequestDto)
+
+    // Then
+    responseSpec.expectStatus().isCreated
+
+    val visitorRequests = visitorRequestsRepository.findAll()
+    assertThat(visitorRequests).hasSize(1)
+    assertVisitorRequest(visitorRequests[0], booker.reference, prisoner.prisonerId, visitorRequestDto, VisitorRequestsStatus.AUTO_APPROVED, personId = prisonerContact.personId)
+    val visitRequest = visitorRequests[0]
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      BookerAuditType.VISITOR_REQUEST_SUBMITTED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to prisoner.prisonerId,
+        "requestReference" to visitRequest.reference,
+        "visitorRequestStatus" to visitRequest.status.name,
+        "prisonId" to prisoner.prisonCode,
+        "visitorId" to prisonerContact.personId.toString(),
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(2)
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
+  }
+
+  @Test
   fun `when visitor request comes in and the only matching contact is an unapproved visitor then request is still matched and saved to database with status auto_approved`() {
     // Given
     val booker = createBooker(oneLoginSub = "123", emailAddress = "test@test.come")
