@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.ContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.ContactLinkedSocialPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.DomainEventTypes
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
@@ -40,8 +41,17 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
       dateOfBirth = LocalDate.now().minusYears(21),
     )
 
+    val prisonerContact = PrisonerContactDto(
+      firstName = "john",
+      lastName = "smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+      approvedVisitor = true,
+      contactType = "S",
+    )
+
     prisonerContactRegistryMockServer.stubGetContact(contactId, contact)
     prisonerContactRegistryMockServer.stubGetContactLinkedSocialPrisoners(contactId, listOf(ContactLinkedSocialPrisonerDto(prisonerId)))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId, listOf(prisonerContact))
 
     val booker = createBooker("oneSub", "testEmail@test.com")
     val prisoner = createPrisoner(booker, prisonerId)
@@ -68,6 +78,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
 
     verify(prisonerContactRegistryClientSpy, times(1)).getContact(contactId)
     verify(prisonerContactRegistryClientSpy, times(1)).getContactLinkedSocialPrisoners(contactId)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
   }
 
   @Test
@@ -110,6 +121,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
 
     verify(prisonerContactRegistryClientSpy, times(1)).getContact(contactId)
     verify(prisonerContactRegistryClientSpy, times(1)).getContactLinkedSocialPrisoners(contactId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(prisonerId)
   }
 
   @Test
@@ -149,6 +161,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
 
     verify(prisonerContactRegistryClientSpy, times(1)).getContact(contactId)
     verify(prisonerContactRegistryClientSpy, times(1)).getContactLinkedSocialPrisoners(contactId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(prisonerId)
   }
 
   @Test
@@ -234,5 +247,72 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
 
     verify(prisonerContactRegistryClientSpy, times(1)).getContact(contactId)
     verify(prisonerContactRegistryClientSpy, times(1)).getContactLinkedSocialPrisoners(contactId)
+  }
+
+  @Test
+  fun `when domain event 'contact updated' is found, but multiple contacts match, then it is skipped`() {
+    // Given
+    val contactId = "123456"
+    val prisonerId = "AA123456"
+
+    val domainEvent = createDomainEventJson(
+      DomainEventTypes.CONTACT_UPDATED_EVENT.value,
+      createContactUpdatedEventAdditionalInformationJson(contactId = contactId.toLong()),
+      contactId = contactId,
+    )
+
+    val contact = ContactDto(
+      contactId = contactId.toLong(),
+      firstName = "john",
+      lastName = "smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+    )
+
+    val prisonerContact1 = PrisonerContactDto(
+      firstName = "john",
+      lastName = "smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+      approvedVisitor = true,
+      contactType = "S",
+    )
+
+    val prisonerContact2 = PrisonerContactDto(
+      firstName = "james",
+      lastName = "smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+      approvedVisitor = true,
+      contactType = "S",
+    )
+
+    prisonerContactRegistryMockServer.stubGetContact(contactId, contact)
+    prisonerContactRegistryMockServer.stubGetContactLinkedSocialPrisoners(contactId, listOf(ContactLinkedSocialPrisonerDto(prisonerId)))
+    prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId, listOf(prisonerContact1, prisonerContact2))
+
+    val booker = createBooker("oneSub", "testEmail@test.com")
+    val prisoner = createPrisoner(booker, prisonerId)
+
+    val visitorRequest = createVisitorRequest(
+      booker.reference,
+      prisoner.prisonerId,
+      AddVisitorToBookerPrisonerRequestDto("john", "smith", LocalDate.now().minusYears(21)),
+      status = VisitorRequestsStatus.REQUESTED,
+    )
+
+    val publishRequest = createDomainEventPublishRequest(domainEvent)
+
+    // When
+    awsSnsClient.publish(publishRequest).get()
+
+    // Then
+    await untilAsserted { verify(domainEventListenerSpy, times(1)).processMessage(any()) }
+    await untilAsserted { verify(domainEventListenerServiceSpy, times(1)).handleMessage(any()) }
+    await untilAsserted { verify(contactUpdatedEventHandlerSpy, times(1)).handle(any()) }
+    await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it == 0 }
+
+    assertThat(visitorRequestsRepositorySpy.findVisitorRequestByReference(visitorRequest.reference)!!.status).isEqualTo(VisitorRequestsStatus.REQUESTED)
+
+    verify(prisonerContactRegistryClientSpy, times(1)).getContact(contactId)
+    verify(prisonerContactRegistryClientSpy, times(1)).getContactLinkedSocialPrisoners(contactId)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
   }
 }

@@ -58,8 +58,16 @@ class PrisonerContactCreatedEventHandler(
       return
     }
 
+    val prisonerSocialContactList = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId)
+
+    val multipleMatches = visitorRequestsValidationService.hasMultipleMatchingContacts(prisonerSocialContactList, contactDetails.lastName, contactDetails.dateOfBirth)
+    if (multipleMatches) {
+      LOG.info("Skipping processing of event as multiple contacts exist with same last name and DOB - cannot auto approve $prisonerId: $prisonerId, contactId: $contactId")
+      return
+    }
+
     requests.forEach { request ->
-      if (visitorRequestsValidationService.matchContactNameAndDob(contactDetails, request.firstName, request.lastName, request.dateOfBirth)) {
+      if (visitorRequestsValidationService.matchContactLastNameAndDob(contactDetails, request.lastName, request.dateOfBirth)) {
         LOG.info("PrisonerContactCreatedEventHandler - Approving visitor request for prisoner $prisonerId, contactId: $contactId, relationshipId: $relationshipId, visitor request reference: ${request.reference}")
         visitorRequestsService.approveAndLinkVisitorRequest(request.reference, ApproveVisitorRequestDto(contactDetails.personId!!, SYSTEM_USER_NAME), autoApproval = true)
       }

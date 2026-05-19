@@ -44,11 +44,13 @@ class VisitorRequestsStoreService(
     visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
 
     val matchingContact = contactList.firstOrNull { contact ->
-      visitorRequestsValidationService.matchContactNameAndDob(contact, request.firstName, request.lastName, request.dateOfBirth) && contact.personId != null
+      visitorRequestsValidationService.matchContactLastNameAndDob(contact, request.lastName, request.dateOfBirth) && contact.personId != null
     }
 
-    val visitorRequestStatus = if (matchingContact != null) {
-      // Only create a visitor entry if we find a 100% match (Auto approval path)
+    val multipleMatches = visitorRequestsValidationService.hasMultipleMatchingContacts(contactList, request.lastName, request.dateOfBirth)
+
+    // If we have a matching contact and there is only 1 of them, begin auto approval process.
+    val visitorRequestStatus = if (matchingContact != null && !multipleMatches) {
       val bookerPrisonerEntity = booker.permittedPrisoners.first { it.prisonerId == prisonerId }
 
       visitorRepository.saveAndFlush(
@@ -72,7 +74,7 @@ class VisitorRequestsStoreService(
         lastName = request.lastName.trim(),
         dateOfBirth = request.dateOfBirth,
         status = visitorRequestStatus, // REQUESTED or AUTO_APPROVED
-        visitorId = matchingContact?.personId,
+        visitorId = if (!multipleMatches) matchingContact?.personId else null,
       ),
     )
 
@@ -85,7 +87,7 @@ class VisitorRequestsStoreService(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
       prisonId = prisonerRegisteredPrisonCode,
-      visitorId = matchingContact?.personId,
+      visitorId = if (!multipleMatches) matchingContact?.personId else null,
     )
   }
 
