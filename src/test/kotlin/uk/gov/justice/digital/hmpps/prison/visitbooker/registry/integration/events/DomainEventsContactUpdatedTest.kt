@@ -42,6 +42,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
     )
 
     val prisonerContact = PrisonerContactDto(
+      personId = 123456L,
       firstName = "john",
       lastName = "smith",
       dateOfBirth = LocalDate.now().minusYears(21),
@@ -269,6 +270,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
     )
 
     val prisonerContact1 = PrisonerContactDto(
+      personId = 123456L,
       firstName = "john",
       lastName = "smith",
       dateOfBirth = LocalDate.now().minusYears(21),
@@ -277,6 +279,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
     )
 
     val prisonerContact2 = PrisonerContactDto(
+      personId = 98765L,
       firstName = "james",
       lastName = "smith",
       dateOfBirth = LocalDate.now().minusYears(21),
