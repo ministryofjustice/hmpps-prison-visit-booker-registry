@@ -280,7 +280,7 @@ class DomainEventsContactUpdatedTest : EventsIntegrationTestBase() {
 
     val prisonerContact2 = PrisonerContactDto(
       personId = 98765L,
-      firstName = "james",
+      firstName = "john",
       lastName = "smith",
       dateOfBirth = LocalDate.now().minusYears(21),
       approvedVisitor = true,

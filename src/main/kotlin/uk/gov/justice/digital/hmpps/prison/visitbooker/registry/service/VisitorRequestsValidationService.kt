@@ -46,46 +46,58 @@ class VisitorRequestsValidationService(
 
   fun hasMultipleMatchingContacts(
     contacts: List<PrisonerContactDto>,
+    firstName: String,
     lastName: String,
     dateOfBirth: LocalDate?,
   ): Boolean = contacts.count { contact ->
-    isEligibleMatchingContact(contact) && matchContactLastNameAndDob(contact, lastName, dateOfBirth)
+    isEligibleMatchingContact(contact) && matchContactLastNameAndDob(contact, firstName, lastName, dateOfBirth)
   } > 1
 
   private fun isEligibleMatchingContact(contact: PrisonerContactDto): Boolean = contact.personId != null
 
   fun matchContactLastNameAndDob(
     contact: PrisonerContactDto,
+    firstName: String,
     lastName: String,
     dateOfBirth: LocalDate?,
-  ): Boolean = matchLastNameAndDob(
+  ): Boolean = matchContactNameAndDob(
+    contact.firstName,
     contact.lastName,
     contact.dateOfBirth,
+    firstName,
     lastName,
     dateOfBirth,
   )
 
   fun matchContactLastNameAndDob(
     contact: ContactDto,
+    firstName: String,
     lastName: String,
     dateOfBirth: LocalDate?,
-  ): Boolean = matchLastNameAndDob(
+  ): Boolean = matchContactNameAndDob(
+    contact.firstName,
     contact.lastName,
     contact.dateOfBirth,
+    firstName,
     lastName,
     dateOfBirth,
   )
 
-  private fun matchLastNameAndDob(
+  private fun matchContactNameAndDob(
+    contactFirstName: String,
     contactLastName: String,
     contactDateOfBirth: LocalDate? = null,
+    firstName: String,
     lastName: String,
     dateOfBirth: LocalDate?,
   ): Boolean {
+    val contactFirst = stringInputUtils.sanitiseText(contactFirstName)
     val contactLast = stringInputUtils.sanitiseText(contactLastName)
+    val inputFirst = stringInputUtils.sanitiseText(firstName)
     val inputLast = stringInputUtils.sanitiseText(lastName)
 
-    return contactLast.equals(inputLast, ignoreCase = true) &&
+    return contactFirst.equals(inputFirst, ignoreCase = true) &&
+      contactLast.equals(inputLast, ignoreCase = true) &&
       contactDateOfBirth == dateOfBirth
   }
 
@@ -134,6 +146,7 @@ class VisitorRequestsValidationService(
       contact.personId in permittedVisitorIds &&
         matchContactLastNameAndDob(
           contact,
+          visitorRequest.firstName,
           visitorRequest.lastName,
           visitorRequest.dateOfBirth,
         )

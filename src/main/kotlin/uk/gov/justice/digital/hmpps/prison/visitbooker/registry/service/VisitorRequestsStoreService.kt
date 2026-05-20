@@ -44,10 +44,10 @@ class VisitorRequestsStoreService(
     visitorRequestsValidationService.validateVisitorRequest(booker, prisonerId, request, contactList)
 
     val matchingContact = contactList.firstOrNull { contact ->
-      visitorRequestsValidationService.matchContactLastNameAndDob(contact, request.lastName, request.dateOfBirth) && contact.personId != null
+      visitorRequestsValidationService.matchContactLastNameAndDob(contact, request.firstName, request.lastName, request.dateOfBirth) && contact.personId != null
     }
 
-    val multipleMatches = visitorRequestsValidationService.hasMultipleMatchingContacts(contactList, request.lastName, request.dateOfBirth)
+    val multipleMatches = visitorRequestsValidationService.hasMultipleMatchingContacts(contactList, request.firstName, request.lastName, request.dateOfBirth)
 
     // If we have a matching contact and there is only 1 of them, begin auto approval process.
     val visitorRequestStatus = if (matchingContact != null && !multipleMatches) {

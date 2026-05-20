@@ -286,7 +286,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     )
 
     // When
-    val prisonerContact1 = PrisonerContactDto(personId = 543L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+    val prisonerContact1 = PrisonerContactDto(personId = 543L, firstName = "James", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
     val prisonerContact2 = PrisonerContactDto(personId = 544L, firstName = "James", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
 
     prisonerContactRegistryMockServer.stubGetPrisonerSocialContacts(prisonerId = prisoner.prisonerId, listOf(prisonerContact1, prisonerContact2))
