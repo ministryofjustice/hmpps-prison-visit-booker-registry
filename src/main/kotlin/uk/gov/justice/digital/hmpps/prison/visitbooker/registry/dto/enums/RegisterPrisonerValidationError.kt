@@ -5,7 +5,6 @@ enum class RegisterPrisonerValidationError(val telemetryEventName: String) {
   BOOKER_ALREADY_HAS_A_PRISONER("booker-has-active-prisoner"),
   PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER("prisoner-already-registered"),
   PRISONER_NOT_FOUND("prisoner-not-found"),
-  FIRST_NAME_INCORRECT("first-name-incorrect"),
   LAST_NAME_INCORRECT("last-name-incorrect"),
   DOB_INCORRECT("dob-incorrect"),
   PRISON_CODE_INCORRECT("prison-code-incorrect"),

@@ -34,9 +34,6 @@ class RegisterPrisonerValidator(private val stringInputUtils: StringInputUtils) 
     if (prisonerSearchPrisoner == null) {
       errors.add(RegisterPrisonerValidationError.PRISONER_NOT_FOUND)
     } else {
-      validateFirstName(registerPrisonerRequest.prisonerFirstName, prisonerSearchPrisoner.firstName)?.let {
-        errors.add(it)
-      }
       validateLastName(registerPrisonerRequest.prisonerLastName, prisonerSearchPrisoner.lastName)?.let {
         errors.add(it)
       }
@@ -49,15 +46,6 @@ class RegisterPrisonerValidator(private val stringInputUtils: StringInputUtils) 
     }
 
     return errors.toList()
-  }
-
-  private fun validateFirstName(
-    prisonerToRegisterFirstName: String,
-    prisonerSearchFirstName: String?,
-  ): RegisterPrisonerValidationError? = if (!areNamesMatching(prisonerToRegisterFirstName, prisonerSearchFirstName)) {
-    RegisterPrisonerValidationError.FIRST_NAME_INCORRECT
-  } else {
-    null
   }
 
   private fun validateLastName(
