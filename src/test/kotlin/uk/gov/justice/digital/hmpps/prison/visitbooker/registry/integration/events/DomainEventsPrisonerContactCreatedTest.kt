@@ -250,7 +250,7 @@ class DomainEventsPrisonerContactCreatedTest : EventsIntegrationTestBase() {
     val contactId = "123456"
     val relationshipId = 9876L
     val contact1 = PrisonerContactDto(personId = contactId.toLong(), firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
-    val contact2 = PrisonerContactDto(personId = 9876654L, firstName = "Jake", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
+    val contact2 = PrisonerContactDto(personId = 9876654L, firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), approvedVisitor = true, contactType = "S")
 
     val domainEvent = createDomainEventJson(
       DomainEventTypes.PRISONER_CONTACT_CREATED_EVENT.value,
