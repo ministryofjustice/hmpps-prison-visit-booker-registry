@@ -152,9 +152,8 @@ class RegisterPrisonerValidatorTest {
 
     val errors = registerPrisonerValidator.validateAgainstPrisonerSearch(registerPrisonerRequestDto, prisonerDto)
     Assertions.assertThat(errors).isNotEmpty()
-    Assertions.assertThat(errors.size).isEqualTo(4)
+    Assertions.assertThat(errors.size).isEqualTo(3)
     Assertions.assertThat(errors).containsExactlyInAnyOrder(
-      RegisterPrisonerValidationError.FIRST_NAME_INCORRECT,
       RegisterPrisonerValidationError.LAST_NAME_INCORRECT,
       RegisterPrisonerValidationError.DOB_INCORRECT,
       RegisterPrisonerValidationError.PRISON_CODE_INCORRECT,
@@ -182,9 +181,8 @@ class RegisterPrisonerValidatorTest {
 
     val errors = registerPrisonerValidator.validateAgainstPrisonerSearch(registerPrisonerRequestDto, prisonerDto)
     Assertions.assertThat(errors).isNotEmpty()
-    Assertions.assertThat(errors.size).isEqualTo(4)
+    Assertions.assertThat(errors.size).isEqualTo(3)
     Assertions.assertThat(errors).containsExactlyInAnyOrder(
-      RegisterPrisonerValidationError.FIRST_NAME_INCORRECT,
       RegisterPrisonerValidationError.LAST_NAME_INCORRECT,
       RegisterPrisonerValidationError.DOB_INCORRECT,
       RegisterPrisonerValidationError.PRISON_CODE_INCORRECT,

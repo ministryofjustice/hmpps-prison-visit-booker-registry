@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.REGISTER_PRISONER_SEARCH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.BOOKER_ALREADY_HAS_A_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.DOB_INCORRECT
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.FIRST_NAME_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.LAST_NAME_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_NOT_FOUND
@@ -232,7 +231,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when register prisoner does not match the prisoner is not registered against the booker and fails with a validation error`() {
+  fun `when register prisoner first-name does not match the prisoner is still registered against the booker`() {
     val registerPrisoner = RegisterPrisonerRequestDto(
       prisonerId = prisonerId,
       prisonCode = prisonCode,
@@ -256,21 +255,11 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
-    assertError(
-      responseSpec,
-      "Prisoner registration validation failed",
-      "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT",
-      HttpStatus.UNPROCESSABLE_CONTENT,
-    )
+    responseSpec.expectStatus().isCreated
 
+    verify(bookerAuditRepositorySpy, times(2)).saveAndFlush(any<BookerAudit>())
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
-    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
 
-    val auditEvents = bookerAuditRepository.findAll()
-    assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - FIRST_NAME_INCORRECT")
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -280,11 +269,23 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "lastNameEntered" to registerPrisoner.prisonerLastName,
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
-        "success" to false.toString(),
-        "failureReasons" to FIRST_NAME_INCORRECT.telemetryEventName,
+        "success" to true.toString(),
       ),
       null,
     )
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      PRISONER_REGISTERED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to registerPrisoner.prisonerId,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(2)
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
   }
 
   @Test
@@ -315,7 +316,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     assertError(
       responseSpec,
       "Prisoner registration validation failed",
-      "Prisoner registration validation failed with the following errors - FIRST_NAME_INCORRECT, LAST_NAME_INCORRECT, DOB_INCORRECT",
+      "Prisoner registration validation failed with the following errors - LAST_NAME_INCORRECT, DOB_INCORRECT",
       HttpStatus.UNPROCESSABLE_CONTENT,
     )
 
@@ -326,7 +327,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - FIRST_NAME_INCORRECT, LAST_NAME_INCORRECT, DOB_INCORRECT")
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - LAST_NAME_INCORRECT, DOB_INCORRECT")
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -337,7 +338,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "failureReasons" to "${FIRST_NAME_INCORRECT.telemetryEventName}, ${LAST_NAME_INCORRECT.telemetryEventName}, ${DOB_INCORRECT.telemetryEventName}",
+        "failureReasons" to "${LAST_NAME_INCORRECT.telemetryEventName}, ${DOB_INCORRECT.telemetryEventName}",
       ),
       null,
     )
