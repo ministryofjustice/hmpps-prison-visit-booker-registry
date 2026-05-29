@@ -35,14 +35,14 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
   fun `when get active visitor requests by booker reference is called only REQUESTED status requests are returned`() {
     // Given
     val bookerReference = booker1.reference
-    val request1 = createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.EN)
+    val request1 = createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED, languagePreference = LanguagePreference.EN)
     // status not REQUESTED
-    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED, LanguagePreference.EN)
+    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED, languagePreference = LanguagePreference.EN)
     // status not REQUESTED
     createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName3", "lastName3", LocalDate.now().minusYears(23)), status = VisitorRequestsStatus.REJECTED)
-    val request4 = createVisitorRequest(booker1.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.CY)
+    val request4 = createVisitorRequest(booker1.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, languagePreference = LanguagePreference.CY)
     // same prisoner REQUESTED - but other booker
-    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.CY)
+    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, languagePreference = LanguagePreference.CY)
 
     // When
     val responseSpec = getActiveVisitorRequestsByBookerReference(webTestClient, bookerReference, orchestrationServiceRoleHttpHeaders)
@@ -66,11 +66,11 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     val bookerReference = booker1.reference
 
     // status not REQUESTED
-    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED, LanguagePreference.EN)
+    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED, languagePreference = LanguagePreference.EN)
     // status not REQUESTED
-    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName3", "lastName3", LocalDate.now().minusYears(23)), status = VisitorRequestsStatus.REJECTED, LanguagePreference.EN)
+    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName3", "lastName3", LocalDate.now().minusYears(23)), status = VisitorRequestsStatus.REJECTED, languagePreference = LanguagePreference.EN)
     // for other booker
-    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.EN)
+    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, languagePreference = LanguagePreference.EN)
 
     // When
     val responseSpec = getActiveVisitorRequestsByBookerReference(webTestClient, bookerReference, orchestrationServiceRoleHttpHeaders)
