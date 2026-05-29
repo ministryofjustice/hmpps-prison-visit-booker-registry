@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.IntegrationTestBase.Companion.PRISON_CODE
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.events.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
@@ -189,7 +190,7 @@ abstract class EventsIntegrationTestBase {
   }
   fun createPrisoner(booker: Booker, prisonerId: String, prisonCode: String = PRISON_CODE): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, prisonCode = prisonCode))
 
-  fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus): VisitorRequest = entityHelper.createVisitorRequest(
+  fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus, languagePreference: LanguagePreference = LanguagePreference.EN): VisitorRequest = entityHelper.createVisitorRequest(
     VisitorRequest(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
@@ -197,6 +198,7 @@ abstract class EventsIntegrationTestBase {
       lastName = addVisitorToBookerPrisonerRequestDto.lastName,
       dateOfBirth = addVisitorToBookerPrisonerRequestDto.dateOfBirth,
       status = status,
+      languagePreference = languagePreference,
     ),
   )
 }

@@ -75,6 +75,7 @@ class VisitorRequestsStoreService(
         dateOfBirth = request.dateOfBirth,
         status = visitorRequestStatus, // REQUESTED or AUTO_APPROVED
         visitorId = if (!multipleMatches) matchingContact?.personId else null,
+        languagePreference = request.languagePreference,
       ),
     )
 
@@ -88,6 +89,7 @@ class VisitorRequestsStoreService(
       prisonerId = prisonerId,
       prisonId = prisonerRegisteredPrisonCode,
       visitorId = if (!multipleMatches) matchingContact?.personId else null,
+      languagePreference = savedVisitorRequest.languagePreference,
     )
   }
 

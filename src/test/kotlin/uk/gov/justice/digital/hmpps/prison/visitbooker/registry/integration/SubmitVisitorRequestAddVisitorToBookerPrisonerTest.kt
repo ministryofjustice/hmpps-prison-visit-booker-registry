@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorTo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import java.time.LocalDate
 
@@ -41,6 +42,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -65,6 +67,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "requestReference" to visitRequest.reference,
         "visitorRequestStatus" to visitRequest.status.name,
         "prisonId" to prisoner.prisonCode,
+        "languagePreference" to LanguagePreference.EN.name,
       ),
       null,
     )
@@ -83,6 +86,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.CY,
     )
 
     // When
@@ -107,6 +111,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "visitorRequestStatus" to visitRequest.status.name,
         "prisonId" to prisoner.prisonCode,
         "visitorId" to prisonerContact.personId.toString(),
+        "languagePreference" to LanguagePreference.CY.name,
       ),
       null,
     )
@@ -126,6 +131,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -151,6 +157,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "visitorRequestStatus" to visitRequest.status.name,
         "prisonId" to prisoner.prisonCode,
         "visitorId" to prisonerContactUnapproved.personId.toString(),
+        "languagePreference" to LanguagePreference.EN.name,
       ),
       null,
     )
@@ -170,6 +177,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = " JoHñ ",
       lastName = " SmIțH ",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -194,6 +202,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "visitorRequestStatus" to visitRequest.status.name,
         "prisonId" to prisoner.prisonCode,
         "visitorId" to prisonerContact.personId.toString(),
+        "languagePreference" to LanguagePreference.EN.name,
       ),
       null,
     )
@@ -213,6 +222,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = " JoHn ",
       lastName = " SmItH ",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -237,6 +247,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "visitorRequestStatus" to visitRequest.status.name,
         "prisonId" to prisoner.prisonCode,
         "visitorId" to prisonerContact.personId.toString(),
+        "languagePreference" to LanguagePreference.EN.name,
       ),
       null,
     )
@@ -256,6 +267,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.CY,
     )
 
     // When
@@ -283,6 +295,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.CY,
     )
 
     // When
@@ -309,6 +322,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
         "requestReference" to visitRequest.reference,
         "visitorRequestStatus" to visitRequest.status.name,
         "prisonId" to prisoner.prisonCode,
+        "languagePreference" to LanguagePreference.CY.name,
       ),
       null,
     )
@@ -334,6 +348,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.CY,
     )
 
     // When
@@ -363,6 +378,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "firstName",
       lastName = "lastName",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -391,6 +407,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -419,6 +436,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -445,6 +463,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -471,6 +490,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
+      languagePreference = LanguagePreference.EN,
     )
     // When
     val responseSpec = callSubmitVisitorRequest(setAuthorisation(roles = listOf()), bookerReference, prisonerId, visitorRequestDto)
