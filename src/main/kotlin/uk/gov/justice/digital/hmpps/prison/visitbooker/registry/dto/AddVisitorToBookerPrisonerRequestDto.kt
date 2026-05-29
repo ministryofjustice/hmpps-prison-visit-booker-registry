@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import java.time.LocalDate
 
 @Schema(description = "Visitor request details to add a visitor to a booker prisoner")
@@ -16,4 +17,7 @@ data class AddVisitorToBookerPrisonerRequestDto(
 
   @param:Schema(name = "dateOfBirth", description = "Date of birth of the visitor in request", required = true)
   val dateOfBirth: LocalDate,
+
+  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", defaultValue = "EN", required = false)
+  val languagePreference: LanguagePreference = LanguagePreference.EN,
 )

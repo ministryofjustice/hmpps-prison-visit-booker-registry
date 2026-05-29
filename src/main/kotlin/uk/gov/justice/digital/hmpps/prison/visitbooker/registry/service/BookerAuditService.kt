@@ -6,12 +6,8 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_PRISONER
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.ACTIVATED_VISITOR
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.BOOKER_CREATED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.CLEAR_BOOKER_DETAILS
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.DEACTIVATED_PRISONER
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.DEACTIVATED_VISITOR
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_REGISTERED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.REGISTER_PRISONER_SEARCH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
@@ -44,6 +40,7 @@ class BookerAuditService(
     private const val REGISTERED_PRISON_CODE = "prisonId"
     private const val VISITOR_REQUEST_STATUS = "visitorRequestStatus"
     private const val ACTIONED_BY = "actionedBy"
+    private const val LANGUAGE_PREFERENCE = "languagePreference"
 
     private interface PrisonerSearchPropertyNames {
       companion object {
@@ -75,32 +72,6 @@ class BookerAuditService(
   fun auditAddPrisoner(bookerReference: String, prisonNumber: String) {
     val auditType = PRISONER_REGISTERED
     val text = "Prisoner with prisonNumber - $prisonNumber registered against booker"
-    auditBookerEvent(bookerReference, auditType, text)
-
-    // send event to telemetry client
-    val properties = mapOf(
-      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
-      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
-    )
-    sendTelemetryClientEvent(auditType, properties)
-  }
-
-  fun auditActivatePrisoner(bookerReference: String, prisonNumber: String) {
-    val auditType = ACTIVATED_PRISONER
-    val text = "Prisoner with prisonNumber - $prisonNumber activated"
-
-    auditBookerEvent(bookerReference, auditType, text)
-    // send event to telemetry client
-    val properties = mapOf(
-      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
-      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
-    )
-    sendTelemetryClientEvent(auditType, properties)
-  }
-
-  fun auditDeactivatePrisoner(bookerReference: String, prisonNumber: String) {
-    val auditType = DEACTIVATED_PRISONER
-    val text = "Prisoner with prisonNumber - $prisonNumber deactivated"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
@@ -162,20 +133,6 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
-  fun auditActivateVisitor(bookerReference: String, visitorId: Long, prisonNumber: String) {
-    val auditType = ACTIVATED_VISITOR
-    val text = "Visitor ID - $visitorId activated for prisoner - $prisonNumber"
-    auditBookerEvent(bookerReference, auditType, text)
-
-    // send event to telemetry client
-    val properties = mapOf(
-      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
-      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
-      VISITOR_ID_PROPERTY_NAME to visitorId.toString(),
-    )
-    sendTelemetryClientEvent(auditType, properties)
-  }
-
   fun auditVisitorRequest(createVisitorRequestResponseDto: CreateVisitorRequestResponseDto) {
     val auditType = BookerAuditType.VISITOR_REQUEST_SUBMITTED
     val text = "Booker ${createVisitorRequestResponseDto.bookerReference}, submitted request to add visitor to prisoner ${createVisitorRequestResponseDto.prisonerId}, request reference - ${createVisitorRequestResponseDto.reference}"
@@ -193,6 +150,7 @@ class BookerAuditService(
       VISITOR_REQUEST_REFERENCE to createVisitorRequestResponseDto.reference,
       VISITOR_REQUEST_STATUS to createVisitorRequestResponseDto.status.name,
       REGISTERED_PRISON_CODE to createVisitorRequestResponseDto.prisonId,
+      LANGUAGE_PREFERENCE to createVisitorRequestResponseDto.languagePreference.name,
     )
 
     // set the matched visitorId if it exists
@@ -200,20 +158,6 @@ class BookerAuditService(
       properties[VISITOR_ID_PROPERTY_NAME] = it.toString()
     }
 
-    sendTelemetryClientEvent(auditType, properties)
-  }
-
-  fun auditDeactivateVisitor(bookerReference: String, visitorId: Long, prisonNumber: String) {
-    val auditType = DEACTIVATED_VISITOR
-    val text = "Visitor ID - $visitorId deactivated for prisoner - $prisonNumber"
-    auditBookerEvent(bookerReference, DEACTIVATED_VISITOR, text)
-
-    // send event to telemetry client
-    val properties = mapOf(
-      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
-      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
-      VISITOR_ID_PROPERTY_NAME to visitorId.toString(),
-    )
     sendTelemetryClientEvent(auditType, properties)
   }
 

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_V
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import java.time.LocalDate
@@ -34,14 +35,14 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
   fun `when get active visitor requests by booker reference is called only REQUESTED status requests are returned`() {
     // Given
     val bookerReference = booker1.reference
-    val request1 = createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    val request1 = createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.EN)
     // status not REQUESTED
-    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED)
+    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED, LanguagePreference.EN)
     // status not REQUESTED
     createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName3", "lastName3", LocalDate.now().minusYears(23)), status = VisitorRequestsStatus.REJECTED)
-    val request4 = createVisitorRequest(booker1.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED)
+    val request4 = createVisitorRequest(booker1.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.CY)
     // same prisoner REQUESTED - but other booker
-    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.CY)
 
     // When
     val responseSpec = getActiveVisitorRequestsByBookerReference(webTestClient, bookerReference, orchestrationServiceRoleHttpHeaders)
@@ -65,11 +66,11 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     val bookerReference = booker1.reference
 
     // status not REQUESTED
-    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED)
+    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(22)), status = VisitorRequestsStatus.APPROVED, LanguagePreference.EN)
     // status not REQUESTED
-    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName3", "lastName3", LocalDate.now().minusYears(23)), status = VisitorRequestsStatus.REJECTED)
+    createVisitorRequest(booker1.reference, "A1234", AddVisitorToBookerPrisonerRequestDto("firstName3", "lastName3", LocalDate.now().minusYears(23)), status = VisitorRequestsStatus.REJECTED, LanguagePreference.EN)
     // for other booker
-    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED)
+    createVisitorRequest(booker2.reference, "A1233", AddVisitorToBookerPrisonerRequestDto("firstName4", "lastName4", LocalDate.now().minusYears(24)), status = VisitorRequestsStatus.REQUESTED, LanguagePreference.EN)
 
     // When
     val responseSpec = getActiveVisitorRequestsByBookerReference(webTestClient, bookerReference, orchestrationServiceRoleHttpHeaders)
@@ -110,6 +111,7 @@ class ActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     Assertions.assertThat(visitorRequestDto.dateOfBirth).isEqualTo(visitorRequest.dateOfBirth)
     Assertions.assertThat(visitorRequestDto.status).isEqualTo(visitorRequest.status)
     Assertions.assertThat(visitorRequestDto.requestedOn).isEqualTo(visitorRequest.createTimestamp!!.toLocalDate())
+    Assertions.assertThat(visitorRequestDto.languagePreference).isEqualTo(visitorRequest.languagePreference)
   }
 
   fun getActiveVisitorRequestsByBookerReference(

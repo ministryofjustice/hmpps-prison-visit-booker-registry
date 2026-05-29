@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPris
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
@@ -136,7 +137,7 @@ abstract class IntegrationTestBase {
   }
   fun createPrisoner(booker: Booker, prisonerId: String, prisonCode: String = PRISON_CODE): PermittedPrisoner = entityHelper.createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = prisonerId, prisonCode = prisonCode))
 
-  fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus): VisitorRequest = entityHelper.createVisitorRequest(
+  fun createVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, status: VisitorRequestsStatus, languagePreference: LanguagePreference = LanguagePreference.EN): VisitorRequest = entityHelper.createVisitorRequest(
     VisitorRequest(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
@@ -144,6 +145,7 @@ abstract class IntegrationTestBase {
       lastName = addVisitorToBookerPrisonerRequestDto.lastName,
       dateOfBirth = addVisitorToBookerPrisonerRequestDto.dateOfBirth,
       status = status,
+      languagePreference = languagePreference,
     ),
   )
 

@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_S
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import java.time.LocalDate
 
 @Transactional(propagation = SUPPORTS)
@@ -24,7 +25,7 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
     val prisonCode = "HEI"
     val booker = createBooker("one-sub", "test@test.com")
     val prisoner = createPrisoner(booker, "AA123456", prisonCode)
-    val request = createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED)
+    val request = createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = VisitorRequestsStatus.REQUESTED, languagePreference = LanguagePreference.EN)
 
     // When
     val responseSpec = callGetSingleVisitorRequest(webTestClient, request.reference, bookerConfigServiceRoleHttpHeaders)
@@ -36,6 +37,7 @@ class GetSingleVisitorRequestForBookerPrisonerByReferenceTest : IntegrationTestB
     Assertions.assertThat(singleRequest.prisonerId).isEqualTo(prisoner.prisonerId)
     Assertions.assertThat(singleRequest.reference).isEqualTo(request.reference)
     Assertions.assertThat(singleRequest.requestedOn).isEqualTo(LocalDate.now())
+    Assertions.assertThat(singleRequest.languagePreference).isEqualTo(request.languagePreference)
   }
 
   @Test
