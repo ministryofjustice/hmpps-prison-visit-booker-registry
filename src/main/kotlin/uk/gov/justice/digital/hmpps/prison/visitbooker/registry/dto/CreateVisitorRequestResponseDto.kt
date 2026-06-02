@@ -23,6 +23,12 @@ data class CreateVisitorRequestResponseDto(
   @param:Schema(description = "Identifier for a matched contact (Person in NOMIS), NULL if an automatic match for the visitor request was not found", required = false)
   val visitorId: Long?,
 
-  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", required = true)
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    required = true,
+    allowableValues = ["en", "cy"],
+    example = "en",
+  )
   val languagePreference: LanguagePreference,
 )

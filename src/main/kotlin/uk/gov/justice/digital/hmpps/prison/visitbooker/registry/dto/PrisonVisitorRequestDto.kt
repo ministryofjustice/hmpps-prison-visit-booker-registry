@@ -48,7 +48,13 @@ data class PrisonVisitorRequestDto(
   @param:Schema(description = "The current status of the request", example = "REQUESTED", required = true)
   val status: VisitorRequestsStatus,
 
-  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", required = true)
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    required = true,
+    allowableValues = ["en", "cy"],
+    example = "en",
+  )
   val languagePreference: LanguagePreference,
 ) {
   constructor(visitorRequest: VisitorRequest, bookerEmail: String) : this(
