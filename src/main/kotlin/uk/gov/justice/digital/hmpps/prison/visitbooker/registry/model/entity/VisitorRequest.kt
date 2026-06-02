@@ -53,7 +53,6 @@ class VisitorRequest(
   @Column
   val rejectionReason: VisitorRequestRejectionReason? = null,
 
-  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   val languagePreference: LanguagePreference,
 ) {
