@@ -128,6 +128,29 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when approved visitor request prisoner id has different casing to stored prisoner the visitor is linked`() {
+    // Given
+    val prisonCode = "HEI"
+    val booker = createBooker("one-sub", "test@test.com")
+    val bookerReference = booker.reference
+    val prisoner = createPrisoner(booker, "AA123456", prisonCode)
+    val requestPrisonerId = prisoner.prisonerId.lowercase()
+    val visitorIdToBeLinked = 12345L
+    val request = createVisitorRequest(bookerReference, requestPrisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = REQUESTED)
+    val userName = "TEST-USER"
+
+    // When
+    val responseSpec = callApproveVisitorRequest(webTestClient, request.reference, visitorIdToBeLinked, userName, bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+
+    val permittedPrisoner = bookerRepository.findByReference(bookerReference)?.permittedPrisoners?.first { it.prisonerId == prisoner.prisonerId }
+    assertThat(permittedPrisoner!!.permittedVisitors.size).isEqualTo(1)
+    assertThat(permittedPrisoner.permittedVisitors[0].visitorId).isEqualTo(visitorIdToBeLinked)
+  }
+
+  @Test
   fun `when approve visitor request is called and booker does not exist then NOT_FOUND status is returned`() {
     // Given
     val visitorIdToBeLinked = 12345L

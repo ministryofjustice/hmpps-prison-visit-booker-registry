@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Visito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PrisonerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
@@ -52,7 +53,7 @@ class VisitorRequestsStoreService(
 
     // If we have a matching contact and there is only 1 of them, begin auto approval process.
     val visitorRequestStatus = if (matchingContact != null && !multipleMatches) {
-      val bookerPrisonerEntity = booker.permittedPrisoners.first { it.prisonerId == prisonerId }
+      val bookerPrisonerEntity = getPermittedPrisoner(booker, prisonerId)
 
       linkVisitorIfAbsent(bookerReference, prisonerId, bookerPrisonerEntity.id, bookerPrisonerEntity, matchingContact.personId!!)
 
@@ -75,7 +76,7 @@ class VisitorRequestsStoreService(
     )
 
     // Required for auditing purposes in calling service.
-    val prisonerRegisteredPrisonCode = booker.permittedPrisoners.first { it.prisonerId == prisonerId }.prisonCode
+    val prisonerRegisteredPrisonCode = getPermittedPrisoner(booker, prisonerId).prisonCode
 
     return CreateVisitorRequestResponseDto(
       reference = savedVisitorRequest.reference,
@@ -93,7 +94,7 @@ class VisitorRequestsStoreService(
     val booker = bookerRepository.findByReference(bookerReference)!!
 
     LOG.info("Enter VisitorRequestsApprovalStoreService approveAndLinkVisitor, booker reference - $bookerReference, prisonerId - $prisonerId, visitorId = $visitorId")
-    val bookerPrisoner = booker.permittedPrisoners.firstOrNull { it.prisonerId == prisonerId } ?: throw PrisonerNotFoundException("Booker with reference $bookerReference does not have a permitted prisoner with id $prisonerId")
+    val bookerPrisoner = getPermittedPrisoner(booker, prisonerId)
 
     linkVisitorIfAbsent(bookerReference, prisonerId, bookerPrisoner.id, bookerPrisoner, visitorId)
 
@@ -119,6 +120,10 @@ class VisitorRequestsStoreService(
   fun deleteVisitorRequestsByBookerPrisonerInStatusRequested(bookerReference: String, prisonerId: String) {
     visitorRequestsRepository.deleteVisitorRequestsByBookerReferenceAndPrisonerIdInStatusRequested(bookerReference, prisonerId)
   }
+
+  private fun getPermittedPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner = booker.permittedPrisoners.firstOrNull {
+    it.prisonerId.equals(prisonerId, ignoreCase = true)
+  } ?: throw PrisonerNotFoundException("Booker with reference ${booker.reference} does not have a permitted prisoner with id $prisonerId")
 
   private fun linkVisitorIfAbsent(bookerReference: String, prisonerId: String, permittedPrisonerId: Long, permittedPrisoner: PermittedPrisoner, visitorId: Long) {
     if (visitorRepository.existsByPermittedPrisonerIdAndVisitorId(permittedPrisonerId, visitorId)) {

@@ -18,7 +18,7 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
     "Select pv.* FROM permitted_visitor pv " +
       "   LEFT JOIN permitted_prisoner pp ON pp.id = pv.permitted_prisoner_id" +
       "   LEFT JOIN booker b ON b.id = pp.booker_id " +
-      " WHERE b.reference = :bookerReference AND prisoner_id=:prisonerId AND pv.visitor_id = :visitorId",
+      " WHERE b.reference = :bookerReference AND lower(pp.prisoner_id) = lower(:prisonerId) AND pv.visitor_id = :visitorId",
     nativeQuery = true,
   )
   fun findVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): PermittedVisitor?
@@ -32,7 +32,7 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
   JOIN booker b ON b.id = pp.booker_id
   WHERE pv.permitted_prisoner_id = pp.id
     AND b.reference = :bookerReference
-    AND pp.prisoner_id = :prisonerId
+    AND lower(pp.prisoner_id) = lower(:prisonerId)
     AND pv.visitor_id = :visitorId
   """,
     nativeQuery = true,

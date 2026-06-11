@@ -125,6 +125,21 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when prisoner id has different casing to stored prisoner then visitor is unlinked successfully`() {
+    // Given
+    val actionedByDto = ActionedByDto(actionedBy = "test-user")
+
+    // When
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisoner.prisonerId.lowercase(), visitor1.visitorId, actionedByDto, bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+
+    val visitors = permittedVisitorRepository.findAll()
+    assertThat(visitors).hasSize(3)
+  }
+
+  @Test
   fun `when invalid reference then NOT_FOUND status is returned`() {
     // Given
     val actionedByDto = ActionedByDto(actionedBy = "test-user")
