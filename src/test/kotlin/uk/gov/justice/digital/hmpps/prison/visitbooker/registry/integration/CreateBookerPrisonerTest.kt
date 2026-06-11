@@ -84,6 +84,23 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when prisoner already exists with different casing an exception is thrown`() {
+    // Given
+    val existingPrisonerId = "AB123456"
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = existingPrisonerId.lowercase(), prisonCode = PRISON_CODE)
+
+    val prisoner = createPrisoner(booker, existingPrisonerId)
+    booker.permittedPrisoners.add(prisoner)
+    bookerRepository.saveAndFlush(booker)
+
+    // When
+    val responseSpec = callCreateBookerPrisoner(bookerConfigServiceRoleHttpHeaders, createPrisoner, booker.reference)
+
+    // Then
+    assertError(responseSpec, "Booker prisoner already exists", "BookerPrisoner for ${booker.reference} already exists", BAD_REQUEST)
+  }
+
+  @Test
   fun `when booker not does exist then exception is thrown`() {
     // Given
     val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", prisonCode = PRISON_CODE)

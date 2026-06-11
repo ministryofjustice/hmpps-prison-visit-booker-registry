@@ -37,7 +37,7 @@ class BookerDetailsStoreService(
     LOG.info("Enter BookerDetailsStoreService storeBookerPrisoner for booker $bookerReference")
 
     val booker = getBooker(bookerReference)
-    if (booker.permittedPrisoners.any { createPermittedPrisonerDto.prisonerId == it.prisonerId }) {
+    if (prisonerRepository.existsByBookerIdAndPrisonerIdIgnoreCase(booker.id, createPermittedPrisonerDto.prisonerId)) {
       LOG.error("Prisoner already exists for booker $bookerReference")
       throw BookerPrisonerAlreadyExistsException("BookerPrisoner for $bookerReference already exists")
     }
@@ -99,7 +99,7 @@ class BookerDetailsStoreService(
 
     val bookerPrisoner = getPermittedPrisoner(bookerReference, prisonerId)
 
-    if (bookerPrisoner.permittedVisitors.any { visitorId == it.visitorId }) {
+    if (visitorRepository.existsByPermittedPrisonerIdAndVisitorId(bookerPrisoner.id, visitorId)) {
       LOG.warn("Visitor  $visitorId already exists for booker $bookerReference prisoner $prisonerId")
       return PermittedVisitorDto(
         visitorId = visitorId,

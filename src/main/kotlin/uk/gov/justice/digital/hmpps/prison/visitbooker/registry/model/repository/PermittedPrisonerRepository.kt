@@ -10,11 +10,13 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   fun findByBookerId(bookerId: Long): List<PermittedPrisoner>
 
+  fun existsByBookerIdAndPrisonerIdIgnoreCase(bookerId: Long, prisonerId: String): Boolean
+
   @Transactional(readOnly = true)
   @Query(
     "Select pp.* FROM permitted_prisoner pp " +
       "   LEFT JOIN booker b ON b.id = pp.booker_id " +
-      " WHERE b.reference = :bookerReference AND prisoner_id=:prisonerId",
+      " WHERE b.reference = :bookerReference AND lower(prisoner_id) = lower(:prisonerId)",
     nativeQuery = true,
   )
   fun findByBookerIdAndPrisonerId(bookerReference: String, prisonerId: String): PermittedPrisoner?

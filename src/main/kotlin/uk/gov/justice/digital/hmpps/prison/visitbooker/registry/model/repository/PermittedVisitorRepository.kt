@@ -11,6 +11,8 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
   fun findByPermittedPrisonerId(prisonerPermittedId: Long): List<PermittedVisitor>
 
+  fun existsByPermittedPrisonerIdAndVisitorId(permittedPrisonerId: Long, visitorId: Long): Boolean
+
   @Transactional(readOnly = true)
   @Query(
     "Select pv.* FROM permitted_visitor pv " +

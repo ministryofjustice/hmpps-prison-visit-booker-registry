@@ -73,7 +73,7 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
 
     bookerTwo = createBooker(oneLoginSub = "987", emailAddress = "test-two@example.com")
     val prisonersForBookerTwo = createAssociatedPrisoners(
-      booker,
+      bookerTwo,
       listOf(
         PermittedPrisonerTestObject("AB123456", PRISON_CODE),
         PermittedPrisonerTestObject("DD948472", PRISON_CODE),
