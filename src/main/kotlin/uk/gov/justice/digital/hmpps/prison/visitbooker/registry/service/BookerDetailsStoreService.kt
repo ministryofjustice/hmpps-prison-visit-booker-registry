@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
-import java.util.*
 
 @Service
 class BookerDetailsStoreService(
@@ -38,7 +37,7 @@ class BookerDetailsStoreService(
     LOG.info("Enter BookerDetailsStoreService storeBookerPrisoner for booker $bookerReference")
 
     val booker = getBooker(bookerReference)
-    val prisonerId = createPermittedPrisonerDto.prisonerId.trim().uppercase(Locale.ROOT)
+    val prisonerId = createPermittedPrisonerDto.prisonerId.trim().uppercase()
     if (prisonerRepository.existsByBookerIdAndPrisonerIdIgnoreCase(booker.id, prisonerId)) {
       LOG.error("Prisoner already exists for booker $bookerReference")
       throw BookerPrisonerAlreadyExistsException("BookerPrisoner for $bookerReference already exists")
