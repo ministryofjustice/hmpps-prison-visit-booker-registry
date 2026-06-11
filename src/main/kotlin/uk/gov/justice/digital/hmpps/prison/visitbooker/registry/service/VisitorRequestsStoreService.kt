@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Prison
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
@@ -55,7 +54,7 @@ class VisitorRequestsStoreService(
     val visitorRequestStatus = if (matchingContact != null && !multipleMatches) {
       val bookerPrisonerEntity = getPermittedPrisoner(booker, prisonerId)
 
-      linkVisitorIfAbsent(bookerReference, prisonerId, bookerPrisonerEntity.id, bookerPrisonerEntity, matchingContact.personId!!)
+      linkVisitorIfAbsent(bookerReference, prisonerId, bookerPrisonerEntity.id, matchingContact.personId!!)
 
       AUTO_APPROVED
     } else {
@@ -96,7 +95,7 @@ class VisitorRequestsStoreService(
     LOG.info("Enter VisitorRequestsApprovalStoreService approveAndLinkVisitor, booker reference - $bookerReference, prisonerId - $prisonerId, visitorId = $visitorId")
     val bookerPrisoner = getPermittedPrisoner(booker, prisonerId)
 
-    linkVisitorIfAbsent(bookerReference, prisonerId, bookerPrisoner.id, bookerPrisoner, visitorId)
+    linkVisitorIfAbsent(bookerReference, prisonerId, bookerPrisoner.id, visitorId)
 
     val approvalStatus = if (autoApproval) {
       AUTO_APPROVED
@@ -125,18 +124,15 @@ class VisitorRequestsStoreService(
     it.prisonerId.equals(prisonerId, ignoreCase = true)
   } ?: throw PrisonerNotFoundException("Booker with reference ${booker.reference} does not have a permitted prisoner with id $prisonerId")
 
-  private fun linkVisitorIfAbsent(bookerReference: String, prisonerId: String, permittedPrisonerId: Long, permittedPrisoner: PermittedPrisoner, visitorId: Long) {
+  private fun linkVisitorIfAbsent(bookerReference: String, prisonerId: String, permittedPrisonerId: Long, visitorId: Long) {
     if (visitorRepository.existsByPermittedPrisonerIdAndVisitorId(permittedPrisonerId, visitorId)) {
       LOG.info("Visitor {} is already linked to booker {} prisoner {}, skipping duplicate permitted visitor insert", visitorId, bookerReference, prisonerId)
       return
     }
 
-    visitorRepository.saveAndFlush(
-      PermittedVisitor(
-        permittedPrisonerId = permittedPrisonerId,
-        permittedPrisoner = permittedPrisoner,
-        visitorId = visitorId,
-      ),
-    )
+    val insertedRows = visitorRepository.insertIfAbsent(permittedPrisonerId, visitorId)
+    if (insertedRows == 0) {
+      LOG.info("Visitor {} is already linked to booker {} prisoner {} after concurrent insert", visitorId, bookerReference, prisonerId)
+    }
   }
 }

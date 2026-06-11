@@ -13,6 +13,17 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
 
   fun existsByPermittedPrisonerIdAndVisitorId(permittedPrisonerId: Long, visitorId: Long): Boolean
 
+  @Modifying
+  @Query(
+    """
+    INSERT INTO permitted_visitor (permitted_prisoner_id, visitor_id)
+    VALUES (:permittedPrisonerId, :visitorId)
+    ON CONFLICT (permitted_prisoner_id, visitor_id) DO NOTHING
+    """,
+    nativeQuery = true,
+  )
+  fun insertIfAbsent(permittedPrisonerId: Long, visitorId: Long): Int
+
   @Transactional(readOnly = true)
   @Query(
     "Select pv.* FROM permitted_visitor pv " +

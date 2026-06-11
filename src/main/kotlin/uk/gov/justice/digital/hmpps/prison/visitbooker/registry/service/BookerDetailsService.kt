@@ -29,7 +29,7 @@ class BookerDetailsService(
 
     val permittedPrisoner = bookerDetailsStoreService.storeBookerPrisoner(bookerReference, createPermittedPrisonerDto)
 
-    bookerAuditService.auditAddPrisoner(bookerReference = bookerReference, prisonNumber = createPermittedPrisonerDto.prisonerId)
+    bookerAuditService.auditAddPrisoner(bookerReference = bookerReference, prisonNumber = permittedPrisoner.prisonerId)
     LOG.info("Prisoner added to permitted prisoners for booker {}", bookerReference)
     return permittedPrisoner
   }
