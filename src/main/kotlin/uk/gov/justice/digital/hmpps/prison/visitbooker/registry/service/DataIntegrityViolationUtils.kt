@@ -8,9 +8,9 @@ internal const val PERMITTED_PRISONER_BOOKER_PRISONER_UNIQUE_INDEX = "ux_permitt
 private const val POSTGRES_UNIQUE_VIOLATION_SQL_STATE = "23505"
 
 internal fun DataIntegrityViolationException.isUniqueViolationFor(constraintName: String): Boolean = sqlExceptions().any { sqlException ->
-    sqlException.sqlState == POSTGRES_UNIQUE_VIOLATION_SQL_STATE &&
-      sqlException.message?.contains(constraintName) == true
-  }
+  sqlException.sqlState == POSTGRES_UNIQUE_VIOLATION_SQL_STATE &&
+    sqlException.message?.contains(constraintName) == true
+}
 
 private fun Throwable.sqlExceptions(): Sequence<SQLException> = sequence {
   var cause: Throwable? = this@sqlExceptions

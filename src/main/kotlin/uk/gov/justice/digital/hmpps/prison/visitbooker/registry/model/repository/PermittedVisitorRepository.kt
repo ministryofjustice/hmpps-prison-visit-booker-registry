@@ -13,6 +13,7 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
 
   fun existsByPermittedPrisonerIdAndVisitorId(permittedPrisonerId: Long, visitorId: Long): Boolean
 
+  @Transactional
   @Modifying
   @Query(
     """
