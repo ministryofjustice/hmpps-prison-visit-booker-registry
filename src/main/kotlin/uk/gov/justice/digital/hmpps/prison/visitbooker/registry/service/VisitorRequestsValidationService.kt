@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.regi
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestValidationException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import java.time.LocalDate
@@ -38,7 +39,7 @@ class VisitorRequestsValidationService(
     val existingRequests = visitorRequestsRepository.findAllActiveRequestsByBookerReference(booker.reference)
 
     validateMaximumAllowedRequestsInProgress(booker, existingRequests)
-    validateDuplicateRequest(visitorRequest, existingRequests = existingRequests.filter { it.prisonerId == prisonerId })
+    validateDuplicateRequest(visitorRequest, existingRequests = existingRequests.filter { it.prisonerId.equals(prisonerId, ignoreCase = true) })
     validateVisitorAlreadyAdded(booker, prisonerId, visitorRequest, prisonerContactList)
 
     LOG.info("Successfully validated visitor request - For booker ${booker.reference}, prisoner $prisonerId")
@@ -102,7 +103,7 @@ class VisitorRequestsValidationService(
   }
 
   private fun validateBookerPrisonerRelationship(booker: Booker, prisonerId: String) {
-    if (!(booker.permittedPrisoners.any { it.prisonerId == prisonerId })) {
+    if (!(booker.permittedPrisoners.any { it.prisonerId.equals(prisonerId, ignoreCase = true) })) {
       LOG.error("Booker with reference ${booker.reference} does not have a permitted prisoner with id $prisonerId")
       throw VisitorRequestValidationException(VisitorRequestValidationError.PRISONER_NOT_FOUND_FOR_BOOKER)
     }
@@ -135,8 +136,7 @@ class VisitorRequestsValidationService(
   }
 
   private fun validateVisitorAlreadyAdded(booker: Booker, prisonerId: String, visitorRequest: AddVisitorToBookerPrisonerRequestDto, prisonerContactList: List<PrisonerContactDto>) {
-    val permittedVisitorIds = booker.permittedPrisoners
-      .first { it.prisonerId == prisonerId }
+    val permittedVisitorIds = getPermittedPrisoner(booker, prisonerId)
       .permittedVisitors
       .map { it.visitorId }
       .distinct()
@@ -156,4 +156,6 @@ class VisitorRequestsValidationService(
       throw VisitorRequestValidationException(VisitorRequestValidationError.VISITOR_ALREADY_EXISTS)
     }
   }
+
+  private fun getPermittedPrisoner(booker: Booker, prisonerId: String): PermittedPrisoner = booker.permittedPrisoners.first { it.prisonerId.equals(prisonerId, ignoreCase = true) }
 }
