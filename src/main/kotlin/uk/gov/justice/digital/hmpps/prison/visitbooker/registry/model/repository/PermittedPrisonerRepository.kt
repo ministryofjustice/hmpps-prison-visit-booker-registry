@@ -32,5 +32,5 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   @Transactional
   @Modifying
   @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE pp.prisonerId = :oldPrisonerId")
-  fun mergePrisoner(newPrisonerId: String, oldPrisonerId: String): Int
+  fun mergePrisoner(oldPrisonerId: String, newPrisonerId: String): Int
 }

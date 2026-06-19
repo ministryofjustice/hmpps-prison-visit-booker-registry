@@ -46,8 +46,8 @@ class PrisonerMergeController(
     oldPrisonerId: String,
     @PathVariable
     newPrisonerId: String,
-  ): ResponseEntity<HttpStatus> {
+  ): ResponseEntity<Void> {
     prisonerMergeService.mergePrisoner(oldPrisonerNumber = oldPrisonerId, newPrisonerNumber = newPrisonerId)
-    return ResponseEntity(HttpStatus.OK)
+    return ResponseEntity.ok().build()
   }
 }
