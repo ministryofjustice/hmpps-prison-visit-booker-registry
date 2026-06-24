@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.2"
   kotlin("plugin.spring") version "2.4.0"
   kotlin("plugin.jpa") version "2.4.0"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.4.0"
@@ -33,7 +33,7 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.28.1")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.29.0")
 
   implementation("org.springframework.data:spring-data-commons:4.1.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.3")
