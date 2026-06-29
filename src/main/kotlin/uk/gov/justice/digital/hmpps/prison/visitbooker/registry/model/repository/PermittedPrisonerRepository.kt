@@ -24,11 +24,11 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
 
   @Transactional
   @Modifying
-  @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE pp.prisonerId = :oldPrisonerId")
+  @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE lower(pp.prisonerId) = lower(:oldPrisonerId)")
   fun mergePrisoner(oldPrisonerId: String, newPrisonerId: String): Int
 
   @Transactional
   @Modifying
-  @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE pp.prisonerId = :oldPrisonerId and pp.booker.reference not in (:ignoredBookerReferences)")
+  @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE lower(pp.prisonerId) = lower(:oldPrisonerId) and pp.booker.reference not in (:ignoredBookerReferences)")
   fun mergePrisonerExceptBookers(oldPrisonerId: String, newPrisonerId: String, ignoredBookerReferences: List<String>): Int
 }
