@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
-import org.springframework.transaction.annotation.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 
@@ -30,7 +30,7 @@ class PrisonerMergeService(
     } else {
       val updated = permittedPrisonerRepository.mergePrisonerExceptBookers(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber, ignoredBookerReferences = bookersWithBothOldAndNewPrisonerNumber.map { it })
 
-      // add an event for bookers who have both old and new prisoner number associated
+      // add an event for bookers who have been ignored due to both old and new prisoner number being associated
       bookersWithBothOldAndNewPrisonerNumber.forEach { bookerReference ->
         logBookerMergeFailure(bookerReference = bookerReference, oldPrisonerNumber = oldPrisonerNumber, newPrisonerNumber = newPrisonerNumber)
       }
