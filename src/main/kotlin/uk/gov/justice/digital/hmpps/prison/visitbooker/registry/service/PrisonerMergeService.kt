@@ -30,7 +30,7 @@ class PrisonerMergeService(
     val updatedRecords = if (bookersWithBothOldAndNewPrisonerNumber.isEmpty()) {
       permittedPrisonerRepository.mergePrisoner(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber)
     } else {
-      val updated = permittedPrisonerRepository.mergePrisonerExceptBookers(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber, ignoredBookerReferences = bookersWithBothOldAndNewPrisonerNumber.map { it })
+      val updated = permittedPrisonerRepository.mergePrisonerExceptBookers(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber, ignoredBookerReferences = bookersWithBothOldAndNewPrisonerNumber)
 
       // delete visitors and old prisoner associated with the booker
       bookersWithBothOldAndNewPrisonerNumber.forEach { bookerReference ->

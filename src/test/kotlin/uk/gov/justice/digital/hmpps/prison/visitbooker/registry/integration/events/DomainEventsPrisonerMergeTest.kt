@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
-import kotlin.collections.forEach
 import kotlin.random.Random
 
 @DisplayName("Test for Domain Event Prisoner Merged Event")

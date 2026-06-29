@@ -54,7 +54,7 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
   @Modifying
   @Transactional
   @Query(
-    "DELETE FROM PermittedVisitor pv where pv.permittedPrisoner.booker.reference = :bookerReference and pv.permittedPrisoner.prisonerId = :prisonerId",
+    "DELETE FROM PermittedVisitor pv where pv.permittedPrisoner.booker.reference = :bookerReference and lower(pv.permittedPrisoner.prisonerId) = lower(:prisonerId)",
   )
   fun deletePermittedVisitorsByPrisonerIdAndBookerReference(bookerReference: String, prisonerId: String): Int
 }

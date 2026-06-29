@@ -20,7 +20,7 @@ class TelemetryClientService(private val telemetryClient: TelemetryClient) {
     try {
       telemetryClient.trackEvent(telemetryEventName, properties, null)
     } catch (e: RuntimeException) {
-      LOG.error("Error occurred in call to telemetry client to log event - $e.toString()")
+      LOG.error("Error occurred in call to telemetry client to log event", e)
     }
   }
 }
