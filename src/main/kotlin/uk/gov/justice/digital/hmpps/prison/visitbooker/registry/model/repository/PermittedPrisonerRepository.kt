@@ -24,7 +24,7 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   @Query(
     "Select pp.* FROM permitted_prisoner pp" +
       "   LEFT JOIN booker b ON b.id = pp.booker_id " +
-      " WHERE b.referenc = :bookerReference AND prisoner_id=:prisonerId ",
+      " WHERE b.reference = :bookerReference AND prisoner_id=:prisonerId ",
     nativeQuery = true,
   )
   fun getBookerPrisoner(bookerReference: String, prisonerId: String): PermittedPrisoner?
@@ -33,4 +33,9 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   @Modifying
   @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE pp.prisonerId = :oldPrisonerId")
   fun mergePrisoner(oldPrisonerId: String, newPrisonerId: String): Int
+
+  @Transactional
+  @Modifying
+  @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE pp.prisonerId = :oldPrisonerId and pp.booker.reference not in (:ignoredBookerReferences)")
+  fun mergePrisonerExceptBookers(oldPrisonerId: String, newPrisonerId: String, ignoredBookerReferences: List<String>): Int
 }

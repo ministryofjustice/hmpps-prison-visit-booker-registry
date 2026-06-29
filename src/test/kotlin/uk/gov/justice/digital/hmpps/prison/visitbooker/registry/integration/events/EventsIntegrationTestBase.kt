@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.DomainEventListenerService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener
@@ -39,6 +40,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.additionalinfo.PrisonerContactCreatedAdditionalInfo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.ContactUpdatedEventHandler
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.PrisonerContactCreatedEventHandler
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.events.handlers.PrisonerMergeEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
@@ -108,13 +110,13 @@ abstract class EventsIntegrationTestBase {
   protected lateinit var contactUpdatedEventHandlerSpy: ContactUpdatedEventHandler
 
   @MockitoSpyBean
+  protected lateinit var prisonerMergeEventHandlerSpy: PrisonerMergeEventHandler
+
+  @MockitoSpyBean
   protected lateinit var visitorRequestsRepositorySpy: VisitorRequestsRepository
 
   @MockitoSpyBean
   protected lateinit var bookerRepositorySpy: BookerRepository
-
-  @MockitoSpyBean
-  protected lateinit var permittedPrisonerRepository: VisitorRequestsRepository
 
   @MockitoSpyBean
   protected lateinit var permittedVisitorRepository: VisitorRequestsRepository
@@ -124,6 +126,9 @@ abstract class EventsIntegrationTestBase {
 
   @MockitoSpyBean
   protected lateinit var telemetryClientSpy: TelemetryClient
+
+  @Autowired
+  protected lateinit var permittedPrisonerRepository: PermittedPrisonerRepository
 
   @BeforeEach
   fun cleanQueue() {

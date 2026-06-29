@@ -13,8 +13,12 @@ class TelemetryClientService(private val telemetryClient: TelemetryClient) {
   }
 
   fun trackEvent(auditEventType: BookerAuditType, properties: Map<String, String>) {
+    trackEvent(auditEventType.telemetryEventName, properties)
+  }
+
+  fun trackEvent(auditEventType: String, properties: Map<String, String>) {
     try {
-      telemetryClient.trackEvent(auditEventType.telemetryEventName, properties, null)
+      telemetryClient.trackEvent(auditEventType, properties, null)
     } catch (e: RuntimeException) {
       LOG.error("Error occurred in call to telemetry client to log event - $e.toString()")
     }
