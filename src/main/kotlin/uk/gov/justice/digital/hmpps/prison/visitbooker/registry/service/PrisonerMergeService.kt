@@ -6,11 +6,13 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 
 @Service
 class PrisonerMergeService(
-  private val permittedPrisonerRepository: PermittedPrisonerRepository,
   private val bookerRepository: BookerRepository,
+  private val permittedPrisonerRepository: PermittedPrisonerRepository,
+  private val permittedVisitorRepository: PermittedVisitorRepository,
   private val telemetryClientService: TelemetryClientService,
 ) {
   companion object {
@@ -29,6 +31,11 @@ class PrisonerMergeService(
       permittedPrisonerRepository.mergePrisoner(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber)
     } else {
       val updated = permittedPrisonerRepository.mergePrisonerExceptBookers(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber, ignoredBookerReferences = bookersWithBothOldAndNewPrisonerNumber.map { it })
+
+      // delete visitors and old prisoner associated with the booker
+      bookersWithBothOldAndNewPrisonerNumber.forEach { bookerReference ->
+        deletePermittedPrisoner(bookerReference = bookerReference, prisonerNumber = oldPrisonerNumber)
+      }
 
       // add an event for bookers who have been ignored due to both old and new prisoner number being associated
       bookersWithBothOldAndNewPrisonerNumber.forEach { bookerReference ->
@@ -50,5 +57,10 @@ class PrisonerMergeService(
         "newPrisonerNumber" to newPrisonerNumber,
       ),
     )
+  }
+
+  private fun deletePermittedPrisoner(bookerReference: String, prisonerNumber: String) {
+    permittedVisitorRepository.deletePermittedVisitorsByPrisonerIdAndBookerReference(prisonerId = prisonerNumber, bookerReference = bookerReference)
+    permittedPrisonerRepository.deletePermittedPrisonerByPrisonerIdAndBookerReference(prisonerId = prisonerNumber, bookerReference = bookerReference)
   }
 }

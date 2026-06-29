@@ -31,4 +31,9 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
   @Modifying
   @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE lower(pp.prisonerId) = lower(:oldPrisonerId) and pp.booker.reference not in (:ignoredBookerReferences)")
   fun mergePrisonerExceptBookers(oldPrisonerId: String, newPrisonerId: String, ignoredBookerReferences: List<String>): Int
+
+  @Transactional
+  @Modifying
+  @Query("delete from PermittedPrisoner pp where lower(pp.prisonerId) = lower(:prisonerId) and pp.booker.reference = :bookerReference")
+  fun deletePermittedPrisonerByPrisonerIdAndBookerReference(prisonerId: String, bookerReference: String): Int
 }

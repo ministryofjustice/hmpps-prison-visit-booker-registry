@@ -17,7 +17,10 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.Inte
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.PermittedPrisonerTestObject
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
+import kotlin.collections.forEach
+import kotlin.random.Random
 
 @DisplayName("Test for Domain Event Prisoner Merged Event")
 class DomainEventsPrisonerMergeTest : EventsIntegrationTestBase() {
@@ -99,7 +102,7 @@ class DomainEventsPrisonerMergeTest : EventsIntegrationTestBase() {
     val newPrisonerNumber = "BB123ABC"
     val otherPrisonerNumber = "OTH123"
 
-    // booker1 already has got both old and new prisoner numbers - should not be updated
+    // booker1 already has got both old and new prisoner numbers - should delete the old one
     createAssociatedPrisoners(
       booker1,
       listOf(
@@ -143,10 +146,10 @@ class DomainEventsPrisonerMergeTest : EventsIntegrationTestBase() {
 
     val bookerPrisoners = permittedPrisonerRepository.findAll()
     val booker1Prisoners = bookerPrisoners.filter { it.bookerId == booker1.id }
-    assertThat(booker1Prisoners.size).isEqualTo(2)
+    assertThat(booker1Prisoners.size).isEqualTo(1)
 
-    // booker1 should still have both old and new prisoner numbers
-    assertThat(booker1Prisoners.map { it.prisonerId }).containsAll(listOf(oldPrisonerNumber, newPrisonerNumber))
+    // booker1 should have only new prisoner number
+    assertThat(booker1Prisoners.map { it.prisonerId }).containsOnly(newPrisonerNumber)
 
     val booker2Prisoners = bookerPrisoners.filter { it.bookerId == booker2.id }
     assertThat(booker2Prisoners.size).isEqualTo(1)
@@ -177,8 +180,10 @@ class DomainEventsPrisonerMergeTest : EventsIntegrationTestBase() {
     associatedPrisoners: List<PermittedPrisonerTestObject>,
   ): List<PermittedPrisoner> {
     val permittedPrisonerList = mutableListOf<PermittedPrisoner>()
+
     associatedPrisoners.forEach {
       val permittedPrisoner = createAssociatedPrisoner(PermittedPrisoner(bookerId = booker.id, booker = booker, prisonerId = it.prisonerId, prisonCode = PRISON_CODE))
+      permittedPrisoner.permittedVisitors.add(createAssociatedPrisonersVisitor(permittedPrisoner))
       permittedPrisonerList.add(permittedPrisoner)
     }
     booker.permittedPrisoners.clear()
@@ -188,6 +193,14 @@ class DomainEventsPrisonerMergeTest : EventsIntegrationTestBase() {
   }
 
   private fun createAssociatedPrisoner(permittedPrisoner: PermittedPrisoner): PermittedPrisoner = entityHelper.createAssociatedPrisoner(permittedPrisoner)
+
+  private fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(
+    PermittedVisitor(
+      permittedPrisonerId = permittedPrisoner.id,
+      permittedPrisoner = permittedPrisoner,
+      visitorId = Random.nextInt(1, 1000).toLong(),
+    ),
+  )
 
   private fun createPrisonerMergeDomainEventJson(
     eventType: String,
