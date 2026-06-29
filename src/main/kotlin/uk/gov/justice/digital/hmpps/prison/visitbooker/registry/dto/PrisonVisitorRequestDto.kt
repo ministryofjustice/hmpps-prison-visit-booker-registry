@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import java.time.LocalDate
 
@@ -46,6 +47,15 @@ data class PrisonVisitorRequestDto(
 
   @param:Schema(description = "The current status of the request", example = "REQUESTED", required = true)
   val status: VisitorRequestsStatus,
+
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    required = true,
+    allowableValues = ["en", "cy"],
+    example = "en",
+  )
+  val languagePreference: LanguagePreference,
 ) {
   constructor(visitorRequest: VisitorRequest, bookerEmail: String) : this(
     reference = visitorRequest.reference,
@@ -59,5 +69,6 @@ data class PrisonVisitorRequestDto(
     visitorId = visitorRequest.visitorId,
     rejectionReason = visitorRequest.rejectionReason,
     status = visitorRequest.status,
+    languagePreference = visitorRequest.languagePreference,
   )
 }

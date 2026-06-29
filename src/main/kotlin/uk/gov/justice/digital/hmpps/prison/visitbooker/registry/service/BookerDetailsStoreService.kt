@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
@@ -15,7 +16,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.Update
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorForPrisonerBookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
@@ -37,24 +37,34 @@ class BookerDetailsStoreService(
     LOG.info("Enter BookerDetailsStoreService storeBookerPrisoner for booker $bookerReference")
 
     val booker = getBooker(bookerReference)
-    if (booker.permittedPrisoners.any { createPermittedPrisonerDto.prisonerId == it.prisonerId }) {
+    val prisonerId = createPermittedPrisonerDto.prisonerId.trim().uppercase()
+    if (prisonerRepository.existsByBookerIdAndPrisonerIdIgnoreCase(booker.id, prisonerId)) {
       LOG.error("Prisoner already exists for booker $bookerReference")
       throw BookerPrisonerAlreadyExistsException("BookerPrisoner for $bookerReference already exists")
     }
 
-    val permittedPrisoner = prisonerRepository.saveAndFlush(
-      PermittedPrisoner(
-        bookerId = booker.id,
-        booker = booker,
-        prisonerId = createPermittedPrisonerDto.prisonerId,
-        prisonCode = createPermittedPrisonerDto.prisonCode,
-      ),
-    )
+    try {
+      val permittedPrisoner = prisonerRepository.saveAndFlush(
+        PermittedPrisoner(
+          bookerId = booker.id,
+          booker = booker,
+          prisonerId = prisonerId,
+          prisonCode = createPermittedPrisonerDto.prisonCode,
+        ),
+      )
 
-    booker.permittedPrisoners.add(permittedPrisoner)
+      booker.permittedPrisoners.add(permittedPrisoner)
 
-    LOG.info("Prisoner added to permitted prisoners for booker $bookerReference")
-    return PermittedPrisonerDto(permittedPrisoner)
+      LOG.info("Prisoner added to permitted prisoners for booker $bookerReference")
+      return PermittedPrisonerDto(permittedPrisoner)
+    } catch (e: DataIntegrityViolationException) {
+      if (e.isUniqueViolationFor(PERMITTED_PRISONER_BOOKER_PRISONER_UNIQUE_INDEX)) {
+        LOG.error("Prisoner already exists for booker $bookerReference after concurrent insert")
+        throw BookerPrisonerAlreadyExistsException("BookerPrisoner for $bookerReference already exists")
+      }
+
+      throw e
+    }
   }
 
   @Transactional
@@ -99,25 +109,21 @@ class BookerDetailsStoreService(
 
     val bookerPrisoner = getPermittedPrisoner(bookerReference, prisonerId)
 
-    if (bookerPrisoner.permittedVisitors.any { visitorId == it.visitorId }) {
+    if (visitorRepository.existsByPermittedPrisonerIdAndVisitorId(bookerPrisoner.id, visitorId)) {
       LOG.warn("Visitor  $visitorId already exists for booker $bookerReference prisoner $prisonerId")
       return PermittedVisitorDto(
         visitorId = visitorId,
       )
     }
 
-    val permittedVisitor = visitorRepository.saveAndFlush(
-      PermittedVisitor(
-        permittedPrisonerId = bookerPrisoner.id,
-        permittedPrisoner = bookerPrisoner,
-        visitorId = visitorId,
-      ),
-    )
-    bookerPrisoner.permittedVisitors.add(permittedVisitor)
+    val insertedRows = visitorRepository.insertIfAbsent(bookerPrisoner.id, visitorId)
+    if (insertedRows == 1) {
+      LOG.info("Visitor $visitorId added to permitted visitors for booker $bookerReference prisoner $prisonerId")
+    } else {
+      LOG.warn("Visitor $visitorId already exists for booker $bookerReference prisoner $prisonerId after concurrent insert")
+    }
 
-    LOG.info("Visitor $visitorId added to permitted visitors for booker $bookerReference prisoner $prisonerId")
-
-    return PermittedVisitorDto(permittedVisitor)
+    return PermittedVisitorDto(visitorId = visitorId)
   }
 
   @Transactional

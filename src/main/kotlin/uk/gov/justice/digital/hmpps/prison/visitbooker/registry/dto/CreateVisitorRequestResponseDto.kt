@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 
 data class CreateVisitorRequestResponseDto(
   @param:Schema(description = "Reference of newly created visitor request", example = "abc-def-ghi")
@@ -21,4 +22,13 @@ data class CreateVisitorRequestResponseDto(
 
   @param:Schema(description = "Identifier for a matched contact (Person in NOMIS), NULL if an automatic match for the visitor request was not found", required = false)
   val visitorId: Long?,
+
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    required = true,
+    allowableValues = ["en", "cy"],
+    example = "en",
+  )
+  val languagePreference: LanguagePreference,
 )

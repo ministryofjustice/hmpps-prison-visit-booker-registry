@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.GET_V
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import java.time.LocalDate
 
 @Transactional(propagation = Propagation.SUPPORTS)
@@ -33,18 +34,21 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
       prisoner.prisonerId,
       AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)),
       status = VisitorRequestsStatus.REQUESTED,
+      languagePreference = LanguagePreference.EN,
     )
     createVisitorRequest(
       booker.reference,
       prisoner.prisonerId,
       AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(21)),
       status = VisitorRequestsStatus.APPROVED,
+      languagePreference = LanguagePreference.EN,
     )
     createVisitorRequest(
       booker.reference,
       otherPrisoner.prisonerId,
       AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)),
       status = VisitorRequestsStatus.REQUESTED,
+      languagePreference = LanguagePreference.EN,
     )
 
     // When
@@ -61,6 +65,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(responseDto[0].lastName).isEqualTo("lastName1")
     Assertions.assertThat(responseDto[0].dateOfBirth).isEqualTo(LocalDate.now().minusYears(21))
     Assertions.assertThat(responseDto[0].requestedOn).isEqualTo(LocalDate.now())
+    Assertions.assertThat(responseDto[0].languagePreference).isEqualTo(LanguagePreference.EN)
   }
 
   @Test
@@ -95,12 +100,14 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
       prisoner.prisonerId,
       AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)),
       status = VisitorRequestsStatus.REQUESTED,
+      languagePreference = LanguagePreference.CY,
     )
     createVisitorRequest(
       booker1.reference,
       prisoner.prisonerId,
       AddVisitorToBookerPrisonerRequestDto("firstName2", "lastName2", LocalDate.now().minusYears(21)),
       status = VisitorRequestsStatus.APPROVED,
+      languagePreference = LanguagePreference.CY,
     )
 
     // When
@@ -113,6 +120,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(responseDto.size).isEqualTo(1)
     Assertions.assertThat(responseDto[0].prisonerId).isEqualTo(prisoner.prisonerId)
     Assertions.assertThat(responseDto[0].bookerReference).isEqualTo(prisoner.booker.reference)
+    Assertions.assertThat(responseDto[0].languagePreference).isEqualTo(LanguagePreference.CY)
 
     // When
     responseSpec = getVisitorRequestsByPrisonCode(webTestClient, otherPrisonCode, orchestrationServiceRoleHttpHeaders)

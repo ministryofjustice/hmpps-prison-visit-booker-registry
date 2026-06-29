@@ -69,6 +69,35 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when prisoner id is not normalised then prisoner is created with normalised prisoner id`() {
+    // Given
+    val normalisedPrisonerId = "AB123456"
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = " ${normalisedPrisonerId.lowercase()} ", prisonCode = PRISON_CODE)
+
+    // When
+    val responseSpec = callCreateBookerPrisoner(bookerConfigServiceRoleHttpHeaders, createPrisoner, booker.reference)
+
+    // Then
+    responseSpec.expectStatus().isCreated
+    val dto = getPermittedPrisonerDto(responseSpec)
+
+    assertThat(dto.prisonerId).isEqualTo(normalisedPrisonerId)
+
+    verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      PRISONER_REGISTERED.telemetryEventName,
+      mapOf(
+        "bookerReference" to booker.reference,
+        "prisonerId" to normalisedPrisonerId,
+      ),
+      null,
+    )
+    val auditEvents = bookerAuditRepository.findAll()
+    assertThat(auditEvents).hasSize(1)
+    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - $normalisedPrisonerId registered against booker")
+  }
+
+  @Test
   fun `when prisoner already exist an exception is thrown`() {
     // Given
     val createPrisoner = CreatePermittedPrisonerDto(prisonerId = "1233", prisonCode = PRISON_CODE)
@@ -76,6 +105,23 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
     val prisoner = createPrisoner(booker, createPrisoner.prisonerId)
     booker.permittedPrisoners.add(prisoner)
     bookerRepository.saveAndFlush(booker)
+    // When
+    val responseSpec = callCreateBookerPrisoner(bookerConfigServiceRoleHttpHeaders, createPrisoner, booker.reference)
+
+    // Then
+    assertError(responseSpec, "Booker prisoner already exists", "BookerPrisoner for ${booker.reference} already exists", BAD_REQUEST)
+  }
+
+  @Test
+  fun `when prisoner already exists with different casing an exception is thrown`() {
+    // Given
+    val existingPrisonerId = "AB123456"
+    val createPrisoner = CreatePermittedPrisonerDto(prisonerId = existingPrisonerId.lowercase(), prisonCode = PRISON_CODE)
+
+    val prisoner = createPrisoner(booker, existingPrisonerId)
+    booker.permittedPrisoners.add(prisoner)
+    bookerRepository.saveAndFlush(booker)
+
     // When
     val responseSpec = callCreateBookerPrisoner(bookerConfigServiceRoleHttpHeaders, createPrisoner, booker.reference)
 

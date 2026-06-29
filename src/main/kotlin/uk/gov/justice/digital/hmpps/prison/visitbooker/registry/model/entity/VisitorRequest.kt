@@ -14,6 +14,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.utils.QuotableEncoder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -51,6 +52,9 @@ class VisitorRequest(
   @Enumerated(EnumType.STRING)
   @Column
   val rejectionReason: VisitorRequestRejectionReason? = null,
+
+  @Column(nullable = false)
+  val languagePreference: LanguagePreference,
 ) {
   @Column
   var reference: String = ""

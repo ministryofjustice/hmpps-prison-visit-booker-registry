@@ -73,7 +73,7 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
 
     bookerTwo = createBooker(oneLoginSub = "987", emailAddress = "test-two@example.com")
     val prisonersForBookerTwo = createAssociatedPrisoners(
-      booker,
+      bookerTwo,
       listOf(
         PermittedPrisonerTestObject("AB123456", PRISON_CODE),
         PermittedPrisonerTestObject("DD948472", PRISON_CODE),
@@ -119,6 +119,21 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UNLINK_VISITOR, "Visitor ID - ${visitor1.visitorId} unlinked for prisoner - ${prisoner.prisonerId}, booker - ${booker.reference}, actionedBy - ${actionedByDto.actionedBy}")
+
+    val visitors = permittedVisitorRepository.findAll()
+    assertThat(visitors).hasSize(3)
+  }
+
+  @Test
+  fun `when prisoner id has different casing to stored prisoner then visitor is unlinked successfully`() {
+    // Given
+    val actionedByDto = ActionedByDto(actionedBy = "test-user")
+
+    // When
+    val responseSpec = unlinkVisitorByPrisonerIdAndBookerReference(webTestClient, booker.reference, prisoner.prisonerId.lowercase(), visitor1.visitorId, actionedByDto, bookerConfigServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
 
     val visitors = permittedVisitorRepository.findAll()
     assertThat(visitors).hasSize(3)

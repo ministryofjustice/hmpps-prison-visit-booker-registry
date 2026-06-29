@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import java.time.LocalDate
 
@@ -35,6 +36,15 @@ data class BookerPrisonerVisitorRequestDto(
 
   @param:Schema(description = "Date when the visitor request was added", example = "2026-05-01", required = true)
   val requestedOn: LocalDate,
+
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    required = true,
+    allowableValues = ["en", "cy"],
+    example = "en",
+  )
+  val languagePreference: LanguagePreference,
 ) {
   constructor(visitorRequest: VisitorRequest) : this(
     reference = visitorRequest.reference,
@@ -45,5 +55,6 @@ data class BookerPrisonerVisitorRequestDto(
     dateOfBirth = visitorRequest.dateOfBirth,
     status = visitorRequest.status,
     requestedOn = visitorRequest.createTimestamp!!.toLocalDate(),
+    languagePreference = visitorRequest.languagePreference,
   )
 }
