@@ -33,7 +33,7 @@ interface BookerRepository : JpaRepository<Booker, Long> {
     "select b.reference from booker b join permitted_prisoner pp on b.id = pp.booker_id " +
       "where pp.prisoner_id in (:prisonerNumber1, :prisonerNumber2) " +
       "group by b.reference " +
-      "having  count(*) > 1",
+      "having count(distinct pp.prisoner_id) = 2",
     nativeQuery = true,
   )
   fun findBookersWithBothPrisoners(prisonerNumber1: String, prisonerNumber2: String): List<String>

@@ -28,18 +28,20 @@ class PrisonerMergeService(
     val updatedRecords = if (bookersWithBothOldAndNewPrisonerNumber.isEmpty()) {
       permittedPrisonerRepository.mergePrisoner(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber)
     } else {
-      permittedPrisonerRepository.mergePrisonerExceptBookers(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber, ignoredBookerReferences = bookersWithBothOldAndNewPrisonerNumber.map { it })
+      val updated = permittedPrisonerRepository.mergePrisonerExceptBookers(oldPrisonerId = oldPrisonerNumber, newPrisonerId = newPrisonerNumber, ignoredBookerReferences = bookersWithBothOldAndNewPrisonerNumber.map { it })
 
       // add an event for bookers who have both old and new prisoner number associated
       bookersWithBothOldAndNewPrisonerNumber.forEach { bookerReference ->
         logBookerMergeFailure(bookerReference = bookerReference, oldPrisonerNumber = oldPrisonerNumber, newPrisonerNumber = newPrisonerNumber)
       }
+
+      updated
     }
     LOG.info("Merging prisoner details, updated {} prisoner records from old prisoner number - {} to new prisoner number - {}", updatedRecords, oldPrisonerNumber, newPrisonerNumber)
   }
 
   private fun logBookerMergeFailure(bookerReference: String, oldPrisonerNumber: String, newPrisonerNumber: String) {
-    LOG.error("Booker with reference - {} has both new prisoner number - {} and old prisoner number - {} already associated, skipping prisoner number update", bookerReference, oldPrisonerNumber, newPrisonerNumber)
+    LOG.error("Booker with reference - {} has both new prisoner number - {} and old prisoner number - {} already associated, skipping prisoner number update", bookerReference, newPrisonerNumber, oldPrisonerNumber)
     telemetryClientService.trackEvent(
       MERGE_EVENT_FAILED_FOR_BOOKER,
       mapOf(

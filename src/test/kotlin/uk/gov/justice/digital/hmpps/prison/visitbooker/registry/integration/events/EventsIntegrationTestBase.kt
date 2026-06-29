@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Per
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedVisitorRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.DomainEventListenerService
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.listener.DomainEventListener
@@ -120,7 +121,7 @@ abstract class EventsIntegrationTestBase {
   protected lateinit var bookerRepositorySpy: BookerRepository
 
   @MockitoSpyBean
-  protected lateinit var permittedVisitorRepository: VisitorRequestsRepository
+  protected lateinit var permittedVisitorRepository: PermittedVisitorRepository
 
   @MockitoSpyBean
   protected lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
