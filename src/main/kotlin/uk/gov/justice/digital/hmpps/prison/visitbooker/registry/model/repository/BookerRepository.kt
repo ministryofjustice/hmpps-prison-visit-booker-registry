@@ -28,4 +28,13 @@ interface BookerRepository : JpaRepository<Booker, Long> {
     "update Booker set email = :emailAddress where reference = :reference",
   )
   fun updateBookerEmailAddress(reference: String, emailAddress: String)
+
+  @Query(
+    "select b.reference from booker b join permitted_prisoner pp on b.id = pp.booker_id " +
+      "where lower(pp.prisoner_id) in (lower(:prisonerNumber1), lower(:prisonerNumber2)) " +
+      "group by b.reference " +
+      "having count(distinct lower(pp.prisoner_id)) = 2",
+    nativeQuery = true,
+  )
+  fun findBookersWithBothPrisoners(prisonerNumber1: String, prisonerNumber2: String): List<String>
 }

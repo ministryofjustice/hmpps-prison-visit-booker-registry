@@ -50,4 +50,11 @@ interface PermittedVisitorRepository : JpaRepository<PermittedVisitor, Long> {
     nativeQuery = true,
   )
   fun deleteVisitorBy(bookerReference: String, prisonerId: String, visitorId: Long): Int
+
+  @Modifying
+  @Transactional
+  @Query(
+    "DELETE FROM PermittedVisitor pv where pv.permittedPrisoner.booker.reference = :bookerReference and lower(pv.permittedPrisoner.prisonerId) = lower(:prisonerId)",
+  )
+  fun deletePermittedVisitorsByPrisonerIdAndBookerReference(bookerReference: String, prisonerId: String): Int
 }

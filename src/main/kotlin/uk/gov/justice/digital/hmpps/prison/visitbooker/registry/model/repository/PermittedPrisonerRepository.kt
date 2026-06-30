@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -20,4 +21,19 @@ interface PermittedPrisonerRepository : JpaRepository<PermittedPrisoner, Long> {
     nativeQuery = true,
   )
   fun findByBookerIdAndPrisonerId(bookerReference: String, prisonerId: String): PermittedPrisoner?
+
+  @Transactional
+  @Modifying
+  @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE lower(pp.prisonerId) = lower(:oldPrisonerId)")
+  fun mergePrisoner(oldPrisonerId: String, newPrisonerId: String): Int
+
+  @Transactional
+  @Modifying
+  @Query("UPDATE PermittedPrisoner pp set pp.prisonerId = :newPrisonerId WHERE lower(pp.prisonerId) = lower(:oldPrisonerId) and pp.booker.reference not in (:ignoredBookerReferences)")
+  fun mergePrisonerExceptBookers(oldPrisonerId: String, newPrisonerId: String, ignoredBookerReferences: List<String>): Int
+
+  @Transactional
+  @Modifying
+  @Query("delete from PermittedPrisoner pp where lower(pp.prisonerId) = lower(:prisonerId) and pp.booker.reference = :bookerReference")
+  fun deletePermittedPrisonerByPrisonerIdAndBookerReference(prisonerId: String, bookerReference: String): Int
 }
