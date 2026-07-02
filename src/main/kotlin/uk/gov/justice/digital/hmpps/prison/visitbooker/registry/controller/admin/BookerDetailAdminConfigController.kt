@@ -83,7 +83,7 @@ class BookerDetailConfigController(
     ],
   )
   fun createBookerPrisoner(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
     @RequestBody @Valid createPermittedPrisonerDto: CreatePermittedPrisonerDto,
@@ -123,10 +123,10 @@ class BookerDetailConfigController(
     ],
   )
   fun createBookerPrisonerVisitor(
-    @PathVariable(value = "prisonerId", required = true)
+    @PathVariable(required = true)
     @NotBlank
     prisonerId: String,
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
     @RequestBody @Valid createPermittedVisitorDto: CreatePermittedVisitorDto,
@@ -161,7 +161,7 @@ class BookerDetailConfigController(
     ],
   )
   fun clearBookerDetails(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
   ): BookerDto = bookerDetailsService.clearBookerDetails(bookerReference)
@@ -195,7 +195,7 @@ class BookerDetailConfigController(
     ],
   )
   fun getBookerDetailsUsingReference(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
   ): BookerDto = bookerDetailsService.getBookerByReference(bookerReference)
@@ -229,13 +229,13 @@ class BookerDetailConfigController(
     ],
   )
   fun unlinkBookerPrisonerVisitor(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonerId", required = true)
+    @PathVariable(required = true)
     @NotBlank
     prisonerId: String,
-    @PathVariable(value = "visitorId", required = true)
+    @PathVariable(required = true)
     @NotNull
     visitorId: Long,
     @RequestBody
@@ -313,11 +313,9 @@ class BookerDetailConfigController(
     ],
   )
   fun updateBookerPrisonerPrison(
-    @PathVariable(value = "bookerReference", required = true)
-    @NotBlank
+    @PathVariable(required = true) @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonerId", required = true)
-    @NotBlank
+    @PathVariable(required = true) @NotBlank
     prisonerId: String,
     @RequestBody
     @Valid
