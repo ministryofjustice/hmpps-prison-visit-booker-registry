@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -15,7 +14,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock
 
 class HmppsAuthExtension :
   BeforeAllCallback,
-  AfterAllCallback,
   BeforeEachCallback {
 
   companion object {
@@ -24,10 +22,11 @@ class HmppsAuthExtension :
   }
 
   override fun beforeAll(context: ExtensionContext) {
-    hmppsAuthApi.start()
+    hmppsAuthApi.startIfNeeded()
   }
 
   override fun beforeEach(context: ExtensionContext) {
+    hmppsAuthApi.startIfNeeded()
     hmppsAuthApi.resetAll()
     hmppsAuthApi.stubGrantToken()
     hmppsAuthApi.stubGetUserDetails("created-user")
@@ -35,8 +34,10 @@ class HmppsAuthExtension :
     hmppsAuthApi.stubGetUserDetails("cancelled-user")
   }
 
-  override fun afterAll(context: ExtensionContext) {
-    hmppsAuthApi.stop()
+  private fun HmppsAuthMockServer.startIfNeeded() {
+    if (!isRunning) {
+      start()
+    }
   }
 }
 

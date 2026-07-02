@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.github.tomakehurst.wiremock.WireMockServer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -64,9 +65,9 @@ abstract class IntegrationTestBase {
     @BeforeAll
     @JvmStatic
     fun startMocks() {
-      prisonOffenderSearchMockServer.start()
-      visitSchedulerMockServer.start()
-      prisonerContactRegistryMockServer.start()
+      prisonOffenderSearchMockServer.startIfNeeded()
+      visitSchedulerMockServer.startIfNeeded()
+      prisonerContactRegistryMockServer.startIfNeeded()
     }
 
     @AfterAll
@@ -75,6 +76,12 @@ abstract class IntegrationTestBase {
       prisonOffenderSearchMockServer.stop()
       visitSchedulerMockServer.stop()
       prisonerContactRegistryMockServer.stop()
+    }
+
+    private fun WireMockServer.startIfNeeded() {
+      if (!isRunning) {
+        start()
+      }
     }
   }
 
@@ -115,6 +122,7 @@ abstract class IntegrationTestBase {
 
   @BeforeEach
   fun resetStubs() {
+    startMocks()
     entityHelper.deleteAll()
     prisonOffenderSearchMockServer.resetAll()
     visitSchedulerMockServer.resetAll()
