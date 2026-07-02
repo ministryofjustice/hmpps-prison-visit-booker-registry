@@ -279,6 +279,7 @@ class BookerDetailConfigController(
     searchBookerDto: SearchBookerDto,
   ): List<BookerDto> = bookerDetailsService.searchForBooker(searchBookerDto)
 
+  @Deprecated("Use /public/booker/{bookerReference}/prisoners/{prisonerId}/prison in BookingDetailsController instead.")
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
@@ -288,7 +289,7 @@ class BookerDetailConfigController(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Registered prisoner's prison code wasupdated successfully",
+        description = "Registered prisoner's prison code was updated successfully",
       ),
       ApiResponse(
         responseCode = "400",
