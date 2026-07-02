@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.UPDATE_PERMITTED_PRISONER_PRISON
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonerPrisonDto
@@ -63,7 +64,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     // When
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
     val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(newPrisonCode)
-    val responseSpec = updatePrisonersPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = updateAdminPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -90,6 +91,35 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when permitted prisoner's prison is updated by a booker and validation is successful then prison code for the prisoner is updated successfully`() {
+    // Given
+    val newPrisonCode = "MDI"
+    val prisonerId = prisoner1.prisonerId
+    val registeredPrisoner = PrisonerDto(
+      prisonerNumber = prisoner1.prisonerId,
+      prisonId = newPrisonCode,
+      inOutStatus = null,
+      firstName = "test",
+      lastName = "user",
+      dateOfBirth = null,
+    )
+
+    // When
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
+    val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(newPrisonCode)
+    val responseSpec = updateBookerPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, orchestrationServiceRoleHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk
+    val associatedPrisoner = getResults(returnResult.expectBody())
+    assertThat(associatedPrisoner.prisonerId).isEqualTo(prisonerId)
+    assertThat(associatedPrisoner.prisonCode).isEqualTo(newPrisonCode)
+
+    val permittedPrisoners = prisonerRepository.findByBookerId(booker.id)
+    assertThat(permittedPrisoners.first { it.prisonerId == prisonerId }.prisonCode).isEqualTo(newPrisonCode)
+  }
+
+  @Test
   fun `when prisoner's prison is updated for a prisoner but prisoner is not in new prison then prison code for the prisoner is not updated`() {
     // Given
     val newPrisonCode = "MDI"
@@ -110,7 +140,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     // When
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
     val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(newPrisonCode)
-    val responseSpec = updatePrisonersPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = updateAdminPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
@@ -139,7 +169,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     // When
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
     val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(prisonCode)
-    val responseSpec = updatePrisonersPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = updateAdminPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
@@ -169,7 +199,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     // When
     prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
     val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(newPrisonCode)
-    val responseSpec = updatePrisonersPrisonByBookerReference(webTestClient, bookerReference = nonExistentBookerReference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
+    val responseSpec = updateAdminPermittedPrisonerPrisonByBookerReference(webTestClient, bookerReference = nonExistentBookerReference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, bookerConfigServiceRoleHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -183,14 +213,14 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   fun `access forbidden when no role`() {
     // Given
     // When
-    val responseSpec = updatePrisonersPrisonByBookerReference(webTestClient, booker.reference, prisonerId = prisoner1.prisonerId, updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto("IDontExist"), setAuthorisation(roles = listOf()))
+    val responseSpec = updateAdminPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId = prisoner1.prisonerId, updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto("IDontExist"), setAuthorisation(roles = listOf()))
     // Then
     responseSpec.expectStatus().isForbidden
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): PermittedPrisonerDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PermittedPrisonerDto::class.java)
 
-  fun updatePrisonersPrisonByBookerReference(
+  fun updateAdminPermittedPrisonerPrisonByBookerReference(
     webTestClient: WebTestClient,
     bookerReference: String,
     prisonerId: String,
@@ -198,6 +228,20 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val url = UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
+    return webTestClient.put().uri(url)
+      .headers(authHttpHeaders)
+      .body(BodyInserters.fromValue(updateRegisteredPrisonerPrisonDto))
+      .exchange()
+  }
+
+  fun updateBookerPermittedPrisonerPrisonByBookerReference(
+    webTestClient: WebTestClient,
+    bookerReference: String,
+    prisonerId: String,
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    val url = UPDATE_PERMITTED_PRISONER_PRISON.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
     return webTestClient.put().uri(url)
       .headers(authHttpHeaders)
       .body(BodyInserters.fromValue(updateRegisteredPrisonerPrisonDto))
