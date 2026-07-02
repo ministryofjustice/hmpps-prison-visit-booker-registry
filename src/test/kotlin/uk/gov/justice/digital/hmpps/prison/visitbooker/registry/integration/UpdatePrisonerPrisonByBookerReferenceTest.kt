@@ -48,7 +48,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisoner's prison is updated for a prisoner and validation is successful then prison code for the prisoner is updated successfully`() {
+  fun `admin - when prisoner's prison is updated for a prisoner and validation is successful then prison code for the prisoner is updated successfully`() {
     // Given
     val newPrisonCode = "MDI"
     val prisonerId = prisoner1.prisonerId
@@ -91,7 +91,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when permitted prisoner's prison is updated by a booker and validation is successful then prison code for the prisoner is updated successfully`() {
+  fun `booker - when permitted prisoner's prison is updated by a booker and validation is successful then prison code for the prisoner is updated successfully`() {
     // Given
     val newPrisonCode = "MDI"
     val prisonerId = prisoner1.prisonerId
@@ -120,7 +120,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisoner's prison is updated for a prisoner but prisoner is not in new prison then prison code for the prisoner is not updated`() {
+  fun `admin - when prisoner's prison is updated for a prisoner but prisoner is not in new prison then prison code for the prisoner is not updated`() {
     // Given
     val newPrisonCode = "MDI"
 
@@ -151,7 +151,38 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisoner's prison is updated for a prisoner but prisoner has not been added for a booker the prison code is not updated`() {
+  fun `booker - when prisoner's prison is updated for a prisoner but prisoner is not in new prison then prison code for the prisoner is not updated`() {
+    // Given
+    val newPrisonCode = "MDI"
+
+    val prisonerId = prisoner1.prisonerId
+    val oldPrisonCode = prisoner1.prisonCode
+
+    // prisoner is not in MDI but still in HEI
+    val registeredPrisoner = PrisonerDto(
+      prisonerNumber = prisoner1.prisonerId,
+      prisonId = oldPrisonCode,
+      inOutStatus = null,
+      firstName = "test",
+      lastName = "user",
+      dateOfBirth = null,
+    )
+
+    // When
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
+    val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(newPrisonCode)
+    val responseSpec = updateBookerPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, orchestrationServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Updating a prisoner's prison failed")
+      .jsonPath("$.developerMessage")
+      .isEqualTo("Updating a prisoner's prison failed with the following error - Prisoner - $prisonerId is in HEI - so cannot be updated to $newPrisonCode")
+  }
+
+  @Test
+  fun `admin - when prisoner's prison is updated for a prisoner but prisoner has not been added for a booker the prison code is not updated`() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "non-existent-prisoner"
@@ -180,7 +211,36 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker is not found a 404 status error is returned`() {
+  fun `booker - when prisoner's prison is updated for a prisoner but prisoner has not been added for a booker the prison code is not updated`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "non-existent-prisoner"
+
+    // prisoner is not registered for booker
+    val registeredPrisoner = PrisonerDto(
+      prisonerNumber = prisonerId,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = "test",
+      lastName = "user",
+      dateOfBirth = null,
+    )
+
+    // When
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
+    val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(prisonCode)
+    val responseSpec = updateBookerPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, orchestrationServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Updating a prisoner's prison failed")
+      .jsonPath("$.developerMessage")
+      .isEqualTo("Updating a prisoner's prison failed with the following error - Prisoner $prisonerId has not been added for booker ${booker.reference}")
+  }
+
+  @Test
+  fun `admin - when booker is not found a 404 status error is returned`() {
     // Given
     val newPrisonCode = "MDI"
     val nonExistentBookerReference = "non-existent-booker-reference"
@@ -210,10 +270,49 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `access forbidden when no role`() {
+  fun `booker - when booker is not found a 404 status error is returned`() {
+    // Given
+    val newPrisonCode = "MDI"
+    val nonExistentBookerReference = "non-existent-booker-reference"
+
+    val prisonerId = prisoner1.prisonerId
+
+    val registeredPrisoner = PrisonerDto(
+      prisonerNumber = prisoner1.prisonerId,
+      prisonId = newPrisonCode,
+      inOutStatus = null,
+      firstName = "test",
+      lastName = "user",
+      dateOfBirth = null,
+    )
+
+    // When
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, registeredPrisoner)
+    val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto(newPrisonCode)
+    val responseSpec = updateBookerPermittedPrisonerPrisonByBookerReference(webTestClient, bookerReference = nonExistentBookerReference, prisonerId, updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto, orchestrationServiceRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Booker not found")
+      .jsonPath("$.developerMessage")
+      .isEqualTo("Booker for reference : non-existent-booker-reference not found")
+  }
+
+  @Test
+  fun `admin - access forbidden when no role`() {
     // Given
     // When
     val responseSpec = updateAdminPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId = prisoner1.prisonerId, updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto("IDontExist"), setAuthorisation(roles = listOf()))
+    // Then
+    responseSpec.expectStatus().isForbidden
+  }
+
+  @Test
+  fun `booker - access forbidden when no role`() {
+    // Given
+    // When
+    val responseSpec = updateBookerPermittedPrisonerPrisonByBookerReference(webTestClient, booker.reference, prisonerId = prisoner1.prisonerId, updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto("IDontExist"), setAuthorisation(roles = listOf()))
     // Then
     responseSpec.expectStatus().isForbidden
   }
