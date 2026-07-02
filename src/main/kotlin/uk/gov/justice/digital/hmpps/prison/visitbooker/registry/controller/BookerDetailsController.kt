@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorRespons
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
@@ -190,11 +190,11 @@ class BookerDetailsController(
     prisonerId: String,
     @RequestBody
     @Valid
-    updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto,
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
   ): PermittedPrisonerDto = bookerDetailsService.updateBookerPrisonerPrison(
     bookerReference = bookerReference,
     prisonerId = prisonerId,
-    newPrisonCode = updateRegisteredPrisonersPrisonDto.prisonCode,
+    newPrisonCode = updateRegisteredPrisonerPrisonDto.prisonCode,
   )
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
