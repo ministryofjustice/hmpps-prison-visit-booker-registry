@@ -116,7 +116,7 @@ class UpdatePermittedPrisonerPrisonByBookerReferenceTest : IntegrationTestBase()
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("Updating a prisoner's prison failed")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Updating a prisoner's prison failed with the following error - Prisoner - $prisonerId is in HEI - so cannot be updated to $newPrisonCode")
+      .isEqualTo("Updating a prisoner's prison failed with the following error - Prisoner - $prisonerId is in $oldPrisonCode - so cannot be updated to $newPrisonCode")
   }
 
   @Test

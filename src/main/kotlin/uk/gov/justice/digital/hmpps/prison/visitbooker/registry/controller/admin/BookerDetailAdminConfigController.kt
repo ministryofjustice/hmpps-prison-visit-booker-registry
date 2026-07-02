@@ -279,7 +279,7 @@ class BookerDetailConfigController(
     searchBookerDto: SearchBookerDto,
   ): List<BookerDto> = bookerDetailsService.searchForBooker(searchBookerDto)
 
-  @Deprecated("Use /public/booker/{bookerReference}/prisoners/{prisonerId}/prison in BookingDetailsController instead.")
+  @Deprecated("Use /public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/prison in BookerDetailsController instead.")
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)

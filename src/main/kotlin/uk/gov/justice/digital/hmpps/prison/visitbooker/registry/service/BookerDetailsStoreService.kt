@@ -147,10 +147,11 @@ class BookerDetailsStoreService(
     validateUpdateBookerPrisonerPrison(booker, prisonerId, newPrisonCode)
 
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
-
-    LOG.info("Prisoner - $prisonerId's prison code updated from ${prisoner.prisonCode} to $newPrisonCode for booker $bookerReference")
+    val previousPrisonCode = prisoner.prisonCode
 
     prisoner.prisonCode = newPrisonCode
+
+    LOG.info("Prisoner - $prisonerId's prison code updated from $previousPrisonCode to $newPrisonCode for booker $bookerReference")
 
     return PermittedPrisonerDto(prisoner)
   }
