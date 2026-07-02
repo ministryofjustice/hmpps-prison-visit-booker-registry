@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorTo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
@@ -124,7 +123,7 @@ class VisitorRequestsController(
       ApiResponse(
         responseCode = "404",
         description = "Booker not found for booker reference.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )

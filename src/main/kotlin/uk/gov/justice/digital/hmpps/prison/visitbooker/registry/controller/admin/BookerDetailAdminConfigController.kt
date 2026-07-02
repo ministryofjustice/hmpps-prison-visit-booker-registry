@@ -22,11 +22,10 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ActionedByDt
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.SearchBookerDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 // Base Endpoint
@@ -68,22 +67,22 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "404",
         description = "The booker does not exist",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
   fun createBookerPrisoner(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
     @RequestBody @Valid createPermittedPrisonerDto: CreatePermittedPrisonerDto,
@@ -108,25 +107,25 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "404",
         description = "The booker or the booker prisoner does not exist",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
   fun createBookerPrisonerVisitor(
-    @PathVariable(value = "prisonerId", required = true)
+    @PathVariable(required = true)
     @NotBlank
     prisonerId: String,
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
     @RequestBody @Valid createPermittedVisitorDto: CreatePermittedVisitorDto,
@@ -146,22 +145,22 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "404",
         description = "Booker not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
   fun clearBookerDetails(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
   ): BookerDto = bookerDetailsService.clearBookerDetails(bookerReference)
@@ -180,22 +179,22 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "404",
         description = "Booker not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
   fun getBookerDetailsUsingReference(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
   ): BookerDto = bookerDetailsService.getBookerByReference(bookerReference)
@@ -214,28 +213,28 @@ class BookerDetailConfigController(
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "404",
         description = "visitor not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
   fun unlinkBookerPrisonerVisitor(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonerId", required = true)
+    @PathVariable(required = true)
     @NotBlank
     prisonerId: String,
-    @PathVariable(value = "visitorId", required = true)
+    @PathVariable(required = true)
     @NotNull
     visitorId: Long,
     @RequestBody
@@ -279,6 +278,7 @@ class BookerDetailConfigController(
     searchBookerDto: SearchBookerDto,
   ): List<BookerDto> = bookerDetailsService.searchForBooker(searchBookerDto)
 
+  @Deprecated("Use /public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/prison in BookerDetailsController instead.")
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PutMapping(UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
@@ -288,43 +288,41 @@ class BookerDetailConfigController(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Registered prisoner's prison code wasupdated successfully",
+        description = "Registered prisoner's prison code was updated successfully",
       ),
       ApiResponse(
         responseCode = "400",
         description = "Validation failure, incorrect request to update registered prisoner's prison code",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "404",
         description = "booker / prisoner not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
   fun updateBookerPrisonerPrison(
-    @PathVariable(value = "bookerReference", required = true)
-    @NotBlank
+    @PathVariable(required = true) @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonerId", required = true)
-    @NotBlank
+    @PathVariable(required = true) @NotBlank
     prisonerId: String,
     @RequestBody
     @Valid
-    updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto,
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
   ): PermittedPrisonerDto = bookerDetailsService.updateBookerPrisonerPrison(
     bookerReference = bookerReference,
     prisonerId = prisonerId,
-    newPrisonCode = updateRegisteredPrisonersPrisonDto.prisonCode,
+    newPrisonCode = updateRegisteredPrisonerPrisonDto.prisonCode,
   )
 }

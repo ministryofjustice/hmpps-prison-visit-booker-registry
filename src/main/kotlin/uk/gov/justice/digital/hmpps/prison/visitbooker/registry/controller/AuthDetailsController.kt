@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerReference
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.AuthService
 
 const val AUTH_DETAILS_CONTROLLER_PATH: String = "/register/auth"
@@ -44,17 +44,17 @@ class AuthDetailsController(
       ApiResponse(
         responseCode = "400",
         description = "An error occurred whilst adding the booker.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions for this action",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
