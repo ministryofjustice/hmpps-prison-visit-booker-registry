@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -16,16 +17,17 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ErrorResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.BookerDetailsService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
 const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
+const val UPDATE_PERMITTED_PRISONER_PRISON: String = "$PERMITTED_PRISONERS/{prisonerId}/prison"
 const val GET_BOOKER_AUDIT: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/audit"
 
 @RestController
@@ -60,7 +62,7 @@ class BookerDetailsController(
     ],
   )
   fun getPermittedPrisonersForBooker(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @Parameter(
       description = "Booker's unique reference.",
       example = "A12345DC",
@@ -97,10 +99,10 @@ class BookerDetailsController(
     ],
   )
   fun getPermittedVisitorsForPrisoner(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonerId", required = true)
+    @PathVariable(required = true)
     @Parameter(
       description = "prisonerId Id for whom permitted visitors need to be returned.",
       example = "A12345DC",
@@ -138,12 +140,61 @@ class BookerDetailsController(
     ],
   )
   fun registerPrisoner(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
     @RequestBody
     registerPrisonerRequestDto: RegisterPrisonerRequestDto,
   ) = bookerDetailsService.registerPrisoner(bookerReference, registerPrisonerRequestDto)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
+  @PutMapping(UPDATE_PERMITTED_PRISONER_PRISON)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Update a permitted prisoner's registered prison code",
+    description = "Update a permitted prisoner's registered prison code",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Permitted prisoner's registered prison code was updated successfully",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Validation failure, incorrect request to update permitted prisoner's registered prison code",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "booker / prisoner not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun updatePermittedPrisonerPrison(
+    @PathVariable(required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(required = true)
+    @NotBlank
+    prisonerId: String,
+    @RequestBody
+    @Valid
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
+  ): PermittedPrisonerDto = bookerDetailsService.updateBookerPrisonerPrison(
+    bookerReference = bookerReference,
+    prisonerId = prisonerId,
+    newPrisonCode = updateRegisteredPrisonerPrisonDto.prisonCode,
+  )
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_BOOKER_AUDIT)
@@ -173,12 +224,12 @@ class BookerDetailsController(
       ApiResponse(
         responseCode = "404",
         description = "The booker does not exist or has no audit history",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponseDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
   fun getBookerAudit(
-    @PathVariable(value = "bookerReference", required = true)
+    @PathVariable(required = true)
     @NotBlank
     bookerReference: String,
   ): List<BookerAuditDto> = bookerDetailsService.getBookerAudit(bookerReference)

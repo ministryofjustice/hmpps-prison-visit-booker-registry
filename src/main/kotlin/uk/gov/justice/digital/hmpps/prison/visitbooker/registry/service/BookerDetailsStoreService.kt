@@ -147,10 +147,12 @@ class BookerDetailsStoreService(
     validateUpdateBookerPrisonerPrison(booker, prisonerId, newPrisonCode)
 
     val prisoner = getPermittedPrisoner(bookerReference, prisonerId)
-    val oldPrisonCode = prisoner.prisonCode
+    val previousPrisonCode = prisoner.prisonCode
+
     prisoner.prisonCode = newPrisonCode
 
-    LOG.info("Prisoner - $prisonerId's prison code updated from $oldPrisonCode to $newPrisonCode for booker $bookerReference")
+    LOG.info("Prisoner - $prisonerId's prison code updated from $previousPrisonCode to $newPrisonCode for booker $bookerReference")
+
     return PermittedPrisonerDto(prisoner)
   }
 
@@ -176,7 +178,7 @@ class BookerDetailsStoreService(
       throw UpdatePrisonerPrisonValidationException(errorMessage)
     }
 
-    // if the prisoner isn't in the prison supplied - throw an exception
+    // if the prisoner isn't in the prison supplied, throw an exception
     val prisonerDetails = prisonerSearchService.getPrisoner(prisonerId)
 
     if (prisonerDetails.prisonId != newPrisonCode) {
