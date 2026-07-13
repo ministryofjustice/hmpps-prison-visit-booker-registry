@@ -170,7 +170,7 @@ class PrisonerMergeControllerTest : IntegrationTestBase() {
     assertThat(prisonerIdsForBooker(booker3)).containsExactly(nextSuccessfulNewPrisonerNumber)
 
     verify(telemetryClientSpy, times(1)).trackEvent(
-      "booker_merge_event_failed",
+      "manual_prisoner_merge_event_failed",
       mapOf(
         "oldPrisonerNumber" to failingOldPrisonerNumber,
         "newPrisonerNumber" to failingNewPrisonerNumber,

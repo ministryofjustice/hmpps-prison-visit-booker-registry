@@ -4,7 +4,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerMergeRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerMergeService.Companion.MERGE_EVENT_FAILED_FOR_BOOKER
 
 @Service
 class ManualPrisonerMergeService(
@@ -13,6 +12,7 @@ class ManualPrisonerMergeService(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+    private const val MANUAL_MERGE_EVENT_FAILED_FOR_PRISONER = "manual_prisoner_merge_event_failed"
   }
 
   fun mergePrisoner(oldPrisonerNumber: String, newPrisonerNumber: String) {
@@ -34,7 +34,7 @@ class ManualPrisonerMergeService(
     } catch (e: Exception) {
       LOG.error("Failed to manually merge prisoner number from {} to {}", oldPrisonerNumber, newPrisonerNumber, e)
       telemetryClientService.trackEvent(
-        MERGE_EVENT_FAILED_FOR_BOOKER,
+        MANUAL_MERGE_EVENT_FAILED_FOR_PRISONER,
         mapOf(
           "oldPrisonerNumber" to oldPrisonerNumber,
           "newPrisonerNumber" to newPrisonerNumber,

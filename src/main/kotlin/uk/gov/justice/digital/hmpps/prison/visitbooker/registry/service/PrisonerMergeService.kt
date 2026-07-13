@@ -17,7 +17,7 @@ class PrisonerMergeService(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-    internal const val MERGE_EVENT_FAILED_FOR_BOOKER = "booker_merge_event_failed"
+    private const val MERGE_EVENT_FAILED_FOR_BOOKER = "booker_merge_event_failed"
   }
 
   @Transactional
