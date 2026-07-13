@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerMergeBatchRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerMergeRequestDto
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerMergeService
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.ManualPrisonerMergeService
 
 const val PRISONER_MERGE_PATH: String = "/public/prisoner/merge"
 const val PRISONER_MERGE_BATCH_PATH: String = "$PRISONER_MERGE_PATH/batch"
 
 @RestController
 class PrisonerMergeController(
-  private val prisonerMergeService: PrisonerMergeService,
+  private val manualPrisonerMergeService: ManualPrisonerMergeService,
 ) {
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PostMapping(PRISONER_MERGE_PATH)
@@ -55,7 +55,7 @@ class PrisonerMergeController(
     @RequestBody
     @Valid
     prisonerMergeRequestDto: PrisonerMergeRequestDto,
-  ) = prisonerMergeService.mergePrisoner(
+  ) = manualPrisonerMergeService.mergePrisoner(
     oldPrisonerNumber = prisonerMergeRequestDto.oldPrisonerNumber,
     newPrisonerNumber = prisonerMergeRequestDto.newPrisonerNumber,
   )
@@ -92,12 +92,5 @@ class PrisonerMergeController(
     @RequestBody
     @Valid
     prisonerMergeBatchRequestDto: PrisonerMergeBatchRequestDto,
-  ) {
-    prisonerMergeBatchRequestDto.prisonerMerges.forEach {
-      prisonerMergeService.mergePrisoner(
-        oldPrisonerNumber = it.oldPrisonerNumber,
-        newPrisonerNumber = it.newPrisonerNumber,
-      )
-    }
-  }
+  ) = manualPrisonerMergeService.mergePrisoners(prisonerMergeBatchRequestDto.prisonerMerges)
 }

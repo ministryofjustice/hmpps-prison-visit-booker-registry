@@ -1,13 +1,15 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
@@ -18,7 +20,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerMergeBatchRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonerMergeRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.PrisonerMergeService
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 
 @Transactional(propagation = SUPPORTS)
 @DisplayName("Manual prisoner merge controller tests")
@@ -28,7 +30,10 @@ class PrisonerMergeControllerTest : IntegrationTestBase() {
   private lateinit var booker3: Booker
 
   @MockitoSpyBean
-  private lateinit var prisonerMergeServiceSpy: PrisonerMergeService
+  private lateinit var telemetryClientSpy: TelemetryClient
+
+  @MockitoSpyBean
+  private lateinit var permittedPrisonerRepositorySpy: PermittedPrisonerRepository
 
   @BeforeEach
   internal fun setUp() {
@@ -129,24 +134,28 @@ class PrisonerMergeControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when manual prisoner merge batch fails halfway then previous merge remains committed`() {
+  fun `when manual prisoner merge batch fails halfway then failure is logged and remaining merges continue`() {
     // Given
     val successfulOldPrisonerNumber = "AB123XYZ"
     val successfulNewPrisonerNumber = "BB123ABC"
     val failingOldPrisonerNumber = "FAILOLD"
     val failingNewPrisonerNumber = "FAILNEW"
+    val nextSuccessfulOldPrisonerNumber = "CB123XYZ"
+    val nextSuccessfulNewPrisonerNumber = "DB123ABC"
 
     createAssociatedPrisoners(booker1, listOf(PermittedPrisonerTestObject(successfulOldPrisonerNumber, PRISON_CODE)))
     createAssociatedPrisoners(booker2, listOf(PermittedPrisonerTestObject(failingOldPrisonerNumber, PRISON_CODE)))
+    createAssociatedPrisoners(booker3, listOf(PermittedPrisonerTestObject(nextSuccessfulOldPrisonerNumber, PRISON_CODE)))
 
     doThrow(RuntimeException("Batch merge failure"))
-      .whenever(prisonerMergeServiceSpy)
-      .mergePrisoner(failingOldPrisonerNumber, failingNewPrisonerNumber)
+      .whenever(permittedPrisonerRepositorySpy)
+      .mergePrisoner(oldPrisonerId = failingOldPrisonerNumber, newPrisonerId = failingNewPrisonerNumber)
 
     val request = PrisonerMergeBatchRequestDto(
       prisonerMerges = listOf(
         PrisonerMergeRequestDto(oldPrisonerNumber = successfulOldPrisonerNumber, newPrisonerNumber = successfulNewPrisonerNumber),
         PrisonerMergeRequestDto(oldPrisonerNumber = failingOldPrisonerNumber, newPrisonerNumber = failingNewPrisonerNumber),
+        PrisonerMergeRequestDto(oldPrisonerNumber = nextSuccessfulOldPrisonerNumber, newPrisonerNumber = nextSuccessfulNewPrisonerNumber),
       ),
     )
 
@@ -154,10 +163,22 @@ class PrisonerMergeControllerTest : IntegrationTestBase() {
     val responseSpec = callMergePrisoners(bookerConfigServiceRoleHttpHeaders, request)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+    responseSpec.expectStatus().isOk
 
     assertThat(prisonerIdsForBooker(booker1)).containsExactly(successfulNewPrisonerNumber)
     assertThat(prisonerIdsForBooker(booker2)).containsExactly(failingOldPrisonerNumber)
+    assertThat(prisonerIdsForBooker(booker3)).containsExactly(nextSuccessfulNewPrisonerNumber)
+
+    verify(telemetryClientSpy, times(1)).trackEvent(
+      "booker_merge_event_failed",
+      mapOf(
+        "oldPrisonerNumber" to failingOldPrisonerNumber,
+        "newPrisonerNumber" to failingNewPrisonerNumber,
+        "exceptionType" to RuntimeException::class.java.name,
+        "exceptionMessage" to "Batch merge failure",
+      ),
+      null,
+    )
   }
 
   @Test
