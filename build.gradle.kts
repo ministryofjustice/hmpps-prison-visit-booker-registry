@@ -76,7 +76,3 @@ tasks {
 allOpen {
   annotation("javax.persistence.Entity")
 }
-
-dependencyCheck {
-  nvd.datafeedUrl = "file:///opt/vulnz/cache"
-}
