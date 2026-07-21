@@ -103,6 +103,38 @@ class VisitorRequestsService(
     }
   }
 
+  fun withdrawVisitorRequest(bookerReference: String, requestReference: String): PrisonVisitorRequestDto {
+    LOG.info("Entered VisitorRequestsService - withdrawVisitorRequest for request reference - $requestReference")
+
+    var visitorRequest = getVisitorRequestByReference(requestReference)
+
+    if (bookerReference != visitorRequest.bookerReference) {
+      // Would we want to throw here?
+      LOG.info("Booker withdrawing the request is not the same as the booker who made the initial request")
+    }
+
+    return when (visitorRequest.status) {
+      REQUESTED -> {
+        val booker = bookerDetailsService.getBookerByReference(bookerReference)
+        visitorRequestsStoreService.withdrawVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
+        LOG.info("Visitor request with reference $requestReference withdrawn.")
+
+        // audit the event
+        bookerAuditService.auditLinkVisitorWithdrawn(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference)
+        // send SNS event
+        snsService.sendVisitorRequestWithdrawnEvent(prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
+
+        visitorRequest = getVisitorRequestByReference(requestReference)
+        PrisonVisitorRequestDto(visitorRequest, booker.email)
+      }
+
+      else -> {
+        LOG.info("Visitor request with reference $requestReference has already been actioned.")
+        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned, and cannot be withdrawn.")
+      }
+    }
+  }
+
   fun rejectVisitorRequest(requestReference: String, rejectVisitorRequest: RejectVisitorRequestDto): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - rejectVisitorRequest for request reference - $requestReference, rejectVisitorRequest - $rejectVisitorRequest")
 

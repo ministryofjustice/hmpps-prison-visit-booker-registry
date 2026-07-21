@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_APPROVED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_REJECTED_FOR_PRISONER
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_WITHDRAWN_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
@@ -129,6 +130,20 @@ class BookerAuditService(
       PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
       REJECTION_REASON to rejectionReason.name,
       ACTIONED_BY to actionedBy,
+    )
+    sendTelemetryClientEvent(auditType, properties)
+  }
+
+  fun auditLinkVisitorWithdrawn(bookerReference: String, prisonNumber: String, requestReference: String) {
+    val auditType = VISITOR_REQUEST_WITHDRAWN_FOR_PRISONER
+    val text = "Request reference - $requestReference withdrawn, actionedBy - $bookerReference"
+    auditBookerEvent(bookerReference, auditType, text)
+
+    // send event to telemetry client
+    val properties = mapOf(
+      VISITOR_REQUEST_REFERENCE to requestReference,
+      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
     )
     sendTelemetryClientEvent(auditType, properties)
   }

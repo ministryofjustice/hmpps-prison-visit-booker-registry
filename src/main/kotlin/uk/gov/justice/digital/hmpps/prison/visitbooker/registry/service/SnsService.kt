@@ -86,6 +86,26 @@ class SnsService(
     }
   }
 
+  fun sendVisitorRequestWithdrawnEvent(prisonerId: String, requestReference: String) {
+    LOG.info("Entered : sendVisitorRequestWithdrawnAsWithdrawnEvent, for prisonerId: $prisonerId, requestReference: $requestReference")
+    val additionalInformation = RejectedAdditionalInformation(
+      requestReference = requestReference,
+    )
+
+    val payloadEvent = getPayloadEvent(SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_WITHDRAWN_EVENT, prisonerId, additionalInformation)
+
+    sendDomainEvent(payloadEvent)?.let {
+      telemetryClient.trackEvent(
+        "${payloadEvent.eventType}-domain-event",
+        mapOf(
+          "messageId" to it.messageId(),
+          "requestReference" to requestReference,
+        ),
+        null,
+      )
+    }
+  }
+
   private fun getPayloadEvent(eventType: SnsEventTypes, prisonerId: String, additionalInformation: AdditionalInformation) = HMPPSDomainEvent(
     eventType = eventType.type,
     version = EVENT_PRISON_VISIT_VERSION,
