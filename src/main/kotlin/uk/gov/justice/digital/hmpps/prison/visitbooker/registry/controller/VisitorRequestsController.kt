@@ -322,15 +322,15 @@ class VisitorRequestsController(
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Withdraw visitor request.",
-    description = "Reject a visitor request.",
+    description = "Withdraw a visitor request.",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Visit request rejected, no visitor linked to booker's prisoner",
+        description = "Visit request withdrawn, no visitor linked to booker's prisoner",
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Incorrect request to reject visitor request",
+        description = "Incorrect request to withdraw visitor request",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -340,7 +340,7 @@ class VisitorRequestsController(
       ),
       ApiResponse(
         responseCode = "403",
-        description = "Incorrect permissions to reject visitor request",
+        description = "Incorrect permissions to withdraw visitor request",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
