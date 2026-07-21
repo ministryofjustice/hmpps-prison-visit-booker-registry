@@ -30,11 +30,12 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorR
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
 
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/permitted/visitors/requests"
-const val WITHDRAW_VISITOR_REQUEST: String = "$GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE/{requestReference}/withdraw"
 
 const val GET_SINGLE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}"
 const val APPROVE_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/approve"
 const val REJECT_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/reject"
+const val WITHDRAW_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/{requestReference}/withdraw"
+
 
 const val GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
