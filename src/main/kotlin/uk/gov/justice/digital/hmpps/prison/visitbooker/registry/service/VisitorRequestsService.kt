@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
 @Service
@@ -109,8 +110,8 @@ class VisitorRequestsService(
     var visitorRequest = getVisitorRequestByReference(requestReference)
 
     if (bookerReference != visitorRequest.bookerReference) {
-      // Would we want to throw here?
       LOG.info("Booker withdrawing the request is not the same as the booker who made the initial request")
+      throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
     }
 
     return when (visitorRequest.status) {
