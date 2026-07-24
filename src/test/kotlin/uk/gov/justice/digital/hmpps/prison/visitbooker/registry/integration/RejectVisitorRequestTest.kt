@@ -172,7 +172,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("Visitor request already actioned")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
+      .isEqualTo("Visitor request with reference ${request.reference} has already been actioned, and cannot be rejected.")
 
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = userName))
     verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())
@@ -200,7 +200,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("Visitor request already actioned")
       .jsonPath("$.developerMessage")
-      .isEqualTo("Visitor request with reference ${request.reference} has already been actioned.")
+      .isEqualTo("Visitor request with reference ${request.reference} has already been actioned, and cannot be rejected.")
 
     verify(visitorRequestsServiceSpy, times(1)).rejectVisitorRequest(request.reference, RejectVisitorRequestDto(rejectionReason = rejectionReason, actionedBy = userName))
     verify(visitorRequestsStoreServiceSpy, times(0)).rejectVisitorRequest(any(), any(), any(), any())

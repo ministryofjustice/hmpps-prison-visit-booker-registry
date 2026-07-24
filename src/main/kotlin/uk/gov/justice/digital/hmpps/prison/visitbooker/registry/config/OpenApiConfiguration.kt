@@ -43,7 +43,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
         Server().url("https://hmpps-prison-visit-booker-registry-preprod.prison.service.justice.gov.uk").description("PreProd"),
         Server().url("https://hmpps-prison-visit-booker-registry-staging.prison.service.justice.gov.uk").description("Staging"),
         Server().url("https://hmpps-prison-visit-booker-registry-dev.prison.service.justice.gov.uk").description("Development"),
-        Server().url("http://localhost:8080").description("Local"),
+        Server().url("http://localhost:8083").description("Local"),
       ),
     )
     .info(

@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.WithdrawVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.VisitorRequestsService
 
 const val PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH: String = "/public/booker/{bookerReference}/permitted/prisoners/{prisonerId}/permitted/visitors/request"
@@ -34,6 +35,7 @@ const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bo
 const val GET_SINGLE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}"
 const val APPROVE_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/approve"
 const val REJECT_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/reject"
+const val WITHDRAW_VISITOR_REQUEST: String = "$GET_SINGLE_VISITOR_REQUEST/withdraw"
 
 const val GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 const val GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
@@ -315,4 +317,47 @@ class VisitorRequestsController(
     @RequestBody
     rejectVisitorRequest: RejectVisitorRequestDto,
   ): PrisonVisitorRequestDto = visitorRequestsService.rejectVisitorRequest(requestReference, rejectVisitorRequest)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @PutMapping(WITHDRAW_VISITOR_REQUEST)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Withdraw visitor request.",
+    description = "Withdraw a pending visitor request.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit request withdrawn, no visitor will be linked to booker's prisoner",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to withdraw a pending visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to withdraw visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Pending visitor request not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun withdrawVisitorRequest(
+    @PathVariable
+    requestReference: String,
+    @RequestBody
+    withdrawVisitorRequest: WithdrawVisitorRequestDto,
+  ): PrisonVisitorRequestDto = visitorRequestsService.withdrawVisitorRequest(
+    requestReference,
+    withdrawVisitorRequest,
+  )
 }

@@ -112,6 +112,12 @@ class VisitorRequestsStoreService(
     visitorRequestsRepository.rejectVisitorRequest(requestReference, rejectionReason, LocalDateTime.now())
   }
 
+  @Transactional
+  fun withdrawVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String) {
+    LOG.info("Enter VisitorRequestsApprovalStoreService withdrawVisitorRequest, booker reference - $bookerReference, prisonerId - $prisonerId, requestReference = $requestReference")
+    visitorRequestsRepository.withdrawVisitorRequest(requestReference, LocalDateTime.now())
+  }
+
   @Transactional(readOnly = true)
   fun getVisitorRequestByReference(requestReference: String): VisitorRequest = visitorRequestsRepository.findVisitorRequestByReference(requestReference) ?: throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
 
