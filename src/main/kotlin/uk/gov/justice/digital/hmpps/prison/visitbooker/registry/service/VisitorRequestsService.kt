@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.WithdrawVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
@@ -104,14 +105,14 @@ class VisitorRequestsService(
     }
   }
 
-  fun withdrawVisitorRequest(bookerReference: String, requestReference: String): PrisonVisitorRequestDto {
+  fun withdrawVisitorRequest(requestReference: String, withdrawVisitorRequestDto: WithdrawVisitorRequestDto): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - withdrawVisitorRequest for request reference - $requestReference")
 
     var visitorRequest = getVisitorRequestByReference(requestReference)
+    val bookerReference = visitorRequest.bookerReference
 
-    if (bookerReference != visitorRequest.bookerReference) {
-      LOG.info("Booker withdrawing the request is not the same as the booker who made the initial request")
-      throw VisitorRequestNotFoundException("Request not found for reference $requestReference")
+    if (withdrawVisitorRequestDto.bookerReference != bookerReference) {
+      throw VisitorRequestNotFoundException("Visitor request with reference $requestReference not found for booker $bookerReference.")
     }
 
     return when (visitorRequest.status) {
@@ -130,7 +131,7 @@ class VisitorRequestsService(
       }
 
       else -> {
-        LOG.info("Visitor request with reference $requestReference has already been actioned.")
+        LOG.info("Visitor request with reference $requestReference has already been actioned, and cannot be withdrawn.")
         throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned, and cannot be withdrawn.")
       }
     }
@@ -158,8 +159,8 @@ class VisitorRequestsService(
       }
 
       else -> {
-        LOG.info("Visitor request with reference $requestReference has already been actioned.")
-        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned.")
+        LOG.info("Visitor request with reference $requestReference has already been actioned, and cannot be rejected.")
+        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned, and cannot be rejected.")
       }
     }
   }

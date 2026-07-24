@@ -136,7 +136,7 @@ class BookerAuditService(
 
   fun auditLinkVisitorWithdrawn(bookerReference: String, prisonNumber: String, requestReference: String) {
     val auditType = VISITOR_REQUEST_WITHDRAWN_FOR_PRISONER
-    val text = "Request reference - $requestReference withdrawn, actionedBy - $bookerReference"
+    val text = "Request reference - $requestReference withdrawn, bookerReference - $bookerReference"
     auditBookerEvent(bookerReference, auditType, text)
 
     // send event to telemetry client
