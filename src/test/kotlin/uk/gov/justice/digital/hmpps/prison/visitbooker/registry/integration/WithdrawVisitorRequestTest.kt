@@ -92,15 +92,6 @@ class WithdrawVisitorRequestTest : IntegrationTestBase() {
       },
       isNull(),
     )
-    verify(snsService, times(1)).sendVisitorRequestWithdrawnEvent(prisonerId, requestReference)
-
-    verify(telemetryClientSpy, times(1)).trackEvent(
-      eq("prison-visit-booker.visitor-withdrawn-domain-event"),
-      check {
-        assertThat(it["requestReference"]).isEqualTo(visitorRequest.reference)
-      },
-      isNull(),
-    )
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
@@ -126,7 +117,6 @@ class WithdrawVisitorRequestTest : IntegrationTestBase() {
     verify(visitorRequestsServiceSpy, times(1)).withdrawVisitorRequest(reference, WithdrawVisitorRequestDto(bookerReference = userName))
     verify(visitorRequestsStoreServiceSpy, times(0)).withdrawVisitorRequest(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).withdrawVisitorRequest(any(), any())
-    verify(snsService, times(0)).sendVisitorRequestWithdrawnEvent(any(), any())
   }
 
   @Test
@@ -152,7 +142,6 @@ class WithdrawVisitorRequestTest : IntegrationTestBase() {
     verify(visitorRequestsServiceSpy, times(1)).withdrawVisitorRequest(request.reference, WithdrawVisitorRequestDto(bookerReference = booker.reference))
     verify(visitorRequestsStoreServiceSpy, times(0)).withdrawVisitorRequest(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).withdrawVisitorRequest(any(), any())
-    verify(snsService, times(0)).sendVisitorRequestWithdrawnEvent(any(), any())
   }
 
   @Test
@@ -161,7 +150,6 @@ class WithdrawVisitorRequestTest : IntegrationTestBase() {
     val prisonCode = "HEI"
     val booker = createBooker("one-sub", "test@test.com")
     val prisoner = createPrisoner(booker, "AA123456", prisonCode)
-    val userName = "test-user"
 
     // request has already been WITHDRAWN
     val request = createVisitorRequest(booker.reference, prisoner.prisonerId, AddVisitorToBookerPrisonerRequestDto("firstName1", "lastName1", LocalDate.now().minusYears(21)), status = WITHDRAWN)
@@ -182,7 +170,6 @@ class WithdrawVisitorRequestTest : IntegrationTestBase() {
     )
     verify(visitorRequestsStoreServiceSpy, times(0)).withdrawVisitorRequest(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).withdrawVisitorRequest(any(), any())
-    verify(snsService, times(0)).sendVisitorRequestWithdrawnEvent(any(), any())
   }
 
   @Test
@@ -214,7 +201,6 @@ class WithdrawVisitorRequestTest : IntegrationTestBase() {
     )
     verify(visitorRequestsStoreServiceSpy, times(0)).withdrawVisitorRequest(any(), any(), any())
     verify(visitorRequestsRepositorySpy, times(0)).withdrawVisitorRequest(any(), any())
-    verify(snsService, times(0)).sendVisitorRequestWithdrawnEvent(any(), any())
   }
 
   @Test

@@ -123,8 +123,6 @@ class VisitorRequestsService(
 
         // audit the event
         bookerAuditService.auditLinkVisitorWithdrawn(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference)
-        // send SNS event
-        snsService.sendVisitorRequestWithdrawnEvent(prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
 
         visitorRequest = getVisitorRequestByReference(requestReference)
         PrisonVisitorRequestDto(visitorRequest, booker.email)
