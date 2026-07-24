@@ -33,7 +33,6 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Visito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.EntityHelper
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.integration.mock.PrisonerContactRegistryMockServer
@@ -47,6 +46,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
+import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 import java.time.LocalDate
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -82,7 +82,7 @@ abstract class IntegrationTestBase {
   lateinit var webTestClient: WebTestClient
 
   @Autowired
-  protected lateinit var jwtAuthHelper: JwtAuthHelper
+  protected lateinit var jwtAuthHelper: JwtAuthorisationHelper
 
   @Autowired
   lateinit var entityHelper: EntityHelper
@@ -129,7 +129,12 @@ abstract class IntegrationTestBase {
     user: String = "AUTH_ADM",
     roles: List<String> = listOf(),
     scopes: List<String> = listOf(),
-  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
+  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(
+    clientId = "visit-scheduler-client",
+    username = user,
+    scope = scopes,
+    roles = roles,
+  )
 
   fun createBooker(oneLoginSub: String, emailAddress: String): Booker {
     val booker = entityHelper.saveBooker(Booker(oneLoginSub = oneLoginSub, email = emailAddress))
