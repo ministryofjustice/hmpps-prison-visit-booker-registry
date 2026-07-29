@@ -30,10 +30,10 @@ To run the prison-visit-booker-registry, first start the required local services
 ```
 docker-compose up -d
 ```
-Next create a .env file at the project root and add 2 secrets to it
-```
-SYSTEM_CLIENT_ID="get from kubernetes secrets for dev namespace"
-SYSTEM_CLIENT_SECRET"get from kubernetes secrets for dev namespace"
+Next [create a .env](./.env) file at the project root and add 2 secrets to it
+
+```bash
+cp example.env .env
 ```
 
 Then create a Spring Boot run configuration with active profile of 'dev' and set an environments file to the

@@ -10,8 +10,10 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.VisitorRequestsCountByPrisonCodeDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.WithdrawVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestAlreadyActionedException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.VisitorRequestNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 
 @Service
@@ -103,6 +105,36 @@ class VisitorRequestsService(
     }
   }
 
+  fun withdrawVisitorRequest(requestReference: String, withdrawVisitorRequestDto: WithdrawVisitorRequestDto): PrisonVisitorRequestDto {
+    LOG.info("Entered VisitorRequestsService - withdrawVisitorRequest for request reference - $requestReference")
+
+    var visitorRequest = getVisitorRequestByReference(requestReference)
+    val bookerReference = visitorRequest.bookerReference
+
+    if (withdrawVisitorRequestDto.bookerReference != bookerReference) {
+      throw VisitorRequestNotFoundException("Visitor request with reference $requestReference not found for booker $bookerReference.")
+    }
+
+    return when (visitorRequest.status) {
+      REQUESTED -> {
+        val booker = bookerDetailsService.getBookerByReference(bookerReference)
+        visitorRequestsStoreService.withdrawVisitorRequest(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
+        LOG.info("Visitor request with reference $requestReference withdrawn.")
+
+        // audit the event
+        bookerAuditService.auditLinkVisitorWithdrawn(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, requestReference = requestReference)
+
+        visitorRequest = getVisitorRequestByReference(requestReference)
+        PrisonVisitorRequestDto(visitorRequest, booker.email)
+      }
+
+      else -> {
+        LOG.info("Visitor request with reference $requestReference has already been actioned, and cannot be withdrawn.")
+        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned, and cannot be withdrawn.")
+      }
+    }
+  }
+
   fun rejectVisitorRequest(requestReference: String, rejectVisitorRequest: RejectVisitorRequestDto): PrisonVisitorRequestDto {
     LOG.info("Entered VisitorRequestsService - rejectVisitorRequest for request reference - $requestReference, rejectVisitorRequest - $rejectVisitorRequest")
 
@@ -125,8 +157,8 @@ class VisitorRequestsService(
       }
 
       else -> {
-        LOG.info("Visitor request with reference $requestReference has already been actioned.")
-        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned.")
+        LOG.info("Visitor request with reference $requestReference has already been actioned, and cannot be rejected.")
+        throw VisitorRequestAlreadyActionedException("Visitor request with reference $requestReference has already been actioned, and cannot be rejected.")
       }
     }
   }
