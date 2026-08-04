@@ -9,8 +9,9 @@ import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.sns.model.PublishResponse
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_APPROVED_EVENT
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_REJECTED_EVENT
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_LINKED_EVENT
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_REQUEST_APPROVED_EVENT
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.SnsEventTypes.PRISON_VISIT_BOOKER_PRISONER_VISITOR_REQUEST_REJECTED_EVENT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.PublishEventException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service.SnsService.Companion.EVENT_ZONE_ID
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -42,15 +43,15 @@ class SnsService(
       ?: throw kotlin.RuntimeException("Topic with name $TOPIC_ID doesn't exist")
   }
 
-  fun sendBookerPrisonerVisitorApprovedEvent(bookerReference: String, prisonerId: String, visitorId: String) {
-    LOG.info("Entered : sendBookerPrisonerVisitorApprovedEvent, for bookerReference: $bookerReference, prisonerId: $prisonerId, visitorId: $visitorId")
+  fun sendBookerPrisonerVisitorLinkedEvent(bookerReference: String, prisonerId: String, visitorId: String) {
+    LOG.info("Entered : sendBookerPrisonerVisitorLinkedEvent, for bookerReference: $bookerReference, prisonerId: $prisonerId, visitorId: $visitorId")
     val additionalInformation = ApprovedAdditionalInformation(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
       visitorId = visitorId,
     )
 
-    val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_APPROVED_EVENT, prisonerId, additionalInformation)
+    val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_LINKED_EVENT, prisonerId, additionalInformation)
 
     sendDomainEvent(payloadEvent)?.let {
       telemetryClient.trackEvent(
@@ -66,13 +67,33 @@ class SnsService(
     }
   }
 
-  fun sendVisitorRequestRejectedEvent(prisonerId: String, requestReference: String) {
-    LOG.info("Entered : sendVisitorRequestRejectedAsRejectedEvent, for prisonerId: $prisonerId, requestReference: $requestReference")
-    val additionalInformation = RejectedAdditionalInformation(
+  fun sendVisitorRequestApprovedEvent(prisonerId: String, requestReference: String) {
+    LOG.info("Entered : sendVisitorRequestApprovedEvent, for prisonerId: $prisonerId, requestReference: $requestReference")
+    val additionalInformation = VisitorRequestAdditionalInformation(
       requestReference = requestReference,
     )
 
-    val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_REJECTED_EVENT, prisonerId, additionalInformation)
+    val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_REQUEST_APPROVED_EVENT, prisonerId, additionalInformation)
+
+    sendDomainEvent(payloadEvent)?.let {
+      telemetryClient.trackEvent(
+        "${payloadEvent.eventType}-domain-event",
+        mapOf(
+          "messageId" to it.messageId(),
+          "requestReference" to requestReference,
+        ),
+        null,
+      )
+    }
+  }
+
+  fun sendVisitorRequestRejectedEvent(prisonerId: String, requestReference: String) {
+    LOG.info("Entered : sendVisitorRequestRejectedEvent, for prisonerId: $prisonerId, requestReference: $requestReference")
+    val additionalInformation = VisitorRequestAdditionalInformation(
+      requestReference = requestReference,
+    )
+
+    val payloadEvent = getPayloadEvent(PRISON_VISIT_BOOKER_PRISONER_VISITOR_REQUEST_REJECTED_EVENT, prisonerId, additionalInformation)
 
     sendDomainEvent(payloadEvent)?.let {
       telemetryClient.trackEvent(
@@ -107,7 +128,7 @@ class SnsService(
       )
     } catch (e: Throwable) {
       val message =
-        "Failed (sendBookerPrisonerVisitorApprovedEvent) to publish Event $payloadEvent.eventType to $TOPIC_ID"
+        "Failed to publish Event ${payloadEvent.eventType} to $TOPIC_ID"
       LOG.error(message, e)
       throw PublishEventException(message, e)
     }
@@ -134,7 +155,7 @@ internal data class ApprovedAdditionalInformation(
   val visitorId: String,
 ) : AdditionalInformation
 
-internal data class RejectedAdditionalInformation(
+internal data class VisitorRequestAdditionalInformation(
   val requestReference: String,
 ) : AdditionalInformation
 

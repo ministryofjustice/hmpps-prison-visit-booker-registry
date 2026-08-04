@@ -20,11 +20,141 @@ servers:
 
 components:
   messages:
-    prison-visit-booker.visitor-approved:
-      $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/prison-visit-booker/prison-visit-booker-visitor-approved.yaml
-    prison-visit-booker.visitor-rejected:
-      $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/prison-visit-booker/prison-visit-booker-visitor-rejected.yaml
-
+    prison-visit-booker.visitor-linked:
+      contentType: application/json
+      name: prison-visit-booker.visitor-linked
+      payload:
+        properties:
+          additionalInformation:
+            properties:
+              bookerReference:
+                example: abc-def-ghi
+                type: string
+              prisonerId:
+                example: AA123456
+                type: string
+              visitorId:
+                example: 123456
+                type: string
+            type: object
+          description:
+            example: Booker's prisoner has a visitor linked.
+            type: string
+          detailUrl:
+            example: null
+            type: string
+          eventType:
+            example: prison-visit-booker.visitor-linked
+            type: string
+          occurredAt:
+            example: '2024-05-01T19:28:58Z'
+            type: string
+          personReference:
+            properties:
+              identifiers:
+                items:
+                - properties:
+                    type:
+                      example: NOMIS
+                      type: string
+                    value:
+                      example: A5276DZ
+                      type: string
+                  type: object
+                type: array
+            type: object
+          version:
+            example: 1
+            type: integer
+        type: object
+      summary: An event to signify a booker's prisoner has a visitor linked by hmpps-prison-visit-booker-registry
+      title: prison-visit-booker.visitor-linked
+    prison-visit-booker.visitor-request-approved:
+      contentType: application/json
+      name: prison-visit-booker.visitor-request-approved
+      payload:
+        properties:
+          additionalInformation:
+            properties:
+              requestReference:
+                example: abc-def-ghi
+                type: string
+            type: object
+          description:
+            example: Booker's prisoner has a visitor request approved.
+            type: string
+          detailUrl:
+            example: null
+            type: string
+          eventType:
+            example: prison-visit-booker.visitor-request-approved
+            type: string
+          occurredAt:
+            example: '2024-05-01T19:28:58Z'
+            type: string
+          personReference:
+            properties:
+              identifiers:
+                items:
+                - properties:
+                    type:
+                      example: NOMIS
+                      type: string
+                    value:
+                      example: A5276DZ
+                      type: string
+                  type: object
+                type: array
+            type: object
+          version:
+            example: 1
+            type: integer
+        type: object
+      summary: An event to signify a booker's prisoner has a visitor request approved by hmpps-prison-visit-booker-registry
+      title: prison-visit-booker.visitor-request-approved
+    prison-visit-booker.visitor-request-rejected:
+      contentType: application/json
+      name: prison-visit-booker.visitor-request-rejected
+      payload:
+        properties:
+          additionalInformation:
+            properties:
+              requestReference:
+                example: abc-def-ghi
+                type: string
+            type: object
+          description:
+            example: Booker's prisoner has a visitor request rejected.
+            type: string
+          detailUrl:
+            example: null
+            type: string
+          eventType:
+            example: prison-visit-booker.visitor-request-rejected
+            type: string
+          occurredAt:
+            example: '2024-05-01T19:28:58Z'
+            type: string
+          personReference:
+            properties:
+              identifiers:
+                items:
+                - properties:
+                    type:
+                      example: NOMIS
+                      type: string
+                    value:
+                      example: A5276DZ
+                      type: string
+                  type: object
+                type: array
+            type: object
+          version:
+            example: 1
+            type: integer
+        type: object
+      summary: An event to signify a booker's prisoner has a visitor request rejected by hmpps-prison-visit-booker-registry
+      title: prison-visit-booker.visitor-request-rejected
 
 channels:
   hmpps-domain-events:
@@ -33,10 +163,12 @@ channels:
       sns:
         name: domainevents
     messages:
-      prison-visit-booker.visitor-approved:
-        $ref: '#/components/messages/prison-visit-booker.visitor-approved'
-      prison-visit-booker.visitor-rejected:
-        $ref: '#/components/messages/prison-visit-booker.visitor-rejected'
+      prison-visit-booker.visitor-linked:
+        $ref: '#/components/messages/prison-visit-booker.visitor-linked'
+      prison-visit-booker.visitor-request-approved:
+        $ref: '#/components/messages/prison-visit-booker.visitor-request-approved'
+      prison-visit-booker.visitor-request-rejected:
+        $ref: '#/components/messages/prison-visit-booker.visitor-request-rejected'
 
 operations:
   publish-event:
@@ -44,6 +176,6 @@ operations:
     channel:
       $ref: '#/channels/hmpps-domain-events'
     messages:
-      - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-approved'
-      - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-rejected'
-
+      - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-linked'
+      - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-request-approved'
+      - $ref: '#/channels/hmpps-domain-events/messages/prison-visit-booker.visitor-request-rejected'

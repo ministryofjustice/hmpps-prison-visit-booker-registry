@@ -92,7 +92,7 @@ class VisitorRequestsService(
         // audit the event
         bookerAuditService.auditLinkVisitorApproved(bookerReference = visitorRequest.bookerReference, prisonNumber = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId, requestReference = requestReference, autoApproval = autoApproval, actionedBy = approveVisitorRequest.actionedBy)
         // send SNS event
-        snsService.sendBookerPrisonerVisitorApprovedEvent(bookerReference = visitorRequest.bookerReference, prisonerId = visitorRequest.prisonerId, visitorId = approveVisitorRequest.visitorId.toString())
+        snsService.sendVisitorRequestApprovedEvent(prisonerId = visitorRequest.prisonerId, requestReference = requestReference)
         LOG.info("Visitor request with reference $requestReference approved successfully")
         visitorRequest = getVisitorRequestByReference(requestReference)
         PrisonVisitorRequestDto(visitorRequest, booker.email)

@@ -99,14 +99,13 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       },
       isNull(),
     )
-    verify(snsService, times(1)).sendBookerPrisonerVisitorApprovedEvent(bookerReference, prisonerId, visitorIdToBeLinked.toString())
+    verify(snsService, times(1)).sendVisitorRequestApprovedEvent(prisonerId, requestReference)
+    verify(snsService, times(0)).sendBookerPrisonerVisitorLinkedEvent(any(), any(), any())
 
     verify(telemetryClientSpy, times(1)).trackEvent(
-      eq("prison-visit-booker.visitor-approved-domain-event"),
+      eq("prison-visit-booker.visitor-request-approved-domain-event"),
       org.mockito.kotlin.check {
-        assertThat(it["bookerReference"]).isEqualTo(bookerReference)
-        assertThat(it["prisonerId"]).isEqualTo(prisonerId)
-        assertThat(it["visitorId"]).isEqualTo(visitorIdToBeLinked.toString())
+        assertThat(it["requestReference"]).isEqualTo(requestReference)
       },
       isNull(),
     )
