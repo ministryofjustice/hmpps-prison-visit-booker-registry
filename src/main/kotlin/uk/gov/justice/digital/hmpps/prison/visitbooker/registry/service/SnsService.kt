@@ -45,7 +45,7 @@ class SnsService(
 
   fun sendBookerPrisonerVisitorLinkedEvent(bookerReference: String, prisonerId: String, visitorId: String) {
     LOG.info("Entered : sendBookerPrisonerVisitorLinkedEvent, for bookerReference: $bookerReference, prisonerId: $prisonerId, visitorId: $visitorId")
-    val additionalInformation = ApprovedAdditionalInformation(
+    val additionalInformation = VisitorLinkedAdditionalInformation(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
       visitorId = visitorId,
@@ -149,7 +149,7 @@ internal data class HMPPSDomainEvent(
 
 interface AdditionalInformation
 
-internal data class ApprovedAdditionalInformation(
+internal data class VisitorLinkedAdditionalInformation(
   val bookerReference: String,
   val prisonerId: String,
   val visitorId: String,
