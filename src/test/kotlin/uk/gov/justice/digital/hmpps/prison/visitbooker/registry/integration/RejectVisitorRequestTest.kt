@@ -102,7 +102,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     verify(snsService, times(1)).sendVisitorRequestRejectedEvent(prisonerId, requestReference)
 
     verify(telemetryClientSpy, times(1)).trackEvent(
-      eq("prison-visit-booker.visitor-rejected-domain-event"),
+      eq("prison-visit-booker.visitor-request-rejected-domain-event"),
       check {
         assertThat(it["requestReference"]).isEqualTo(visitorRequest.reference)
       },
