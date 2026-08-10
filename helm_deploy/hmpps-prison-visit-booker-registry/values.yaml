@@ -30,12 +30,10 @@ generic-service:
     APPLICATIONINSIGHTS_STATSBEAT_DISABLED: "true"
     JAVA_TOOL_OPTIONS: "$(JAVA_PROXY_TOOL_OPTIONS) -Xmx512m -XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0"
 
-
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
   #   [name of kubernetes secret]:
   #     [name of environment variable as seen by app]: [key of kubernetes secret to load]
-
   namespace_secrets:
     application-insights:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
@@ -53,6 +51,11 @@ generic-service:
       SPRING_DATASOURCE_PASSWORD: "database_password"
       DATABASE_NAME: "database_name"
       DATABASE_ENDPOINT: "rds_instance_endpoint"
+    hmpps-envoy-https-proxy-env:
+      HTTP_PROXY: "HTTP_PROXY"
+      HTTPS_PROXY: "HTTPS_PROXY"
+      NO_PROXY: "NO_PROXY"
+      JAVA_PROXY_TOOL_OPTIONS: "JAVA_PROXY_TOOL_OPTIONS"
 
   allowlist:
     groups:
