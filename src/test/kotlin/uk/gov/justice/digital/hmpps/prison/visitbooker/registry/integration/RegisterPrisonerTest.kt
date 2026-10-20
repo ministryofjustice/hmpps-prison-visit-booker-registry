@@ -14,11 +14,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.client.PrisonerOffenderSearchClient
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_REGISTERED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.REGISTER_PRISONER_SEARCH
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.BOOKER_ALREADY_HAS_A_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.DOB_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.LAST_NAME_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER
@@ -391,7 +392,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker already has an active prisoner the prisoner is not registered against the booker and fails with a validation error`() {
+  fun `when booker already has a prisoner with visitors another prisoner can be registered without changing existing visitors`() {
     // Given
     val registerPrisoner = RegisterPrisonerRequestDto(
       prisonerId = "1233",
@@ -401,25 +402,46 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       prisonerDateOfBirth = dateOfBirth,
     )
 
-    // an active prisoner already exists for booker
+    // a prisoner with two permitted visitors already exists for booker
     val prisoner = createPrisoner(booker, "AB123456")
     booker.permittedPrisoners.add(prisoner)
     bookerRepository.saveAndFlush(booker)
+    createVisitor(prisoner, 123L)
+    createVisitor(prisoner, 456L)
+
+    val prisonerOffenderDetails = createPrisonerDto(
+      prisonerNumber = prisonerId,
+      prisonId = prisonCode,
+      inOutStatus = null,
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+    )
+    prisonOffenderSearchMockServer.stubGetPrisoner(prisonerId, prisonerOffenderDetails)
+
     // When
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
-    assertError(
-      responseSpec,
-      "Prisoner registration validation failed",
-      "Prisoner registration validation failed with the following errors - BOOKER_ALREADY_HAS_A_PRISONER",
-      HttpStatus.UNPROCESSABLE_CONTENT,
-    )
+    responseSpec.expectStatus().isCreated
 
-    verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
+    val permittedPrisoners = webTestClient.get()
+      .uri(PERMITTED_PRISONERS.replace("{bookerReference}", booker.reference))
+      .headers(orchestrationServiceRoleHttpHeaders)
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(PermittedPrisonerDto::class.java)
+      .returnResult().responseBody!!
+
+    assertThat(permittedPrisoners.map { it.prisonerId }).containsExactlyInAnyOrder(prisoner.prisonerId, prisonerId)
+    assertThat(permittedPrisoners.single { it.prisonerId == prisoner.prisonerId }.permittedVisitors.map { it.visitorId }).containsExactlyInAnyOrder(123L, 456L)
+    assertThat(permittedPrisoners.single { it.prisonerId == prisonerId }.permittedVisitors).isEmpty()
+
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
-    assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - BOOKER_ALREADY_HAS_A_PRISONER")
+    assertThat(auditEvents).hasSize(2)
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -429,8 +451,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "lastNameEntered" to registerPrisoner.prisonerLastName,
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
-        "success" to false.toString(),
-        "failureReasons" to BOOKER_ALREADY_HAS_A_PRISONER.telemetryEventName,
+        "success" to true.toString(),
       ),
       null,
     )

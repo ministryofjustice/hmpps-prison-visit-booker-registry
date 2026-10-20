@@ -18,12 +18,6 @@ class RegisterPrisonerValidator(private val stringInputUtils: StringInputUtils) 
       // check if the prisoner is already registered - active / inactive
       if (isPrisonerAlreadyAdded(registeredPrisoners, prisonerIdToRegister)) {
         errors.add(RegisterPrisonerValidationError.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER)
-      } else {
-        // check if there are already any active prisoners for the booker
-        // TODO - to be removed when we allow multiple prisoners.
-        if (hasActivePrisoners(registeredPrisoners)) {
-          errors.add(RegisterPrisonerValidationError.BOOKER_ALREADY_HAS_A_PRISONER)
-        }
       }
     }
     return errors
@@ -86,8 +80,6 @@ class RegisterPrisonerValidator(private val stringInputUtils: StringInputUtils) 
   } else {
     null
   }
-
-  private fun hasActivePrisoners(permittedPrisoners: List<PermittedPrisonerDto>): Boolean = permittedPrisoners.any()
 
   private fun isPrisonerAlreadyAdded(permittedPrisoners: List<PermittedPrisonerDto>, prisonerIdToRegister: String): Boolean = permittedPrisoners.map { it.prisonerId.uppercase() }.contains(prisonerIdToRegister.uppercase())
 }
