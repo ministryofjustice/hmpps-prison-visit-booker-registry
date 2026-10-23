@@ -34,7 +34,7 @@ class BookerAudit(
   @Column(name = "text", nullable = false)
   val text: String,
 
-  @OneToMany(fetch = FetchType.EAGER, cascade = [ALL], mappedBy = "bookerAudit", orphanRemoval = true)
+  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "bookerAudit", orphanRemoval = true)
   val bookerAuditAttributes: MutableList<BookerAuditAttribute> = mutableListOf(),
 ) {
   @CreationTimestamp
