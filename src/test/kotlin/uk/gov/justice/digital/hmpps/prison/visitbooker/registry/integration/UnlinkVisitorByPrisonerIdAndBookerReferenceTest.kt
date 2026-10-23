@@ -16,6 +16,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.UNLINK_VISITOR_ENDPOINT_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ActionedByDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
@@ -118,7 +119,13 @@ class UnlinkVisitorByPrisonerIdAndBookerReferenceTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UNLINK_VISITOR, "Visitor ID - ${visitor1.visitorId} unlinked for prisoner - ${prisoner.prisonerId}, booker - ${booker.reference}, actionedBy - ${actionedByDto.actionedBy}")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_ID to visitor1.visitorId.toString(),
+      BookerAuditAttributeTypes.ACTIONED_BY to actionedByDto.actionedBy,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UNLINK_VISITOR, "Visitor ID - ${visitor1.visitorId} unlinked for prisoner - ${prisoner.prisonerId}, booker - ${booker.reference}, actionedBy - ${actionedByDto.actionedBy}", expectedAuditAttributes)
 
     val visitors = permittedVisitorRepository.findAll()
     assertThat(visitors).hasSize(3)

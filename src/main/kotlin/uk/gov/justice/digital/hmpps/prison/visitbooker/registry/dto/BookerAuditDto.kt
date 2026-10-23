@@ -18,11 +18,15 @@ data class BookerAuditDto(
 
   @param:Schema(name = "createdTimestamp", description = "Timestamp of booker audit entry", required = true)
   val createdTimestamp: LocalDateTime,
+
+  @param:Schema(description = "Booker audit attributes, empty list if no additional data associated", required = true)
+  val auditAttributes: List<BookerAuditAttributeDto>,
 ) {
   constructor(bookerAudit: BookerAudit) : this(
     bookerReference = bookerAudit.bookerReference,
     auditType = bookerAudit.auditType,
     text = bookerAudit.text,
     createdTimestamp = bookerAudit.createTimestamp!!,
+    auditAttributes = bookerAudit.bookerAuditAttributes.map { BookerAuditAttributeDto(it) },
   )
 }
