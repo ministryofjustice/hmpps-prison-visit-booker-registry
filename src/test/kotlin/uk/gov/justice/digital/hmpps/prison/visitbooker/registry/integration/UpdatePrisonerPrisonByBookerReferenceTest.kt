@@ -90,7 +90,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner1.prisonerId,
-      BookerAuditAttributeTypes.PRISON_CODE to newPrisonCode,
+      BookerAuditAttributeTypes.NEW_PRISON_CODE to newPrisonCode,
     )
 
     assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UPDATE_REGISTERED_PRISONER_PRISON, text = "Prisoner with prisonNumber - $prisonerId had prison code updated to $newPrisonCode for booker reference - ${booker.reference}", expectedAuditAttributes)
