@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.TestObjectMapper
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.AUTH_DETAILS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AuthDetailDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerReference
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.BOOKER_CREATED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.UPDATE_BOOKER_EMAIL
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
@@ -71,7 +72,11 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], updatedPilotBooker.reference, BOOKER_CREATED, "Booker created with email - $emailAddress")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.EMAIL_ADDRESS to emailAddress,
+    )
+
+    assertAuditEvent(auditEvents[0], updatedPilotBooker.reference, BOOKER_CREATED, "Booker created with email - $emailAddress", expectedAuditAttributes)
   }
 
   @Test
@@ -165,7 +170,10 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], reference, BOOKER_CREATED, "Booker created with email - ${authDetailsDto.email}")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.EMAIL_ADDRESS to emailAddress,
+    )
+    assertAuditEvent(auditEvents[0], reference, BOOKER_CREATED, "Booker created with email - ${authDetailsDto.email}", expectedAuditAttributes)
   }
 
   @Test
@@ -208,7 +216,12 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], reference, UPDATE_BOOKER_EMAIL, "Booker email updated from $oldEmailAddress to $newEmailAddress for booker reference - $reference")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.OLD_EMAIL_ADDRESS to emailAddress,
+      BookerAuditAttributeTypes.NEW_EMAIL_ADDRESS to authDetailsDto.email,
+    )
+
+    assertAuditEvent(auditEvents[0], reference, UPDATE_BOOKER_EMAIL, "Booker email updated from $oldEmailAddress to $newEmailAddress for booker reference - $reference", expectedAuditAttributes)
   }
 
   @Test

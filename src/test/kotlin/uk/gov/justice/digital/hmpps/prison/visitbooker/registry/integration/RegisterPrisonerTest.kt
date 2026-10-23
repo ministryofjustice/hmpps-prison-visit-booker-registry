@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PERMI
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_REGISTERED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.REGISTER_PRISONER_SEARCH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.DOB_INCORRECT
@@ -111,8 +112,21 @@ class RegisterPrisonerTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
-    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to firstName,
+      BookerAuditAttributeTypes.LAST_NAME to lastName,
+      BookerAuditAttributeTypes.DOB to dateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to true.toString(),
+    )
+
+    val expectedPrisonerRegisteredAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful", expectedPrisonerSearchAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker", expectedPrisonerRegisteredAuditAttributes)
   }
 
   @Test
@@ -169,8 +183,21 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
-    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to registerPrisoner.prisonerFirstName,
+      BookerAuditAttributeTypes.LAST_NAME to registerPrisoner.prisonerLastName,
+      BookerAuditAttributeTypes.DOB to registerPrisoner.prisonerDateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to registerPrisoner.prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to true.toString(),
+    )
+
+    val expectedPrisonerRegisteredAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful", expectedPrisonerSearchAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker", expectedPrisonerRegisteredAuditAttributes)
   }
 
   @Test
@@ -227,8 +254,21 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
-    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to registerPrisoner.prisonerFirstName,
+      BookerAuditAttributeTypes.LAST_NAME to registerPrisoner.prisonerLastName,
+      BookerAuditAttributeTypes.DOB to registerPrisoner.prisonerDateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to registerPrisoner.prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to true.toString(),
+    )
+
+    val expectedPrisonerRegisteredAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful", expectedPrisonerSearchAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker", expectedPrisonerRegisteredAuditAttributes)
   }
 
   @Test
@@ -285,8 +325,20 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
-    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to registerPrisoner.prisonerFirstName,
+      BookerAuditAttributeTypes.LAST_NAME to registerPrisoner.prisonerLastName,
+      BookerAuditAttributeTypes.DOB to registerPrisoner.prisonerDateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to registerPrisoner.prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to true.toString(),
+    )
+
+    val expectedPrisonerRegisteredAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+    )
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful", expectedPrisonerSearchAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker", expectedPrisonerRegisteredAuditAttributes)
   }
 
   @Test
@@ -328,7 +380,17 @@ class RegisterPrisonerTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - LAST_NAME_INCORRECT, DOB_INCORRECT")
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to registerPrisoner.prisonerFirstName,
+      BookerAuditAttributeTypes.LAST_NAME to registerPrisoner.prisonerLastName,
+      BookerAuditAttributeTypes.DOB to registerPrisoner.prisonerDateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to registerPrisoner.prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to false.toString(),
+      BookerAuditAttributeTypes.FAILURE_REASONS to listOf(LAST_NAME_INCORRECT, DOB_INCORRECT).joinToString(", "),
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - LAST_NAME_INCORRECT, DOB_INCORRECT", expectedPrisonerSearchAuditAttributes)
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -374,7 +436,17 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER")
+
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to firstName,
+      BookerAuditAttributeTypes.LAST_NAME to lastName,
+      BookerAuditAttributeTypes.DOB to dateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to false.toString(),
+      BookerAuditAttributeTypes.FAILURE_REASONS to listOf(PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER).joinToString(", "),
+    )
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER", expectedPrisonerSearchAuditAttributes)
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -440,8 +512,21 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful")
-    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker")
+
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to firstName,
+      BookerAuditAttributeTypes.LAST_NAME to lastName,
+      BookerAuditAttributeTypes.DOB to dateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to true.toString(),
+    )
+
+    val expectedPrisonerRegisteredAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+    )
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} was successful", expectedPrisonerSearchAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${registerPrisoner.prisonerId} registered against booker", expectedPrisonerRegisteredAuditAttributes)
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -485,7 +570,18 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - PRISONER_NOT_FOUND")
+
+    val expectedPrisonerSearchAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
+      BookerAuditAttributeTypes.FIRST_NAME to firstName,
+      BookerAuditAttributeTypes.LAST_NAME to lastName,
+      BookerAuditAttributeTypes.DOB to dateOfBirth.toString(),
+      BookerAuditAttributeTypes.PRISON_CODE to prisonCode,
+      BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to false.toString(),
+      BookerAuditAttributeTypes.FAILURE_REASONS to listOf(PRISONER_NOT_FOUND).joinToString(", "),
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - PRISONER_NOT_FOUND", expectedPrisonerSearchAuditAttributes)
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(

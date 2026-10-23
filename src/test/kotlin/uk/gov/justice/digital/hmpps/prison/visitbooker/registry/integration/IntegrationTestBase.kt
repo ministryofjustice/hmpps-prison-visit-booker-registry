@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
@@ -245,10 +246,13 @@ abstract class IntegrationTestBase {
 
   protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
 
-  protected fun assertAuditEvent(auditEvent: BookerAudit, bookerReference: String, auditType: BookerAuditType, text: String) {
+  protected fun assertAuditEvent(auditEvent: BookerAudit, bookerReference: String, auditType: BookerAuditType, text: String, expectedAuditAttributes: Map<BookerAuditAttributeTypes, String>) {
     assertThat(auditEvent.bookerReference).isEqualTo(bookerReference)
     assertThat(auditEvent.auditType).isEqualTo(auditType)
     assertThat(auditEvent.text).isEqualTo(text)
+    val actualAuditAttributes = auditEvent.bookerAuditAttributes.map { it.attributeName to it.attributeValue }
+    assertThat(actualAuditAttributes.size).isEqualTo(expectedAuditAttributes.size)
+    assertThat(actualAuditAttributes).containsAll(expectedAuditAttributes.toList())
   }
 
   protected fun createPrisonerDto(
