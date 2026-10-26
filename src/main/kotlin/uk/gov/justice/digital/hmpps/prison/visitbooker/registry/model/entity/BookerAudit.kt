@@ -1,12 +1,15 @@
 package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity
 
+import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
@@ -30,6 +33,9 @@ class BookerAudit(
 
   @Column(name = "text", nullable = false)
   val text: String,
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "bookerAudit", orphanRemoval = true)
+  val bookerAuditAttributes: MutableList<BookerAuditAttribute> = mutableListOf(),
 ) {
   @CreationTimestamp
   @Column

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.PRISONER_REGISTERED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
@@ -65,7 +66,10 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${createPrisoner.prisonerId} registered against booker")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to createPrisoner.prisonerId,
+    )
+    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - ${createPrisoner.prisonerId} registered against booker", expectedAuditAttributes)
   }
 
   @Test
@@ -94,7 +98,10 @@ class CreateBookerPrisonerTest : IntegrationTestBase() {
     )
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - $normalisedPrisonerId registered against booker")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to normalisedPrisonerId,
+    )
+    assertAuditEvent(auditEvents[0], booker.reference, PRISONER_REGISTERED, "Prisoner with prisonNumber - $normalisedPrisonerId registered against booker", expectedAuditAttributes)
   }
 
   @Test

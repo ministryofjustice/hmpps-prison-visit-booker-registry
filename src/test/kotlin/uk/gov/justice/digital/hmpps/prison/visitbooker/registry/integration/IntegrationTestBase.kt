@@ -23,11 +23,13 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REGIS
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RegisterPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
@@ -186,9 +188,9 @@ abstract class IntegrationTestBase {
 
   fun createAssociatedPrisonersVisitor(permittedPrisoner: PermittedPrisoner, permittedVisitor: PermittedVisitor): PermittedVisitor = entityHelper.createAssociatedPrisonerVisitor(permittedVisitor)
 
-  fun createBookerAudit(bookerReference: String, auditType: BookerAuditType, text: String): BookerAudit = entityHelper.createBookerAudit(
-    BookerAudit(bookerReference = bookerReference, auditType = auditType, text = text),
-  )
+  fun createBookerAudits(bookerAuditDtos: List<BookerAuditDto>) = bookerAuditDtos.forEach { createBookerAudit(it) }
+
+  fun createBookerAudit(bookerAuditDto: BookerAuditDto): BookerAudit = entityHelper.createBookerAudit(bookerAuditDto)
 
   protected fun callCreateBookerPrisoner(
     authHttpHeaders: (HttpHeaders) -> Unit,
@@ -245,10 +247,13 @@ abstract class IntegrationTestBase {
 
   protected fun getPermittedVisitorDto(responseSpec: ResponseSpec): PermittedVisitorDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorDto::class.java)
 
-  protected fun assertAuditEvent(auditEvent: BookerAudit, bookerReference: String, auditType: BookerAuditType, text: String) {
+  protected fun assertAuditEvent(auditEvent: BookerAudit, bookerReference: String, auditType: BookerAuditType, text: String, expectedAuditAttributes: Map<BookerAuditAttributeTypes, String>) {
     assertThat(auditEvent.bookerReference).isEqualTo(bookerReference)
     assertThat(auditEvent.auditType).isEqualTo(auditType)
     assertThat(auditEvent.text).isEqualTo(text)
+    val actualAuditAttributes = auditEvent.bookerAuditAttributes.map { it.attributeName to it.attributeValue }
+    assertThat(actualAuditAttributes.size).isEqualTo(expectedAuditAttributes.size)
+    assertThat(actualAuditAttributes).containsAll(expectedAuditAttributes.toList())
   }
 
   protected fun createPrisonerDto(
