@@ -69,6 +69,12 @@ class BookerDetailsService(
     return bookerDetailsStoreService.getPermittedVisitors(bookerReference, prisonerId)
   }
 
+  fun unlinkBookerPrisoner(bookerReference: String, prisonerId: String, actionedBy: String) {
+    LOG.info("Enter BookerDetailsService unlinkBookerPrisoner for booker $bookerReference, actionedBy $actionedBy")
+    bookerDetailsStoreService.unlinkBookerPrisoner(bookerReference, prisonerId)
+    bookerAuditService.auditUnlinkPrisoner(bookerReference = bookerReference, prisonNumber = prisonerId, actionedBy = actionedBy)
+  }
+
   fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long, actionedBy: String) {
     LOG.info("Enter BookerDetailsService unlinkBookerPrisonerVisitor for booker $bookerReference, unlink visitor $visitorId, actionedBy $actionedBy")
 

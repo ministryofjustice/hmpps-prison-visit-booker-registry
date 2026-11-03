@@ -39,6 +39,7 @@ const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONFIG_CONTROLLER_PATH/sea
 const val CREATE_BOOKER_PRISONER_PATH = "$BOOKER_ENDPOINT_PATH/prisoner"
 const val PRISONER_ENDPOINT_PATH: String = "$BOOKER_ENDPOINT_PATH/prisoner/{prisonerId}"
 const val UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH: String = "$PRISONER_ENDPOINT_PATH/prison"
+const val UNLINK_PRISONER_ENDPOINT_PATH: String = "$PRISONER_ENDPOINT_PATH/unlink"
 
 // Visitor Endpoints
 const val CREATE_BOOKER_PRISONER_VISITOR_PATH: String = "$PRISONER_ENDPOINT_PATH/visitor"
@@ -198,6 +199,44 @@ class BookerDetailConfigController(
     @NotBlank
     bookerReference: String,
   ): BookerDto = bookerDetailsService.getBookerByReference(bookerReference)
+
+  @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
+  @PostMapping(UNLINK_PRISONER_ENDPOINT_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Unlink a prisoner from a booker",
+    description = "Unlink a prisoner from a booker",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Prisoner unlinked successfully from booker",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "booker / prisoner not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun unlinkPrisonerFromBooker(
+    @PathVariable(required = true) @NotBlank
+    bookerReference: String,
+    @PathVariable(required = true) @NotBlank
+    prisonerId: String,
+    @RequestBody
+    @Valid
+    actionedByDto: ActionedByDto,
+  ) = bookerDetailsService.unlinkBookerPrisoner(bookerReference, prisonerId, actionedByDto.actionedBy)
 
   @PreAuthorize("hasRole('ROLE_VISIT_BOOKER_REGISTRY__VISIT_BOOKER_CONFIG')")
   @PostMapping(UNLINK_VISITOR_ENDPOINT_PATH)

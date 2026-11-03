@@ -127,6 +127,20 @@ class BookerDetailsStoreService(
   }
 
   @Transactional
+  fun unlinkBookerPrisoner(bookerReference: String, prisonerId: String) {
+    LOG.info("Enter BookerDetailsStoreService unlinkBookerPrisoner for booker $bookerReference, unlink prisoner $prisonerId")
+    val booker = getBooker(bookerReference)
+    val prisonerDetails = booker.permittedPrisoners.firstOrNull { it.prisonerId.equals(prisonerId, ignoreCase = true) }
+    if (prisonerDetails == null) {
+      LOG.error("Failed to unlink prisoner $prisonerId for booker $bookerReference, prisoner as prisoner not linked to booker.")
+      throw PrisonerNotFoundException("Failed to unlink prisoner for booker $bookerReference, prisoner $prisonerId")
+    } else {
+      visitorRepository.deletePermittedVisitorsByPrisonerIdAndBookerReference(bookerReference = bookerReference, prisonerId = prisonerDetails.prisonerId)
+      prisonerRepository.deletePermittedPrisonerByPrisonerIdAndBookerReference(prisonerId = prisonerDetails.prisonerId, bookerReference = bookerReference)
+    }
+  }
+
+  @Transactional
   fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerId: String, visitorId: Long) {
     LOG.info("Enter BookerDetailsStoreService unlinkBookerPrisonerVisitor for booker $bookerReference, unlink visitor $visitorId")
 

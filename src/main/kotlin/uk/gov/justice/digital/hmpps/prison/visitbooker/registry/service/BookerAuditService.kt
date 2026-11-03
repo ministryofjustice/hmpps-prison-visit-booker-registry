@@ -176,6 +176,19 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
+  fun auditUnlinkPrisoner(bookerReference: String, prisonNumber: String, actionedBy: String) {
+    val text = "Prisoner ID - $prisonNumber unlinked for booker - $bookerReference, actionedBy - $actionedBy"
+    auditBookerEvent(bookerReference, BookerAuditType.UNLINK_PRISONER, text)
+
+    // send event to telemetry client
+    val properties = mapOf(
+      BOOKER_REFERENCE_PROPERTY_NAME to bookerReference,
+      PRISON_NUMBER_PROPERTY_NAME to prisonNumber,
+      ACTIONED_BY to actionedBy,
+    )
+    sendTelemetryClientEvent(BookerAuditType.UNLINK_PRISONER, properties)
+  }
+
   fun auditUnlinkVisitor(bookerReference: String, visitorId: Long, prisonNumber: String, actionedBy: String) {
     val text = "Visitor ID - $visitorId unlinked for prisoner - $prisonNumber, booker - $bookerReference, actionedBy - $actionedBy"
     auditBookerEvent(bookerReference, BookerAuditType.UNLINK_VISITOR, text)
