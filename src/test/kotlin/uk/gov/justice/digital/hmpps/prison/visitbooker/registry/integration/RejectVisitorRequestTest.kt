@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.REJEC
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.RejectVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_REJECTED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestRejectionReason.ALREADY_LINKED
@@ -111,7 +112,14 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_REJECTED_FOR_PRISONER, "Request reference - $requestReference rejected with rejection reason - $rejectionReason, actionedBy - $userName")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to requestReference,
+      BookerAuditAttributeTypes.REJECTION_REASON to rejectionReason.name,
+      BookerAuditAttributeTypes.ACTIONED_BY to userName,
+    )
+
+    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_REJECTED_FOR_PRISONER, "Request reference - $requestReference rejected with rejection reason - $rejectionReason, actionedBy - $userName", expectedAuditAttributes)
   }
 
   @Test

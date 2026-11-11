@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.UPDAT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.UPDATE_BOOKER_PRISONER_PRISON_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.UpdateRegisteredPrisonerPrisonDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
@@ -87,7 +88,12 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UPDATE_REGISTERED_PRISONER_PRISON, text = "Prisoner with prisonNumber - $prisonerId had prison code updated to $newPrisonCode for booker reference - ${booker.reference}")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner1.prisonerId,
+      BookerAuditAttributeTypes.NEW_PRISON_CODE to newPrisonCode,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.UPDATE_REGISTERED_PRISONER_PRISON, text = "Prisoner with prisonNumber - $prisonerId had prison code updated to $newPrisonCode for booker reference - ${booker.reference}", expectedAuditAttributes)
   }
 
   @Test
