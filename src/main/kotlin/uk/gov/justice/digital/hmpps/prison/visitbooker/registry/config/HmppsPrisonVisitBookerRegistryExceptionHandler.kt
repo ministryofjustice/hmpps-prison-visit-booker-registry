@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerAlreadyExistsException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerPrisonerAlreadyExistsException
@@ -301,17 +302,13 @@ class HmppsPrisonVisitBookerRegistryExceptionHandler {
   }
 
   @ExceptionHandler(RegisterPrisonerValidationException::class)
-  fun handleRegisterPrisonerValidationException(e: RegisterPrisonerValidationException): ResponseEntity<ErrorResponse>? {
+  fun handleRegisterPrisonerValidationException(e: RegisterPrisonerValidationException): ResponseEntity<RegisterPrisonerValidationErrorResponse>? {
     LOG.error("Validation exception", e)
     return ResponseEntity
       .status(HttpStatus.UNPROCESSABLE_CONTENT)
       .body(
-        ErrorResponse(
-          status = HttpStatus.UNPROCESSABLE_CONTENT,
-          errorCode = null,
-          userMessage = "Prisoner registration validation failed",
-          developerMessage = "Prisoner registration validation failed with the following errors - ${e.errors.joinToString()}",
-          moreInfo = null,
+        RegisterPrisonerValidationErrorResponse(
+          validationErrors = e.errors,
         ),
       )
   }
@@ -353,3 +350,11 @@ open class ErrorResponse(
 data class BookerValidationErrorResponse(
   val validationError: String,
 ) : ErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT)
+
+data class RegisterPrisonerValidationErrorResponse(
+  val validationErrors: List<RegisterPrisonerValidationError>,
+) : ErrorResponse(
+  status = HttpStatus.UNPROCESSABLE_CONTENT,
+  userMessage = "Prisoner registration validation failed",
+  developerMessage = "Prisoner registration validation failed with the following errors - ${validationErrors.joinToString()}",
+)

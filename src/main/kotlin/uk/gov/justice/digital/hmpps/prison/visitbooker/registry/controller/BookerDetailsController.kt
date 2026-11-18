@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.config.RegisterPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.BookerAuditDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedPrisonerDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PermittedVisitorDto
@@ -135,7 +136,7 @@ class BookerDetailsController(
       ApiResponse(
         responseCode = "422",
         description = "Register prisoner validation failed",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = RegisterPrisonerValidationErrorResponse::class))],
       ),
     ],
   )
