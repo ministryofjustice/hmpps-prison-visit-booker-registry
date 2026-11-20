@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository
 import java.time.LocalDate
 
 @Service
+@Transactional
 class BookerAuditService(
   private val telemetryClientService: TelemetryClientService,
   private val bookerAuditRepository: BookerAuditRepository,
