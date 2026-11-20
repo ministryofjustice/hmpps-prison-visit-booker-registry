@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Regist
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.LAST_NAME_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISONER_NOT_FOUND
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.RegisterPrisonerValidationError.PRISON_CODE_INCORRECT
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
@@ -345,7 +346,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
   fun `when register prisoner does not match and fails with multiple errors the prisoner is not registered against the booker and fails with a validation error`() {
     val registerPrisoner = RegisterPrisonerRequestDto(
       prisonerId = "1233",
-      prisonCode = prisonCode,
+      prisonCode = "XYZ",
       prisonerFirstName = "different-firstname",
       prisonerLastName = "different-lastname",
       prisonerDateOfBirth = dateOfBirth.plusYears(1),
@@ -366,12 +367,12 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
-    assertError(
-      responseSpec,
-      "Prisoner registration validation failed",
-      "Prisoner registration validation failed with the following errors - LAST_NAME_INCORRECT, DOB_INCORRECT",
-      HttpStatus.UNPROCESSABLE_CONTENT,
-    )
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
+      .expectBody()
+      .jsonPath("$.status").isEqualTo(422)
+      .jsonPath("$.userMessage").isEqualTo("Prisoner registration validation failed")
+      .jsonPath("$.developerMessage").isEqualTo("Prisoner registration validation failed with the following errors - LAST_NAME_INCORRECT, DOB_INCORRECT, PRISON_CODE_INCORRECT")
+      .jsonPath("$.validationErrors").isEqualTo(listOf(LAST_NAME_INCORRECT.name, DOB_INCORRECT.name, PRISON_CODE_INCORRECT.name))
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(bookerAuditRepositorySpy, times(1)).saveAndFlush(any<BookerAudit>())
@@ -387,10 +388,17 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       BookerAuditAttributeTypes.DOB to registerPrisoner.prisonerDateOfBirth.toString(),
       BookerAuditAttributeTypes.PRISON_CODE to registerPrisoner.prisonCode,
       BookerAuditAttributeTypes.IS_SEARCH_SUCCESSFUL to false.toString(),
-      BookerAuditAttributeTypes.FAILURE_REASONS to listOf(LAST_NAME_INCORRECT, DOB_INCORRECT).joinToString(", "),
+      BookerAuditAttributeTypes.FAILURE_REASONS to listOf(LAST_NAME_INCORRECT, DOB_INCORRECT, PRISON_CODE_INCORRECT).joinToString(", "),
     )
 
-    assertAuditEvent(auditEvents[0], booker.reference, REGISTER_PRISONER_SEARCH, "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - LAST_NAME_INCORRECT, DOB_INCORRECT", expectedPrisonerSearchAuditAttributes)
+    assertAuditEvent(
+      auditEvent = auditEvents[0],
+      bookerReference = booker.reference,
+      REGISTER_PRISONER_SEARCH,
+      "Prisoner search for prisonNumber - ${registerPrisoner.prisonerId}, firstName: ${registerPrisoner.prisonerFirstName}, lastName: ${registerPrisoner.prisonerLastName}, DOB: ${registerPrisoner.prisonerDateOfBirth}, prisonCode: ${registerPrisoner.prisonCode} failed with errors - LAST_NAME_INCORRECT, DOB_INCORRECT, PRISON_CODE_INCORRECT",
+      expectedAuditAttributes = expectedPrisonerSearchAuditAttributes,
+    )
+
     verify(telemetryClientSpy, times(1)).trackEvent(
       REGISTER_PRISONER_SEARCH.telemetryEventName,
       mapOf(
@@ -401,7 +409,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
         "dobEntered" to registerPrisoner.prisonerDateOfBirth.toString(),
         "prisonCodeEntered" to registerPrisoner.prisonCode,
         "success" to false.toString(),
-        "failureReasons" to "${LAST_NAME_INCORRECT.telemetryEventName}, ${DOB_INCORRECT.telemetryEventName}",
+        "failureReasons" to "${LAST_NAME_INCORRECT.telemetryEventName}, ${DOB_INCORRECT.telemetryEventName}, ${PRISON_CODE_INCORRECT.telemetryEventName}",
       ),
       null,
     )
@@ -426,12 +434,12 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
-    assertError(
-      responseSpec,
-      "Prisoner registration validation failed",
-      "Prisoner registration validation failed with the following errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER",
-      HttpStatus.UNPROCESSABLE_CONTENT,
-    )
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
+      .expectBody()
+      .jsonPath("$.status").isEqualTo(422)
+      .jsonPath("$.userMessage").isEqualTo("Prisoner registration validation failed")
+      .jsonPath("$.developerMessage").isEqualTo("Prisoner registration validation failed with the following errors - PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER")
+      .jsonPath("$.validationErrors").isEqualTo(listOf(PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER.name))
 
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
@@ -560,12 +568,12 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     val responseSpec = callRegisterPrisoner(orchestrationServiceRoleHttpHeaders, registerPrisoner, booker.reference)
 
     // Then
-    assertError(
-      responseSpec,
-      "Prisoner registration validation failed",
-      "Prisoner registration validation failed with the following errors - PRISONER_NOT_FOUND",
-      HttpStatus.UNPROCESSABLE_CONTENT,
-    )
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
+      .expectBody()
+      .jsonPath("$.status").isEqualTo(422)
+      .jsonPath("$.userMessage").isEqualTo("Prisoner registration validation failed")
+      .jsonPath("$.developerMessage").isEqualTo("Prisoner registration validation failed with the following errors - PRISONER_NOT_FOUND")
+      .jsonPath("$.validationErrors").isEqualTo(listOf(PRISONER_NOT_FOUND.name))
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     val auditEvents = bookerAuditRepository.findAll()
