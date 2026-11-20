@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Propagation.SUPPORTS
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.admin.CREATE_BOOKER_PRISONER_VISITOR_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreatePermittedVisitorDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_ADDED_TO_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Booker
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
@@ -90,7 +91,13 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}, actionedBy - TEST_USER")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_ID to createVisitorDto.visitorId.toString(),
+      BookerAuditAttributeTypes.ACTIONED_BY to createVisitorDto.actionedBy,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}, actionedBy - TEST_USER", expectedAuditAttributes)
   }
 
   @Test
@@ -123,7 +130,13 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
 
     val auditEvents = bookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}, actionedBy - TEST_USER")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_ID to createVisitorDto.visitorId.toString(),
+      BookerAuditAttributeTypes.ACTIONED_BY to createVisitorDto.actionedBy,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, VISITOR_ADDED_TO_PRISONER, "Visitor ID - ${createVisitorDto.visitorId} added to prisoner - ${prisoner.prisonerId}, actionedBy - TEST_USER", expectedAuditAttributes)
   }
 
   @Test

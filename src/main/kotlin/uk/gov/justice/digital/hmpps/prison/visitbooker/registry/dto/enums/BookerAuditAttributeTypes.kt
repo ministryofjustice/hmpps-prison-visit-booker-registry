@@ -1,0 +1,20 @@
+package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums
+
+enum class BookerAuditAttributeTypes {
+  EMAIL_ADDRESS,
+  VISITOR_ID,
+  PRISONER_NUMBER,
+  FIRST_NAME,
+  LAST_NAME,
+  DOB,
+  PRISON_CODE,
+  NEW_PRISON_CODE,
+  IS_SEARCH_SUCCESSFUL,
+  FAILURE_REASONS,
+  ACTIONED_BY,
+  OLD_EMAIL_ADDRESS,
+  NEW_EMAIL_ADDRESS,
+  VISITOR_REQUEST_REFERENCE,
+  REJECTION_REASON,
+  LANGUAGE_CODE,
+}
