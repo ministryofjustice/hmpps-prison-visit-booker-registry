@@ -356,7 +356,7 @@ class BookerAuditService(
     return audits
   }
 
-  private fun auditBookerEvent(bookerReference: String, auditType: BookerAuditType, text: String, attributes: Map<BookerAuditAttributeTypes, String>) {
+  fun auditBookerEvent(bookerReference: String, auditType: BookerAuditType, text: String, attributes: Map<BookerAuditAttributeTypes, String>) {
     LOG.debug("Auditing audit booker event for $bookerReference")
     val bookerAudit = bookerAuditRepository.save(
       BookerAudit(bookerReference = bookerReference, auditType = auditType, text = text),
