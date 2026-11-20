@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.prison.visitbooker.registry.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
@@ -20,12 +22,14 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.Visito
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.exception.BookerNotFoundException
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAudit
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.BookerAuditAttribute
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import java.time.LocalDate
 
 @Service
 class BookerAuditService(
-  private val bookerAuditTransactionalService: BookerAuditTransactionalService,
   private val telemetryClientService: TelemetryClientService,
+  private val bookerAuditRepository: BookerAuditRepository,
 ) {
   private companion object {
     private val LOG = LoggerFactory.getLogger(this::class.java)
@@ -61,7 +65,7 @@ class BookerAuditService(
     val bookerAuditAttributes = mapOf(
       BookerAuditAttributeTypes.EMAIL_ADDRESS to email,
     )
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -77,7 +81,7 @@ class BookerAuditService(
     val bookerAuditAttributes = mutableMapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisonNumber,
     )
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -96,7 +100,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.ACTIONED_BY to actionedBy,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -122,7 +126,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.ACTIONED_BY to actionedBy,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -145,7 +149,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.ACTIONED_BY to actionedBy,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -166,7 +170,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to requestReference,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -187,7 +191,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.LANGUAGE_CODE to createVisitorRequestResponseDto.languagePreference.name,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(createVisitorRequestResponseDto.bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text, bookerAuditAttributes)
 
     // if AUTO_APPROVED also add an entry to the audit table
     if (createVisitorRequestResponseDto.status == VisitorRequestsStatus.AUTO_APPROVED) {
@@ -220,7 +224,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.ACTIONED_BY to actionedBy,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, BookerAuditType.UNLINK_VISITOR, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, BookerAuditType.UNLINK_VISITOR, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -235,7 +239,7 @@ class BookerAuditService(
   fun auditClearBookerDetails(bookerReference: String) {
     val auditType = CLEAR_BOOKER_DETAILS
     val text = "Booker details cleared"
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, emptyMap())
+    auditBookerEvent(bookerReference, auditType, text, emptyMap())
 
     // send event to telemetry client
     val properties = mapOf(
@@ -252,7 +256,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.NEW_EMAIL_ADDRESS to newEmail,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -271,7 +275,7 @@ class BookerAuditService(
       BookerAuditAttributeTypes.NEW_PRISON_CODE to newPrisonCode,
     )
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mapOf(
@@ -282,6 +286,7 @@ class BookerAuditService(
     sendTelemetryClientEvent(auditType, properties)
   }
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun auditPrisonerSearchDetails(
     bookerReference: String,
     prisonerNumber: String,
@@ -308,7 +313,7 @@ class BookerAuditService(
       bookerAuditAttributes[BookerAuditAttributeTypes.FAILURE_REASONS] = failureReasons
     }
 
-    bookerAuditTransactionalService.saveBookerAudit(bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(bookerReference, auditType, text, bookerAuditAttributes)
 
     // send event to telemetry client
     val properties = mutableMapOf(
@@ -336,18 +341,39 @@ class BookerAuditService(
       BookerAuditAttributeTypes.VISITOR_ID to createVisitorRequestResponseDto.visitorId.toString(),
       BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to createVisitorRequestResponseDto.reference,
     )
-    bookerAuditTransactionalService.saveBookerAudit(createVisitorRequestResponseDto.bookerReference, auditType, text, bookerAuditAttributes)
+    auditBookerEvent(createVisitorRequestResponseDto.bookerReference, auditType, text, bookerAuditAttributes)
     // do not send a separate event to telemetry client
   }
 
+  @Transactional(readOnly = true)
   fun getBookerAudit(bookerReference: String): List<BookerAudit> {
     LOG.debug("Getting booker audit entries for $bookerReference")
-    val audits = bookerAuditTransactionalService.getBookerAudit(bookerReference)
+    val audits = bookerAuditRepository.findByBookerReference(bookerReference)
     if (audits.isEmpty()) {
       throw BookerNotFoundException("No audits found for booker, either booker doesn't exist or has no audits")
     }
 
     return audits
+  }
+
+  private fun auditBookerEvent(bookerReference: String, auditType: BookerAuditType, text: String, attributes: Map<BookerAuditAttributeTypes, String>) {
+    LOG.debug("Auditing audit booker event for $bookerReference")
+    val bookerAudit = bookerAuditRepository.save(
+      BookerAudit(bookerReference = bookerReference, auditType = auditType, text = text),
+    )
+
+    attributes.forEach { (bookerAuditAttributeType, value) ->
+      bookerAudit.bookerAuditAttributes.add(
+        BookerAuditAttribute(
+          bookerAuditId = bookerAudit.id,
+          attributeName = bookerAuditAttributeType,
+          attributeValue = value,
+          bookerAudit = bookerAudit,
+        ),
+      )
+    }
+
+    bookerAuditRepository.saveAndFlush(bookerAudit)
   }
 
   private fun sendTelemetryClientEvent(bookerAuditType: BookerAuditType, properties: Map<String, String>) {
