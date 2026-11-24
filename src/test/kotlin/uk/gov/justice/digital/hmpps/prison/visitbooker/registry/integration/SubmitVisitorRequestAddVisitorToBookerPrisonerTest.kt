@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.PUBLIC_BOOKER_PRISONER_VISITOR_REQUESTS_PATH
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.enums.LanguagePreference
@@ -71,9 +72,15 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+      BookerAuditAttributeTypes.PRISON_CODE to prisoner.prisonCode,
+      BookerAuditAttributeTypes.LANGUAGE_CODE to visitorRequestDto.languagePreference.name,
+    )
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedAuditAttributes)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
@@ -115,10 +122,23 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
-    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    val expectedRequestAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+      BookerAuditAttributeTypes.PRISON_CODE to prisoner.prisonCode,
+      BookerAuditAttributeTypes.LANGUAGE_CODE to visitorRequestDto.languagePreference.name,
+    )
+    val expectedAutoApprovalAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.VISITOR_ID to visitRequest.visitorId.toString(),
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedRequestAuditAttributes)
+
+    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedAutoApprovalAuditAttributes)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
@@ -188,10 +208,22 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
-    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    val expectedRequestAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+      BookerAuditAttributeTypes.PRISON_CODE to prisoner.prisonCode,
+      BookerAuditAttributeTypes.LANGUAGE_CODE to visitorRequestDto.languagePreference.name,
+    )
+    val expectedAutoApprovalAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.VISITOR_ID to visitRequest.visitorId.toString(),
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedRequestAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedAutoApprovalAuditAttributes)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
@@ -233,10 +265,22 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
-    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    val expectedRequestAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+      BookerAuditAttributeTypes.PRISON_CODE to prisoner.prisonCode,
+      BookerAuditAttributeTypes.LANGUAGE_CODE to visitorRequestDto.languagePreference.name,
+    )
+    val expectedAutoApprovalAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.VISITOR_ID to visitRequest.visitorId.toString(),
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedRequestAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedAutoApprovalAuditAttributes)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
@@ -278,10 +322,22 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
-    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    val expectedRequestAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+      BookerAuditAttributeTypes.PRISON_CODE to prisoner.prisonCode,
+      BookerAuditAttributeTypes.LANGUAGE_CODE to visitorRequestDto.languagePreference.name,
+    )
+    val expectedAutoApprovalAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.VISITOR_ID to visitRequest.visitorId.toString(),
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedRequestAuditAttributes)
+    assertAuditEvent(auditEvents[1], booker.reference, BookerAuditType.VISITOR_REQUEST_AUTO_APPROVED_FOR_PRISONER, "Visitor ID - ${visitRequest.visitorId} auto approved for prisoner - ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedAutoApprovalAuditAttributes)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
@@ -305,7 +361,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -353,9 +409,16 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}")
+    val expectedRequestAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to visitRequest.reference,
+      BookerAuditAttributeTypes.PRISON_CODE to prisoner.prisonCode,
+      BookerAuditAttributeTypes.LANGUAGE_CODE to visitorRequestDto.languagePreference.name,
+    )
+
+    assertAuditEvent(auditEvents[0], booker.reference, BookerAuditType.VISITOR_REQUEST_SUBMITTED, "Booker ${booker.reference}, submitted request to add visitor to prisoner ${prisoner.prisonerId}, request reference - ${visitRequest.reference}", expectedRequestAuditAttributes)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId = prisoner.prisonerId)
   }
 
@@ -386,7 +449,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -416,7 +479,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -446,7 +509,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -473,7 +536,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Then
     responseSpec.expectStatus().is5xxServerError
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -500,7 +563,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Then
     responseSpec.expectStatus().isNotFound
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()

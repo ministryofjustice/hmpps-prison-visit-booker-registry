@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.APPRO
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_APPROVED_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.APPROVED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
@@ -110,9 +111,16 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       isNull(),
     )
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
-    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_APPROVED_FOR_PRISONER, "Visitor ID - $visitorIdToBeLinked approved (autoApproved = false) for prisoner - $prisonerId, request reference - $requestReference, actionedBy - TEST-USER")
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to prisonerId,
+      BookerAuditAttributeTypes.VISITOR_ID to visitorIdToBeLinked.toString(),
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to requestReference,
+      BookerAuditAttributeTypes.ACTIONED_BY to userName,
+    )
+    assertAuditEvent(auditEvents[0], bookerReference, VISITOR_REQUEST_APPROVED_FOR_PRISONER, "Visitor ID - $visitorIdToBeLinked approved (autoApproved = false) for prisoner - $prisonerId, request reference - $requestReference, actionedBy - TEST-USER", expectedAuditAttributes)
+
     verify(telemetryClientSpy, times(1)).trackEvent(
       eq(VISITOR_REQUEST_APPROVED_FOR_PRISONER.telemetryEventName),
       org.mockito.kotlin.check {

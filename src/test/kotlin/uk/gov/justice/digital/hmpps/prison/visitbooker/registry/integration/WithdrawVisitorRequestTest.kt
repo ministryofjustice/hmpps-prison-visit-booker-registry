@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.controller.WITHD
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.WithdrawVisitorRequestDto
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.BookerAuditType.VISITOR_REQUEST_WITHDRAWN_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.APPROVED
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.dto.enums.VisitorRequestsStatus.REQUESTED
@@ -93,13 +94,19 @@ class WithdrawVisitorRequestTest : IntegrationTestBase() {
       isNull(),
     )
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
+    val expectedAuditAttributes = mapOf(
+      BookerAuditAttributeTypes.PRISONER_NUMBER to request.prisonerId,
+      BookerAuditAttributeTypes.VISITOR_REQUEST_REFERENCE to request.reference,
+    )
+
     assertAuditEvent(
       auditEvents[0],
       bookerReference,
       VISITOR_REQUEST_WITHDRAWN_FOR_PRISONER,
       "Request reference - ${request.reference} withdrawn, bookerReference - $bookerReference",
+      expectedAuditAttributes,
     )
   }
 
