@@ -89,7 +89,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
       isNull(),
     )
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
@@ -128,7 +128,7 @@ class CreateBookerPrisonerVisitorTest : IntegrationTestBase() {
     )
     verifyNoInteractions(snsService)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,

@@ -86,7 +86,7 @@ class UpdatePrisonerPrisonByBookerReferenceTest : IntegrationTestBase() {
       null,
     )
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner1.prisonerId,

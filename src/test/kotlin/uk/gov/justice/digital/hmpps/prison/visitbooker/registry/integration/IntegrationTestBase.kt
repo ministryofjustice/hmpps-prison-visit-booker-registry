@@ -44,9 +44,9 @@ import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.Boo
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedPrisoner
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.PermittedVisitor
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.entity.VisitorRequest
-import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.BookerRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.PermittedPrisonerRepository
+import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.TestBookerAuditRepository
 import uk.gov.justice.digital.hmpps.prison.visitbooker.registry.model.repository.VisitorRequestsRepository
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 import java.time.LocalDate
@@ -96,7 +96,7 @@ abstract class IntegrationTestBase {
   protected lateinit var permittedPrisonerRepository: PermittedPrisonerRepository
 
   @Autowired
-  protected lateinit var bookerAuditRepository: BookerAuditRepository
+  protected lateinit var testBookerAuditRepository: TestBookerAuditRepository
 
   @Autowired
   protected lateinit var visitorRequestsRepository: VisitorRequestsRepository

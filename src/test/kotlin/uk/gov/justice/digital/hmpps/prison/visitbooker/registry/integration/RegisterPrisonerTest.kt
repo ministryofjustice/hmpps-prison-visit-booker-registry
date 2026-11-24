@@ -111,7 +111,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       null,
     )
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedPrisonerSearchAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
@@ -182,7 +182,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedPrisonerSearchAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
@@ -253,7 +253,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedPrisonerSearchAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
@@ -324,7 +324,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedPrisonerSearchAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
@@ -379,7 +379,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedPrisonerSearchAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to registerPrisoner.prisonerId,
@@ -442,7 +442,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       .jsonPath("$.validationErrors").isEqualTo(listOf(PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER.name))
 
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
 
     val expectedPrisonerSearchAuditAttributes = mapOf(
@@ -518,7 +518,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     assertThat(permittedPrisoners.single { it.prisonerId == prisonerId }.permittedVisitors).isEmpty()
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
 
     val expectedPrisonerSearchAuditAttributes = mapOf(
@@ -576,7 +576,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       .jsonPath("$.validationErrors").isEqualTo(listOf(PRISONER_NOT_FOUND.name))
 
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
 
     val expectedPrisonerSearchAuditAttributes = mapOf(
@@ -626,7 +626,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
     verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
   }
 
@@ -654,7 +654,7 @@ class RegisterPrisonerTest : IntegrationTestBase() {
       NOT_FOUND,
     )
     verify(prisonerOffenderSearchClientSpy, times(0)).getPrisonerById(prisonerId)
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
   }
 

@@ -110,7 +110,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       isNull(),
     )
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,

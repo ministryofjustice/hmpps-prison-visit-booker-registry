@@ -70,7 +70,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.EMAIL_ADDRESS to emailAddress,
@@ -101,7 +101,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
 
     verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
   }
 
@@ -126,7 +126,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
     verify(bookerRepositorySpy, times(0)).findByOneLoginSub(authDetailsDto.oneLoginSub)
     verify(bookerAuditRepositorySpy, times(0)).saveAndFlush(any<BookerAudit>())
     verify(telemetryClientSpy, times(0)).trackEvent(any(), any(), any())
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
   }
 
@@ -168,7 +168,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.EMAIL_ADDRESS to emailAddress,
@@ -214,7 +214,7 @@ class AuthDetailsControllerTest : IntegrationTestBase() {
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.OLD_EMAIL_ADDRESS to emailAddress,

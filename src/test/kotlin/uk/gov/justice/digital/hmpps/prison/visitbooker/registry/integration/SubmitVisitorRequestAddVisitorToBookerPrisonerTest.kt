@@ -72,7 +72,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
@@ -122,7 +122,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedRequestAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
@@ -208,7 +208,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedRequestAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
@@ -265,7 +265,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedRequestAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
@@ -322,7 +322,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(2)
     val expectedRequestAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
@@ -361,7 +361,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -409,7 +409,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
       ),
       null,
     )
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(1)
     val expectedRequestAuditAttributes = mapOf(
       BookerAuditAttributeTypes.PRISONER_NUMBER to prisoner.prisonerId,
@@ -449,7 +449,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -479,7 +479,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -509,7 +509,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
 
     verifyNoInteractions(telemetryClientSpy)
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -536,7 +536,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Then
     responseSpec.expectStatus().is5xxServerError
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
@@ -563,7 +563,7 @@ class SubmitVisitorRequestAddVisitorToBookerPrisonerTest : IntegrationTestBase()
     // Then
     responseSpec.expectStatus().isNotFound
 
-    val auditEvents = bookerAuditRepository.findAll()
+    val auditEvents = testBookerAuditRepository.findAll()
     assertThat(auditEvents).hasSize(0)
 
     val visitorRequests = visitorRequestsRepository.findAll()
